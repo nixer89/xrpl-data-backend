@@ -3,7 +3,7 @@ import * as scheduler from 'node-schedule';
 import * as ripple from 'ripple-lib';
 import { LedgerDataRequest, LedgerDataResponse, LedgerResponse } from 'ripple-lib';
 import consoleStamp = require("console-stamp");
-import { Ledger, RippleStateLedgerEntry } from 'ripple-lib/dist/npm/common/types/objects';
+import { RippleStateLedgerEntry } from 'ripple-lib/dist/npm/common/types/objects';
 
 interface Currency {
   token: string,
@@ -13,10 +13,6 @@ interface Currency {
 interface IssuerAccount {
   issuer: string,
   tokens: Currency[]
-}
-
-interface Issuers {
-  issuers: IssuerAccount[];
 }
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
@@ -51,7 +47,7 @@ const start = async () => {
       console.log("adding cors");
 
       fastify.register(require('fastify-cors'), {
-        origin: ["https://xumm.community", "http://localhost:4200"],
+        origin: ["https://xumm.community/", "http://localhost:4200"],
         methods: 'GET, OPTIONS',
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Referer']
       });
@@ -132,11 +128,10 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
     ledger_data.marker = marker;
 
   try { 
-    if(!websocket)
+    if(!websocket || !websocket.isConnected()) {
       websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.USE_PROXY ? config.PROXY_URL : null, timeout: 120000});
-
-    await websocket.connect();
-
+      await websocket.connect();
+    }
 
     //console.log("connected to xrpl.ws");
     //console.log("calling with: " + JSON.stringify(ledger_data));
@@ -204,8 +199,18 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
       ledger_date_2 = ledgerInfo.ledger.close_time_human;
     }
 
+    websocket.disconnect();
+    websocket = null;
+
   } catch(err) {
     console.log(err);
+    try {
+      if(websocket)
+        websocket.disconnect();
+    } catch(err) {
+      //nothing to do
+    }
+    
     websocket = null;
     if(marker != null)
       return readIssuedToken(ledgerIndex, marker);
