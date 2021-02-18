@@ -88,15 +88,20 @@ const start = async () => {
       console.log('Error starting server:', err)
     }
 
-    await readIssuedToken(null, null);
-    load1=!load1;
-
-    scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await readIssuedToken(null, null); load1=!load1});
-    scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await readIssuedToken(null, null); load1=!load1});
+    setTimeout(() => init(),0);
+    
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);
   }
+}
+
+async function init() {
+  await readIssuedToken(null, null);
+  load1=!load1;
+
+  scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await readIssuedToken(null, null); load1=!load1});
+  scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await readIssuedToken(null, null); load1=!load1});
 }
 
 async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void> {
@@ -129,7 +134,11 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
 
   try { 
     if(!websocket || !websocket.isConnected()) {
-      websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.USE_PROXY ? config.PROXY_URL : null, timeout: 120000});
+      if(config.USE_PROXY)
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000});
+      else
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000});
+
       await websocket.connect();
     }
 
