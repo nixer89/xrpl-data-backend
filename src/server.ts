@@ -135,9 +135,9 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
   try { 
     if(!websocket || !websocket.isConnected()) {
       if(config.USE_PROXY)
-        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000, connectionTimeout: 10000});
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000});
       else
-        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000, connectionTimeout: 10000});
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000});
 
       try {
         await websocket.connect();
