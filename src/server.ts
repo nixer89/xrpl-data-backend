@@ -15,12 +15,17 @@ interface IssuerAccount {
   tokens: Currency[]
 }
 
+interface IssuerData {
+  amount: number,
+  trustlines: number
+}
+
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 const fastify = require('fastify')({trustProxy: config.USE_PROXY})
 
-let issuers_1: Map<string, number> = new Map();
-let issuers_2: Map<string, number> = new Map();
+let issuers_1: Map<string, IssuerData> = new Map();
+let issuers_2: Map<string, IssuerData> = new Map();
 let ledger_index_1: string;
 let ledger_index_2: string;
 let ledger_date_1: string;
@@ -225,7 +230,7 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
     }
     
     websocket = null;
-    if(marker != null)
+    if(marker != null || (marker == null && ledgerIndex == null))
       return readIssuedToken(ledgerIndex, marker);
   }
 }
@@ -234,7 +239,7 @@ function addIssuer(issuer:string, amount:number): void {
   if(hasIssuer(issuer))
     addExistingIssuer(issuer, amount);
   else
-    addNewIssuer(issuer, amount);
+    addNewIssuer(issuer, amount, 1);
 }
 
 function hasIssuer(issuer: string) : boolean {
@@ -244,14 +249,14 @@ function hasIssuer(issuer: string) : boolean {
     return issuers_2.has(issuer);
 }
 
-function addNewIssuer(issuer:string, amount: number): void {
+function addNewIssuer(issuer:string, amount: number, trustlines: number): void {
   if(load1)
-    issuers_1.set(issuer, amount);
+    issuers_1.set(issuer, {amount: amount, trustlines: trustlines});
   else
-    issuers_2.set(issuer, amount);
+    issuers_2.set(issuer, {amount: amount, trustlines: trustlines});
 }
 
-function getIssuerData(issuer:string): number {
+function getIssuerData(issuer:string): IssuerData {
   if(load1)
     return issuers_1.get(issuer);
   else
@@ -259,22 +264,23 @@ function getIssuerData(issuer:string): number {
 }
 
 function addExistingIssuer(issuer: string, amount:number) {
-  let newAmount:number = getIssuerData(issuer)+amount;
+  let issuerData:IssuerData = getIssuerData(issuer);
+  let newAmount = issuerData.amount + amount
   //console.log("setting issuer old");
-  addNewIssuer(issuer, newAmount);
+  addNewIssuer(issuer, newAmount, ++issuerData.trustlines);
 }
 
-function transformIssuers(issuers: Map<string, number>): any {
+function transformIssuers(issuers: Map<string, IssuerData>): any {
   let transformedIssuers:any = {}
 
-  issuers.forEach((value, key, map) => {
-    let acc = key.substring(0, key.indexOf("_"));
-    let currency = key.substring(key.indexOf("_")+1, key.length);
+  issuers.forEach((data: IssuerData, key: string, map) => {
+    let acc:string = key.substring(0, key.indexOf("_"));
+    let currency:string = key.substring(key.indexOf("_")+1, key.length);
 
     if(!transformedIssuers[acc])
-      transformedIssuers[acc] = [{currency: currency, amount: value}];
+      transformedIssuers[acc] = [{currency: currency, amount: data.amount, trustlines: data.trustlines}];
     else
-      transformedIssuers[acc].push({currency: currency, amount: value});
+      transformedIssuers[acc].push({currency: currency, amount: data.amount, trustlines: data.trustlines});
 
   });
 
