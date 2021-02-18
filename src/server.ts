@@ -135,11 +135,15 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
   try { 
     if(!websocket || !websocket.isConnected()) {
       if(config.USE_PROXY)
-        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000});
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000, connectionTimeout: 10000});
       else
-        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000});
+        websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000, connectionTimeout: 10000});
 
-      await websocket.connect();
+      try {
+        await websocket.connect();
+      } catch(err) {
+        return readIssuedToken(ledgerIndex, marker);
+      }
     }
 
     //console.log("connected to xrpl.ws");
@@ -214,7 +218,7 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
   } catch(err) {
     console.log(err);
     try {
-      if(websocket)
+      if(websocket && websocket.isConnected())
         websocket.disconnect();
     } catch(err) {
       //nothing to do
