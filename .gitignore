@@ -1,0 +1,8 @@
+# dependencies
+/node_modules
+/dist
+/src/doc/swagger-doc.yaml.bak
+local_config.txt
+
+# IDE - VSCode
+.vscode/*
