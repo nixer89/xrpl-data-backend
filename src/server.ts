@@ -217,12 +217,12 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
       ledger_index_1 = ledgerIndex;
       ledger_hash_1 = ledgerInfo.ledger_hash;
       ledger_date_1 = ledgerInfo.ledger.close_time_human;
-      ledger_time_ms_1 = ledgerInfo.ledger.close_time + 946684800*1000; //ledger close time + ripple epoch in seconds * 1000 (to get miliseconds)
+      ledger_time_ms_1 = ledgerInfo.ledger.close_time;
     } else {
       ledger_index_2 = ledgerIndex;
       ledger_hash_2 = ledgerInfo.ledger_hash;
       ledger_date_2 = ledgerInfo.ledger.close_time_human;
-      ledger_time_ms_2 = ledgerInfo.ledger.close_time + 946684800*1000; //ledger close time + ripple epoch in seconds * 1000 (to get miliseconds)
+      ledger_time_ms_2 = ledgerInfo.ledger.close_time;
     }
 
     websocket.disconnect();
