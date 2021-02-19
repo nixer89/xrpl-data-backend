@@ -54,7 +54,7 @@ const start = async () => {
       console.log("adding cors");
 
       fastify.register(require('fastify-cors'), {
-        origin: ["https://xumm.community/", "http://localhost:4200"],
+        origin: ["https://xumm.community", "https://test.xumm.community", "http://localhost:4200"],
         methods: 'GET, OPTIONS',
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Referer']
       });
