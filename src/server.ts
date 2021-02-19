@@ -30,6 +30,8 @@ let ledger_index_1: string;
 let ledger_index_2: string;
 let ledger_date_1: string;
 let ledger_date_2: string;
+let ledger_time_ms_1: number;
+let ledger_time_ms_2: number;
 let ledger_hash_1: string;
 let ledger_hash_2: string;
 
@@ -64,6 +66,7 @@ const start = async () => {
             ledger_index: ledger_index_1,
             ledger_hash: ledger_hash_1,
             ledger_close: ledger_date_1,
+            ledger_close_ms: ledger_time_ms_1,
             tokens: transformIssuers(new Map(issuers_1))
           }
         } else {
@@ -71,6 +74,7 @@ const start = async () => {
             ledger_index: ledger_index_2,
             ledger_hash: ledger_hash_2,
             ledger_close: ledger_date_2,
+            ledger_close_ms: ledger_time_ms_2,
             tokens: transformIssuers(new Map(issuers_2))
           }
         }
@@ -116,11 +120,13 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
     if(load1) {
       issuers_1.clear();
       ledger_date_1 = null;
+      ledger_time_ms_1 = null;
       ledger_index_1 = null;
       ledger_hash_1 = null;
     } else {
       issuers_2.clear();
       ledger_date_2 = null;
+      ledger_time_ms_2 = null;
       ledger_index_2 = null;
       ledger_hash_2 = null;
     }
@@ -211,10 +217,12 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
       ledger_index_1 = ledgerIndex;
       ledger_hash_1 = ledgerInfo.ledger_hash;
       ledger_date_1 = ledgerInfo.ledger.close_time_human;
+      ledger_time_ms_1 = ledgerInfo.ledger.close_time + 946684800 ;
     } else {
       ledger_index_2 = ledgerIndex;
       ledger_hash_2 = ledgerInfo.ledger_hash;
       ledger_date_2 = ledgerInfo.ledger.close_time_human;
+      ledger_time_ms_2 = ledgerInfo.ledger.close_time + 946684800 ;
     }
 
     websocket.disconnect();
