@@ -109,13 +109,13 @@ export class AccountNames {
     }
 
     getUserName(xrplAccount:string): string {
-        if(this.bithompServiceNames.has(xrplAccount))
+        if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null)
             return this.bithompServiceNames.get(xrplAccount) + " (Bithomp Service)";
 
-        else if(this.xrpscanUserNames.has(xrplAccount))
+        else if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null)
             return this.xrpscanUserNames.get(xrplAccount) + " (XRPScan Service)";
         
-        else if(this.bithompUserNames.has(xrplAccount))
+        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.has(xrplAccount) != null)
             return this.bithompUserNames.get(xrplAccount) + " (Bithomp IUser)";
 
         else
