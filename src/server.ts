@@ -6,9 +6,12 @@ import consoleStamp = require("console-stamp");
 import { RippleStateLedgerEntry } from 'ripple-lib/dist/npm/common/types/objects';
 import * as fetch from 'node-fetch';
 import * as HttpsProxyAgent from 'https-proxy-agent';
+import { AccountNames } from './accountNames';
 
 let proxy = new HttpsProxyAgent(config.PROXY_URL);
 let useProxy = config.USE_PROXY;
+
+let accountInfo:AccountNames = new AccountNames();
 
 interface Currency {
   token: string,
@@ -29,6 +32,11 @@ consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 const fastify = require('fastify')({trustProxy: config.USE_PROXY})
 
+let testValues_1:Map<string, IssuerData> = new Map();
+testValues_1.set("rNixerUVPwrhxGDt4UooDu6FJ7zuofvjCF_NIX", {amount: 111, trustlines: 11});
+testValues_1.set("r9N4v3cWxfh4x6yUNjxNy3DbWUgbzMBLdk_BOT", {amount: 222, trustlines: 22});
+testValues_1.set("raPHaELpTDKtufQwptF9nhfb8qnvefqiMB_RAP", {amount: 333, trustlines: 33});
+
 let issuers_1: Map<string, IssuerData> = new Map();
 let issuers_2: Map<string, IssuerData> = new Map();
 let ledger_index_1: string;
@@ -39,8 +47,6 @@ let ledger_time_ms_1: number;
 let ledger_time_ms_2: number;
 let ledger_hash_1: string;
 let ledger_hash_2: string;
-
-let bithompUserNames: Map<string, string> = new Map();
 
 let load1: boolean = true;
 
@@ -113,11 +119,12 @@ const start = async () => {
 }
 
 async function init() {
+  await accountInfo.resolveAllUserNames();
   await readIssuedToken(null, null);
   load1=!load1;
 
   scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await readIssuedToken(null, null); load1=!load1});
-  scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await readIssuedToken(null, null); load1=!load1});
+  //scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await readIssuedToken(null, null); load1=!load1});
 }
 
 async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void> {
@@ -218,8 +225,6 @@ async function readIssuedToken(ledgerIndex:string, marker:string): Promise<void>
 
     console.log("ALL DONE");
 
-    console.log("bithomp names: " + bithompUserNames.size);
-
     let ledgerInfo:LedgerResponse = await websocket.request('ledger', {ledger_index: ledgerIndex});
 
     if(load1) {
@@ -257,7 +262,8 @@ async function addIssuer(issuer:string, amount:number): Promise<void> {
     addExistingIssuer(issuer, amount);
   } else {
     addNewIssuer(issuer, amount, 1);
-    await loadBithompUserNames(issuer.substring(0, issuer.indexOf("_")));
+    //initialize user name to have faster access later on
+    await accountInfo.initAccountNames(issuer.substring(0, issuer.indexOf("_")));
   }
 }
 
@@ -295,7 +301,7 @@ function transformIssuers(issuers: Map<string, IssuerData>): any {
   issuers.forEach((data: IssuerData, key: string, map) => {
     let acc:string = key.substring(0, key.indexOf("_"));
     let currency:string = key.substring(key.indexOf("_")+1, key.length);
-    let userName:string = bithompUserNames.has(acc) ? bithompUserNames.get(acc) : null;
+    let userName:string = accountInfo.getUserName(acc);
 
     if(!transformedIssuers[acc]) {
       transformedIssuers[acc] = {
@@ -310,34 +316,6 @@ function transformIssuers(issuers: Map<string, IssuerData>): any {
 
   return transformedIssuers;
 }
-
-
-
-async function loadBithompUserNames(xrplAccount:string) {
-  try {
-    //copy unsued map for iteration
-    let currentIssuers:Map<string, IssuerData> = new Map(load1 ? issuers_1 : issuers_2);
-
-    let keys:IterableIterator<string> = currentIssuers.keys();
-    
-    //call bithomp and ask for username
-    if(!bithompUserNames.has(xrplAccount)) {
-      console.log("resolving: " + xrplAccount);
-      let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }, agent: useProxy ? proxy : null})
-      
-      if(bithompResponse && bithompResponse.ok) {
-        let accountInfo:any = await bithompResponse.json();
-
-        console.log("resolved: " + JSON.stringify(accountInfo));
-        if(accountInfo)
-          bithompUserNames.set(xrplAccount, accountInfo.username);
-      }
-    }
-  } catch(err) {
-    //nothing to do here. Just skip
-  }   
-}
-
 
 console.log("running server");
 start();
