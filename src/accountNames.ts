@@ -3,6 +3,7 @@ import * as fetch from 'node-fetch';
 import * as scheduler from 'node-schedule';
 import * as HttpsProxyAgent from 'https-proxy-agent';
 import consoleStamp = require("console-stamp");
+import * as fs from 'fs';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -16,9 +17,10 @@ export class AccountNames {
 
     constructor() {
         scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1}, this.resolveAllUserNames);
+        this.loadBithompUserNamesFromFS();
     }
 
-    async resolveAllUserNames(): Promise<void> {
+    public async resolveAllUserNames(): Promise<void> {
         //load bithomp services
         await this.loadBithompServiceNames();
         //load xrpscan services
@@ -30,6 +32,7 @@ export class AccountNames {
                 this.bithompUserNames.delete(key);
         });
         
+
     }
 
     private async loadBithompServiceNames() :Promise<void> {
@@ -136,5 +139,32 @@ export class AccountNames {
         else
             //try to resolve user name - seems like it is a new one!
             await this.loadBithompSingleAccountName(xrplAccount);
+    }
+
+    public async saveBithompUserNamesToFS(): Promise<void> {
+        if(this.bithompUserNames && this.bithompUserNames.size > 0) {
+            let bithompNames:any = {};
+            this.bithompUserNames.forEach((value, key, map) => {
+                bithompNames[key] = value;
+            });
+            fs.writeFileSync("../bihompUserNames.js", JSON.stringify(bithompNames));
+
+            console.log("saved " + this.bithompUserNames.size + " user names to file system");
+        }
+    }
+
+    private async loadBithompUserNamesFromFS(): Promise<void> {
+        if(fs.existsSync("../bihompUserNames.js")) {
+            let bithompNames:any = fs.readFileSync("../bihompUserNames.js").toJSON();
+            if(bithompNames) {
+                for (var account in bithompNames) {
+                    if (bithompNames.hasOwnProperty(account)) {
+                        this.bithompUserNames.set(account, bithompNames[account]);
+                    }
+                }
+
+                console.log("loaded " + this.bithompUserNames.size + " user names from file system");
+            }
+        }
     }
 }
