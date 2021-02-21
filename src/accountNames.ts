@@ -118,8 +118,8 @@ export class AccountNames {
         else if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null)
             return this.xrpscanUserNames.get(xrplAccount) + " (XRPScan Service)";
         
-        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.has(xrplAccount) != null)
-            return this.bithompUserNames.get(xrplAccount) + " (Bithomp IUser)";
+        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null)
+            return this.bithompUserNames.get(xrplAccount) + " (Bithomp User)";
 
         else
             //try to resolve user name - seems like it is a new one!
@@ -138,7 +138,7 @@ export class AccountNames {
 
         else
             //try to resolve user name - seems like it is a new one!
-            await this.loadBithompSingleAccountName(xrplAccount);
+            this.loadBithompSingleAccountName(xrplAccount);
     }
 
     public async saveBithompUserNamesToFS(): Promise<void> {
@@ -147,15 +147,17 @@ export class AccountNames {
             this.bithompUserNames.forEach((value, key, map) => {
                 bithompNames[key] = value;
             });
-            fs.writeFileSync("../bihompUserNames.js", JSON.stringify(bithompNames));
+            fs.writeFileSync("./../bithompUserNames.js", JSON.stringify(bithompNames));
 
             console.log("saved " + this.bithompUserNames.size + " user names to file system");
         }
     }
 
     private async loadBithompUserNamesFromFS(): Promise<void> {
-        if(fs.existsSync("../bihompUserNames.js")) {
-            let bithompNames:any = fs.readFileSync("../bihompUserNames.js").toJSON();
+        console.log("loading bithomp user names");
+        if(fs.existsSync("./../bithompUserNames.js")) {
+            let bithompNames:any = fs.readFileSync("./../bithompUserNames.js").toJSON().data;
+            //console.log(JSON.stringify(bithompNames));
             if(bithompNames) {
                 for (var account in bithompNames) {
                     if (bithompNames.hasOwnProperty(account)) {
@@ -165,6 +167,8 @@ export class AccountNames {
 
                 console.log("loaded " + this.bithompUserNames.size + " user names from file system");
             }
+        } else {
+            console.log("bithomp user name file does not exist yet.")
         }
     }
 }
