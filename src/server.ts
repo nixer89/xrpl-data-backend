@@ -47,7 +47,7 @@ const start = async () => {
     try {
       await fastify.listen(4001, '0.0.0.0');
 
-      console.log("http://localhost:4001/");
+      console.log("http://localhost:4002/");
 
       fastify.ready(err => {
         if (err) throw err

@@ -140,10 +140,7 @@ export class IssuerAccounts {
           }
       
           console.log("ALL DONE");
-          //always save resolved user names to file system to make restart of server much faster
-          this.accountInfo.saveBithompUserNamesToFS();
-          this.saveIssuerDataToFS();
-      
+                
           let ledgerInfo:LedgerResponse = await this.websocket.request('ledger', {ledger_index: ledgerIndex});
       
           if(this.load1) {
@@ -157,6 +154,10 @@ export class IssuerAccounts {
             this.ledger_date_2 = ledgerInfo.ledger.close_time_human;
             this.ledger_time_ms_2 = ledgerInfo.ledger.close_time;
           }
+
+          //always save resolved user names to file system to make restart of server much faster
+          setTimeout(() => this.accountInfo.saveBithompUserNamesToFS(), 10000);
+          await this.saveIssuerDataToFS();
       
           this.websocket.disconnect();
           this.websocket = null;
@@ -182,7 +183,7 @@ export class IssuerAccounts {
         } else {
             this.addNewIssuer(issuer, amount, 1);
           //initialize user name to have faster access later on
-          await this.accountInfo.initAccountNames(issuer.substring(0, issuer.indexOf("_")));
+          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
         }
       }
       
@@ -240,53 +241,122 @@ export class IssuerAccounts {
         return this.load1 ? this.ledger_index_2 : this.ledger_index_1;
     }
 
+    public getLedgerIndexNew(): string {
+      return this.load1 ? this.ledger_index_1 : this.ledger_index_2;
+  }
+
+    private setLedgerIndex(index:string): void {
+      if(this.load1)
+        this.ledger_index_1 = index;
+      else
+        this.ledger_index_2 = index;
+    }
+
     public getLedgerHash(): string {
         return this.load1 ? this.ledger_hash_2 : this.ledger_hash_1;
+    }
+
+    public getLedgerHashNew(): string {
+      return this.load1 ? this.ledger_hash_1 : this.ledger_hash_2;
+  }
+
+    private setLedgerHash(hash:string): void {
+      if(this.load1)
+        this.ledger_hash_1 = hash;
+      else
+        this.ledger_hash_2 = hash;
     }
 
     public getLedgerCloseTime(): string {
         return this.load1 ? this.ledger_date_2 : this.ledger_date_1;
     }
 
+    public getLedgerCloseTimeNew(): string {
+      return this.load1 ? this.ledger_date_1 : this.ledger_date_2;
+  }
+
+    private setLedgerCloseTime(closeTime: string): void {
+      if(this.load1)
+        this.ledger_date_1 = closeTime;
+      else
+        this.ledger_date_2 = closeTime;
+    }
+
     public getLedgerCloseTimeMs(): number {
         return this.load1 ? this.ledger_time_ms_2 : this.ledger_time_ms_1;
+    }
+
+    public getLedgerCloseTimeMsNew(): number {
+      return this.load1 ? this.ledger_time_ms_1 : this.ledger_time_ms_2;
+  }
+
+    private setLedgerCloseTimeMs(closeTimeInMs: number): void {
+      if(this.load1)
+        this.ledger_time_ms_1 = closeTimeInMs;
+      else
+        this.ledger_time_ms_2 = closeTimeInMs;
     }
 
     public getLedgerTokens(): any {
         return this.transformIssuers(new Map(this.load1 ? this.issuers_2 : this.issuers_1));
     }
 
+    private setIssuers(issuers: Map<string, IssuerData>): void{
+      if(this.load1)
+        this.issuers_1 = new Map(issuers);
+      else
+        this.issuers_2 = new Map(issuers);
+    }
+
     public async saveIssuerDataToFS(): Promise<void> {
-        let mapToSave:Map<string, IssuerData> = new Map(this.load1 ? this.issuers_2 : this.issuers_1);
+        let mapToSave:Map<string, IssuerData> = new Map(this.load1 ? this.issuers_1 : this.issuers_2);
         if(mapToSave && mapToSave.size > 0) {
-            let issuerData:any = {};
+            let issuerData:any = {
+              "ledger_index": this.getLedgerIndexNew(),
+              "ledger_date": this.getLedgerCloseTimeNew(),
+              "ledger_time_ms": this.getLedgerCloseTimeMsNew(),
+              "ledger_hash": this.getLedgerHashNew(),
+              "issuers": {
+
+              }
+            };
+
             mapToSave.forEach((value, key, map) => {
-                issuerData[key] = value;
+                issuerData["issuers"][key] = value;
             });
-            fs.writeFileSync("../issuerData.js", JSON.stringify(issuerData));
+
+            fs.writeFileSync("./../issuerData.js", JSON.stringify(issuerData));
 
             console.log("saved " + mapToSave.size + " issuer data to file system");
+        } else {
+          console.log("issuer data is empty!");
         }
     }
 
     private async loadIssuerDataFromFS(): Promise<void> {
+      console.log("loading issuer data from FS");
         let loadedMap:Map<string, IssuerData> = new Map();
-        if(fs.existsSync("../issuerData.js")) {
-            let issuerData:any = fs.readFileSync("../issuerData.js").toJSON();
+        if(fs.existsSync("./../issuerData.js")) {
+            let issuerData:any = JSON.parse(fs.readFileSync("./../issuerData.js").toString());
             if(issuerData) {
-                for (var account in issuerData) {
-                    if (issuerData.hasOwnProperty(account)) {
-                        loadedMap.set(account, issuerData[account]);
+                let issuers = issuerData.issuers;
+                for (var account in issuers) {
+                    if (issuers.hasOwnProperty(account)) {
+                        loadedMap.set(account, issuers[account]);
                     }
                 }
 
                 console.log("loaded " + loadedMap.size + " issuer data from file system");
 
-                if(this.load1)
-                    this.issuers_1 = new Map(loadedMap);
-                else
-                    this.issuers_2 = new Map(loadedMap);
+                this.setLedgerIndex(issuerData['ledger_index']);
+                this.setLedgerCloseTime(issuerData['ledger_date']);
+                this.setLedgerCloseTimeMs(issuerData['ledger_time_ms']);
+                this.setLedgerHash(issuerData['ledger_hash']);
+                this.setIssuers(loadedMap);
             }
-        }
+        } else {
+          console.log("issuer data file does not exist yet.")
+      }
+        
     }
 }

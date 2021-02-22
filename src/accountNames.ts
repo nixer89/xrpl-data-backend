@@ -16,28 +16,36 @@ export class AccountNames {
     private bithompUserNames:Map<string, string> = new Map();
 
     constructor() {
-        scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1}, this.resolveAllUserNames);
+        scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1, hour: 12, minute: 0, second: 0}, () => this.resolveAllUserNames(true));
         this.loadBithompUserNamesFromFS();
     }
 
-    public async resolveAllUserNames(): Promise<void> {
-        //load bithomp services
-        await this.loadBithompServiceNames();
-        //load xrpscan services
-        await this.loadXRPScanNames();
-        //reset all unkown accounts
-        let iteratorMap: Map<string,string> = new Map(this.bithompUserNames);
-        iteratorMap.forEach((value, key, map) => {
-            if(value == null)
-                this.bithompUserNames.delete(key);
-        });
+    public async resolveAllUserNames(deleteEmptyNames?: boolean): Promise<void> {
+        try {
+            //load bithomp services
+            await this.loadBithompServiceNames();
+            //load xrpscan services
+            await this.loadXRPScanNames();
+
+            if(deleteEmptyNames) {
+                //reset all unkown accounts
+                let iteratorMap: Map<string,string> = new Map(this.bithompUserNames);
+                iteratorMap.forEach((value, key, map) => {
+                    if(value == null || value.trim().length == 0)
+                        this.bithompUserNames.delete(key);
+                });
+            }
+        } catch(err) {
+            console.log(err);
+            console.log("some weird error happened!");
+        }
         
 
     }
 
-    private async loadBithompServiceNames() :Promise<void> {
+    public async loadBithompServiceNames() :Promise<void> {
         try {
-            console.log("loadservice names from bithomp");
+            console.log("load service names from bithomp");
             let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }, agent: this.useProxy ? this.proxy : null})
             
             if(bithompResponse && bithompResponse.ok) {
@@ -100,7 +108,7 @@ export class AccountNames {
             
                     console.log("resolved: " + JSON.stringify(accountInfo));
                     if(accountInfo)
-                        this.bithompUserNames.set(xrplAccount, accountInfo.username ? accountInfo.username : null);
+                        this.bithompUserNames.set(xrplAccount, accountInfo.username ? accountInfo.username : "");
 
                     console.log("bithompUserNames size: " + this.bithompUserNames.size);
                 }
@@ -112,13 +120,13 @@ export class AccountNames {
     }
 
     getUserName(xrplAccount:string): string {
-        if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null)
+        if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null && this.bithompServiceNames.get(xrplAccount).trim().length > 0)
             return this.bithompServiceNames.get(xrplAccount) + " (Bithomp Service)";
 
-        else if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null)
+        else if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).trim().length > 0)
             return this.xrpscanUserNames.get(xrplAccount) + " (XRPScan Service)";
         
-        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null)
+        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null && this.bithompUserNames.get(xrplAccount).trim().length > 0)
             return this.bithompUserNames.get(xrplAccount) + " (Bithomp User)";
 
         else
@@ -126,19 +134,20 @@ export class AccountNames {
             return null
     }
 
-    async initAccountNames(xrplAccount:string): Promise<void> {
-        if(this.bithompServiceNames.has(xrplAccount))
+    async initAccountName(xrplAccount:string): Promise<void> {
+        if(this.bithompServiceNames.has(xrplAccount)) {
             return;
 
-        else if(this.xrpscanUserNames.has(xrplAccount))
+        } else if(this.xrpscanUserNames.has(xrplAccount)) {
             return;
         
-        else if(this.bithompUserNames.has(xrplAccount))
+        } else if(this.bithompUserNames.has(xrplAccount)) {
             return;
 
-        else
+        } else {
             //try to resolve user name - seems like it is a new one!
             this.loadBithompSingleAccountName(xrplAccount);
+        }
     }
 
     public async saveBithompUserNamesToFS(): Promise<void> {
@@ -154,14 +163,14 @@ export class AccountNames {
     }
 
     private async loadBithompUserNamesFromFS(): Promise<void> {
-        console.log("loading bithomp user names");
+        console.log("loading bithomp user names from FS");
         if(fs.existsSync("./../bithompUserNames.js")) {
-            let bithompNames:any = fs.readFileSync("./../bithompUserNames.js").toJSON().data;
+            let bithompNames:any = JSON.parse(fs.readFileSync("./../bithompUserNames.js").toString());
             //console.log(JSON.stringify(bithompNames));
             if(bithompNames) {
                 for (var account in bithompNames) {
                     if (bithompNames.hasOwnProperty(account)) {
-                        this.bithompUserNames.set(account, bithompNames[account]);
+                        this.bithompUserNames.set(account, bithompNames[account] != null ? bithompNames[account] : "");
                     }
                 }
 
