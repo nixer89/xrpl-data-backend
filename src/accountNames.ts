@@ -120,14 +120,14 @@ export class AccountNames {
     }
 
     getUserName(xrplAccount:string): string {
-        if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null && this.bithompServiceNames.get(xrplAccount).trim().length > 0)
-            return this.bithompServiceNames.get(xrplAccount) + " (Bithomp Service)";
+        if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).trim().length > 0)
+            return this.xrpscanUserNames.get(xrplAccount) + "_[XRPScan]";
 
-        else if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).trim().length > 0)
-            return this.xrpscanUserNames.get(xrplAccount) + " (XRPScan Service)";
+        else if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null && this.bithompServiceNames.get(xrplAccount).trim().length > 0)
+            return this.bithompServiceNames.get(xrplAccount) + "_[Bithomp]";
         
         else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null && this.bithompUserNames.get(xrplAccount).trim().length > 0)
-            return this.bithompUserNames.get(xrplAccount) + " (Bithomp User)";
+            return this.bithompUserNames.get(xrplAccount) + "_[Bithomp]";
 
         else
             //try to resolve user name - seems like it is a new one!
