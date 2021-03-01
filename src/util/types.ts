@@ -12,4 +12,12 @@ export interface IssuerData {
     amount: number,
     trustlines: number
 }
-  
+ 
+export interface IssuerVerification {
+    resolvedBy: string,
+    account: string,
+    verified: boolean
+    domain?: string,
+    username?: string,
+    twitter?: string
+}
