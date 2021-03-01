@@ -36,16 +36,29 @@ export class IssuerAccounts {
         await this.loadIssuerDataFromFS();
 
         //load issuer data if it could not be read from the file system
-        if(this.load1 && this.issuers_1.size == 0 || !this.load1 && this.issuers_2.size == 0)
-            await this.readIssuedToken(null, null);
+        if(this.load1 && this.issuers_1.size == 0 || !this.load1 && this.issuers_2.size == 0) {
+            await this.readIssuedToken(null, null, null, 0);
+        }
 
         this.load1=!this.load1;
 
-        scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await this.readIssuedToken(null, null); this.load1=!this.load1});
-        scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await this.readIssuedToken(null, null); this.load1=!this.load1});
+        scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await this.readIssuedToken(null, null, null, 0); this.load1=!this.load1; });
+        scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await this.readIssuedToken(null, null, null, 0);this.load1=!this.load1});
     }
 
-    public async readIssuedToken(ledgerIndex:string, marker:string): Promise<void> {
+    public async readIssuedToken(ledgerIndex:string, marker:string, oldMarker:string, retryCounter:number): Promise<void> {
+        if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
+          console.log("increase retry counter");
+          retryCounter++;
+
+          if(retryCounter > 4) {
+            console.log("giving up for this request.");
+            return;
+          }
+        } else if(marker != oldMarker) {
+          //reset retry counter
+          retryCounter = 0;
+        }
         //console.log("new call: ledgerIndex: " + ledgerIndex);
         console.log("new call: marker: " + marker);
         if(!marker) {
@@ -85,16 +98,14 @@ export class IssuerAccounts {
             try {
               await this.websocket.connect();
             } catch(err) {
-              return this.readIssuedToken(ledgerIndex, marker);
+              return this.readIssuedToken(ledgerIndex, marker, marker, retryCounter);
             }
           }
       
           //console.log("connected to xrpl.ws");
           //console.log("calling with: " + JSON.stringify(ledger_data));
-      
-          let message:LedgerDataResponse;
-        
-          message = await this.websocket.request('ledger_data', ledger_data);
+              
+          let message:LedgerDataResponse = await this.websocket.request('ledger_data', ledger_data);
       
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
       
@@ -127,7 +138,7 @@ export class IssuerAccounts {
             console.log("issuer_1 size: " + this.issuers_1.size);
             console.log("issuer_2 size: " + this.issuers_2.size);
             if(newledgerIndex != null && newMarker != null)
-                return this.readIssuedToken(newledgerIndex, newMarker);
+                return this.readIssuedToken(newledgerIndex, newMarker, marker, retryCounter);
             else {
               console.log("Done 1");
               console.log("issuer_1 size: " + this.issuers_1.size);
@@ -166,14 +177,14 @@ export class IssuerAccounts {
           console.log(err);
           try {
             if(this.websocket && this.websocket.isConnected())
-            this.websocket.disconnect();
+              this.websocket.disconnect();
           } catch(err) {
             //nothing to do
           }
           
           this.websocket = null;
           if(marker != null || (marker == null && ledgerIndex == null))
-            return this.readIssuedToken(ledgerIndex, marker);
+            return this.readIssuedToken(ledgerIndex, marker, marker, retryCounter);
         }
       }
     
@@ -243,7 +254,7 @@ export class IssuerAccounts {
 
     public getLedgerIndexNew(): string {
       return this.load1 ? this.ledger_index_1 : this.ledger_index_2;
-  }
+    }
 
     private setLedgerIndex(index:string): void {
       if(this.load1)
@@ -334,7 +345,8 @@ export class IssuerAccounts {
     }
 
     private async loadIssuerDataFromFS(): Promise<void> {
-      console.log("loading issuer data from FS");
+      try {
+        console.log("loading issuer data from FS");
         let loadedMap:Map<string, IssuerData> = new Map();
         if(fs.existsSync("./../issuerData.js")) {
             let issuerData:any = JSON.parse(fs.readFileSync("./../issuerData.js").toString());
@@ -356,7 +368,11 @@ export class IssuerAccounts {
             }
         } else {
           console.log("issuer data file does not exist yet.")
-      }
-        
+        }
+      } catch(err) {
+        console.log("error reading issuer data from FS");
+        console.log(err);
+        this.setIssuers(new Map());
+      }  
     }
 }
