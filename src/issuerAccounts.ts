@@ -42,13 +42,8 @@ export class IssuerAccounts {
 
         this.load1=!this.load1;
 
-        await this.readIssuedToken(null, null, null, 0);
-
-        scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => {
-          await this.readIssuedToken(null, null, null, 0);
-          this.load1=!this.load1;
-        });
-        //scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await this.readIssuedToken(null, null); this.load1=!this.load1});
+        scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await this.readIssuedToken(null, null, null, 0); this.load1=!this.load1; });
+        scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await this.readIssuedToken(null, null, null, 0);this.load1=!this.load1});
     }
 
     public async readIssuedToken(ledgerIndex:string, marker:string, oldMarker:string, retryCounter:number): Promise<void> {
