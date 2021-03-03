@@ -254,11 +254,11 @@ export class IssuerAccounts {
         issuers.forEach((data: IssuerData, key: string, map) => {
           let acc:string = key.substring(0, key.indexOf("_"));
           let currency:string = key.substring(key.indexOf("_")+1, key.length);
-          let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
+          let userName:string = this.accountInfo.getUserName(acc);
       
           if(!transformedIssuers[acc]) {
             transformedIssuers[acc] = {
-              data: issuerData,
+              username: userName,
               tokens: [{currency: currency, amount: data.amount, trustlines: data.trustlines}]
             }
           } else {

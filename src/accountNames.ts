@@ -133,13 +133,13 @@ export class AccountNames {
 
     getUserName(xrplAccount:string): string {
         if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).username.trim().length > 0)
-            return this.xrpscanUserNames.get(xrplAccount) + "_[XRPScan]";
+            return this.xrpscanUserNames.get(xrplAccount).username + "_[XRPScan]";
 
         else if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null && this.bithompServiceNames.get(xrplAccount).username.trim().length > 0)
-            return this.bithompServiceNames.get(xrplAccount) + "_[Bithomp]";
+            return this.bithompServiceNames.get(xrplAccount).username + "_[Bithomp]";
         
         else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null && this.bithompUserNames.get(xrplAccount).username.trim().length > 0)
-            return this.bithompUserNames.get(xrplAccount) + "_[Bithomp]";
+            return this.bithompUserNames.get(xrplAccount).username + "_[Bithomp]";
 
         else
             //try to resolve user name - seems like it is a new one!
