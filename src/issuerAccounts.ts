@@ -226,7 +226,29 @@ export class IssuerAccounts {
         this.addNewIssuer(issuer, newAmount, ++issuerData.trustlines);
       }
       
-      private transformIssuers(issuers: Map<string, IssuerData>): any {
+      private transformIssuersV1(issuers: Map<string, IssuerData>): any {
+        let transformedIssuers:any = {}
+      
+        issuers.forEach((data: IssuerData, key: string, map) => {
+          let acc:string = key.substring(0, key.indexOf("_"));
+          let currency:string = key.substring(key.indexOf("_")+1, key.length);
+          let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
+      
+          if(!transformedIssuers[acc]) {
+            transformedIssuers[acc] = {
+              data: issuerData,
+              tokens: [{currency: currency, amount: data.amount, trustlines: data.trustlines}]
+            }
+          } else {
+            transformedIssuers[acc].tokens.push({currency: currency, amount: data.amount, trustlines: data.trustlines});
+          }
+      
+        });
+      
+        return transformedIssuers;
+      }
+
+      private transformIssuersOld(issuers: Map<string, IssuerData>): any {
         let transformedIssuers:any = {}
       
         issuers.forEach((data: IssuerData, key: string, map) => {
@@ -308,9 +330,13 @@ export class IssuerAccounts {
         this.ledger_time_ms_2 = closeTimeInMs;
     }
 
-    public getLedgerTokens(): any {
-        return this.transformIssuers(new Map(this.load1 ? this.issuers_2 : this.issuers_1));
+    public getLedgerTokensV1(): any {
+        return this.transformIssuersV1(new Map(this.load1 ? this.issuers_2 : this.issuers_1));
     }
+
+    public getLedgerTokensOld(): any {
+      return this.transformIssuersOld(new Map(this.load1 ? this.issuers_2 : this.issuers_1));
+  }
 
     private setIssuers(issuers: Map<string, IssuerData>): void{
       if(this.load1)

@@ -35,7 +35,18 @@ const start = async () => {
           ledger_hash: issuerAccount.getLedgerHash(),
           ledger_close: issuerAccount.getLedgerCloseTime(),
           ledger_close_ms: issuerAccount.getLedgerCloseTimeMs(),
-          tokens: issuerAccount.getLedgerTokens()
+          tokens: issuerAccount.getLedgerTokensOld()
+        }
+      });
+
+      fastify.get('/api/v1/tokens', async (request, reply) => {
+        //console.log("request params: " + JSON.stringify(request.params));
+        return {
+          ledger_index: issuerAccount.getLedgerIndex(),
+          ledger_hash: issuerAccount.getLedgerHash(),
+          ledger_close: issuerAccount.getLedgerCloseTime(),
+          ledger_close_ms: issuerAccount.getLedgerCloseTimeMs(),
+          tokens: issuerAccount.getLedgerTokensV1()
         }
       });
       
