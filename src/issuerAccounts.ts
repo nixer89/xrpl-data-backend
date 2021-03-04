@@ -42,18 +42,28 @@ export class IssuerAccounts {
 
         this.load1=!this.load1;
 
-        scheduler.scheduleJob("readIssuedToken", {minute: 0}, async () => { await this.readIssuedToken(null, null, null, 0); this.load1=!this.load1; });
-        scheduler.scheduleJob("readIssuedToken", {minute: 30}, async () => { await this.readIssuedToken(null, null, null, 0);this.load1=!this.load1});
+        scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
     }
 
-    public async readIssuedToken(ledgerIndex:string, marker:string, oldMarker:string, retryCounter:number): Promise<void> {
+    async scheduleLoadingIssuerData(): Promise<void> {
+      let success:boolean = await this.readIssuedToken(null, null, null, 0);
+      if(success) {
+        this.load1=!this.load1;
+        console.log("loading issuer successfull. Maps changed.")
+      } else {
+        console.log("loading issuer not successfull. Not changing maps.")
+      }
+    }
+
+    public async readIssuedToken(ledgerIndex:string, marker:string, oldMarker:string, retryCounter:number): Promise<boolean> {
         if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
           console.log("increase retry counter");
           retryCounter++;
 
           if(retryCounter > 4) {
             console.log("giving up for this request.");
-            return;
+            return false;
           }
         } else if(marker != oldMarker) {
           //reset retry counter
@@ -61,6 +71,7 @@ export class IssuerAccounts {
         }
         //console.log("new call: ledgerIndex: " + ledgerIndex);
         console.log("new call: marker: " + marker);
+
         if(!marker) {
           if(this.load1) {
             this.issuers_1.clear();
@@ -91,9 +102,9 @@ export class IssuerAccounts {
         try { 
           if(!this.websocket || !this.websocket.isConnected()) {
             if(this.useProxy)
-                this.websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", proxy: config.PROXY_URL, timeout: 120000});
+                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", proxy: config.PROXY_URL, timeout: 120000});
             else
-                this.websocket = new ripple.RippleAPI({server: "wss://xrpl.ws", timeout: 120000});
+                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", timeout: 120000});
       
             try {
               await this.websocket.connect();
@@ -102,7 +113,7 @@ export class IssuerAccounts {
             }
           }
       
-          //console.log("connected to xrpl.ws");
+          //console.log("connected to xrplcluster.com");
           //console.log("calling with: " + JSON.stringify(ledger_data));
               
           let message:LedgerDataResponse = await this.websocket.request('ledger_data', ledger_data);
@@ -172,6 +183,8 @@ export class IssuerAccounts {
       
           this.websocket.disconnect();
           this.websocket = null;
+
+          return true;
       
         } catch(err) {
           console.log(err);
@@ -185,6 +198,8 @@ export class IssuerAccounts {
           this.websocket = null;
           if(marker != null || (marker == null && ledgerIndex == null))
             return this.readIssuedToken(ledgerIndex, marker, marker, retryCounter);
+          else
+            return false;
         }
       }
     
