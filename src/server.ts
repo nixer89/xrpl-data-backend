@@ -41,12 +41,14 @@ const start = async () => {
 
       fastify.get('/api/v1/tokens', async (request, reply) => {
         //console.log("request params: " + JSON.stringify(request.params));
+        let issuers = issuerAccount.getLedgerTokensV1();
         return {
           ledger_index: issuerAccount.getLedgerIndex(),
           ledger_hash: issuerAccount.getLedgerHash(),
           ledger_close: issuerAccount.getLedgerCloseTime(),
           ledger_close_ms: issuerAccount.getLedgerCloseTimeMs(),
-          tokens: issuerAccount.getLedgerTokensV1()
+          tokens: issuers,
+          issuers: issuers
         }
       });
       
