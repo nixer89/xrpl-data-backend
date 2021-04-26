@@ -173,7 +173,7 @@ export class AccountNames {
 
         } else {
             //try to resolve user name - seems like it is a new one!
-            return this.loadBithompSingleAccountName(xrplAccount);
+            this.loadBithompSingleAccountName(xrplAccount);
         }
     }
 
