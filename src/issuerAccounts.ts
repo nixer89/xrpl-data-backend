@@ -226,10 +226,11 @@ export class IssuerAccounts {
         if(this.hasIssuer(issuer)) {
             this.addExistingIssuer(issuer, amount);
         } else {
-          if(amount > 0) //only add issuer if he actually has issued the token -> do not add zero balance trustlines
+          if(amount > 0) { //only add issuer if he actually has issued the token -> do not add zero balance trustlines
             this.addNewIssuer(issuer, amount, 1);
             //initialize user name to have faster access later on
             this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+          }
         }
       }
       
