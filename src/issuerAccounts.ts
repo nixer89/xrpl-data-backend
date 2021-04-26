@@ -40,6 +40,8 @@ export class IssuerAccounts {
             await this.readIssuedToken(null, null, null, 0);
         }
 
+        await this.readIssuedToken(null, null, null, 0);
+
         this.load1=!this.load1;
 
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
