@@ -133,7 +133,15 @@ export class IssuerAccounts {
             for(let i = 0; i < rippleStates.length; i++) {
               let amount:number = Number.parseFloat(rippleStates[i].Balance.value);
               let currency:string = rippleStates[i].Balance.currency;
-              let issuer:string = amount > 0 ? rippleStates[i].HighLimit.issuer : rippleStates[i].LowLimit.issuer;
+              let issuer:string = rippleStates[i].Balance.issuer;
+              
+              if(amount > 0) {
+                issuer = rippleStates[i].HighLimit.issuer;
+              } else if(amount < 0) {
+                issuer = rippleStates[i].LowLimit.issuer
+              } else {
+                issuer = Number.parseFloat(rippleStates[i].HighLimit.value) == 0 ? rippleStates[i].HighLimit.issuer : rippleStates[i].LowLimit.issuer
+              }
       
               amount = amount < 0 ? amount * -1 : amount;
               issuer = issuer + "_" + currency;
