@@ -133,24 +133,33 @@ export class IssuerAccounts {
             for(let i = 0; i < rippleStates.length; i++) {
               let amount:number = Number.parseFloat(rippleStates[i].Balance.value);
               let currency:string = rippleStates[i].Balance.currency;
-              let issuer:string = rippleStates[i].Balance.issuer;
+              let issuer:string = null;
               
               if(amount > 0) {
                 issuer = rippleStates[i].HighLimit.issuer;
               } else if(amount < 0) {
                 issuer = rippleStates[i].LowLimit.issuer
               } else {
-                issuer = Number.parseFloat(rippleStates[i].HighLimit.value) == 0 ? rippleStates[i].HighLimit.issuer : rippleStates[i].LowLimit.issuer
+                //balance is zero. check who has a limit set
+                if(Number.parseFloat(rippleStates[i].HighLimit.value) > 0 && Number.parseFloat(rippleStates[i].LowLimit.value) == 0)
+                  issuer = rippleStates[i].LowLimit.issuer;
+                else if(Number.parseFloat(rippleStates[i].LowLimit.value) > 0 && Number.parseFloat(rippleStates[i].HighLimit.value) == 0)
+                  issuer = rippleStates[i].HighLimit.issuer;
+                else 
+                  issuer = null; //can not determine issuer!
               }
+
+              if(issuer != null) {
       
-              amount = amount < 0 ? amount * -1 : amount;
-              issuer = issuer + "_" + currency;
-      
-              if(amount >= 0) {
-                //console.log("issuer: " + issuer);
-                //console.log("balance: " + balance);
-      
-                await this.addIssuer(issuer, amount);
+                amount = amount < 0 ? amount * -1 : amount;
+                issuer = issuer + "_" + currency;
+        
+                if(amount >= 0) {
+                  //console.log("issuer: " + issuer);
+                  //console.log("balance: " + amount);
+        
+                  await this.addIssuer(issuer, amount);
+                }
               }
             }
       
