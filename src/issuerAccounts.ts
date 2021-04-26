@@ -136,7 +136,7 @@ export class IssuerAccounts {
               amount = amount < 0 ? amount * -1 : amount;
               issuer = issuer + "_" + currency;
       
-              if(amount > 0) {
+              if(amount >= 0) {
                 //console.log("issuer: " + issuer);
                 //console.log("balance: " + balance);
       
