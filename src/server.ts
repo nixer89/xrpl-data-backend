@@ -1,8 +1,12 @@
 import * as config from './util/config';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
+import { LedgerScanner } from './ledgerScanner';
+import { LedgerData } from './ledgerData';
 
-let issuerAccount:IssuerAccounts = new IssuerAccounts();
+let issuerAccount:IssuerAccounts;
+let ledgerData:LedgerData;
+let ledgerScanner:LedgerScanner;
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -17,6 +21,10 @@ fastify.register(require('fastify-helmet'));
 // Run the server!
 const start = async () => {
 
+  issuerAccount = IssuerAccounts.Instance
+  ledgerData = LedgerData.Instance;
+  ledgerScanner = LedgerScanner.Instance
+
     console.log("starting server");
     try {
       //init routes
@@ -28,27 +36,27 @@ const start = async () => {
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Referer']
       });
 
-      fastify.get('/tokens', async (request, reply) => {
+      fastify.get('/api/v1/tokens', async (request, reply) => {
         //console.log("request params: " + JSON.stringify(request.params));
+        let issuers = issuerAccount.getLedgerTokensV1(ledgerScanner.getLoad());
         return {
-          ledger_index: issuerAccount.getLedgerIndex(),
-          ledger_hash: issuerAccount.getLedgerHash(),
-          ledger_close: issuerAccount.getLedgerCloseTime(),
-          ledger_close_ms: issuerAccount.getLedgerCloseTimeMs(),
-          tokens: issuerAccount.getLedgerTokensOld()
+          ledger_index: ledgerScanner.getLedgerIndex(),
+          ledger_hash: ledgerScanner.getLedgerHash(),
+          ledger_close: ledgerScanner.getLedgerCloseTime(),
+          ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
+          tokens: issuers
         }
       });
 
-      fastify.get('/api/v1/tokens', async (request, reply) => {
+      fastify.get('/api/v1/ledgerdata', async (request, reply) => {
         //console.log("request params: " + JSON.stringify(request.params));
-        let issuers = issuerAccount.getLedgerTokensV1();
+        let ledgerDataObjects = ledgerData.getLedgerDataV1(ledgerScanner.getLoad());
         return {
-          ledger_index: issuerAccount.getLedgerIndex(),
-          ledger_hash: issuerAccount.getLedgerHash(),
-          ledger_close: issuerAccount.getLedgerCloseTime(),
-          ledger_close_ms: issuerAccount.getLedgerCloseTimeMs(),
-          tokens: issuers,
-          issuers: issuers
+          ledger_index: ledgerScanner.getLedgerIndex(),
+          ledger_hash: ledgerScanner.getLedgerHash(),
+          ledger_close: ledgerScanner.getLedgerCloseTime(),
+          ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
+          ledger_data: ledgerDataObjects
         }
       });
       
@@ -69,7 +77,7 @@ const start = async () => {
       console.log('Error starting server:', err)
     }
 
-    setTimeout(() => issuerAccount.init(),0);
+    setTimeout(() => ledgerScanner.init(),0);
     
   } catch (err) {
     fastify.log.error(err);

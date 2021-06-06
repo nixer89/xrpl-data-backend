@@ -10,7 +10,8 @@ export interface IssuerAccount {
 
 export interface IssuerData {
     amount: number,
-    trustlines: number
+    trustlines: number,
+    offers: number
 }
  
 export interface IssuerVerification {

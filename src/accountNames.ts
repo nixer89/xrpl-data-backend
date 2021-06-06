@@ -9,6 +9,9 @@ import { IssuerVerification } from './util/types';
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 export class AccountNames {
+
+    private static _instance: AccountNames;
+
     private proxy = new HttpsProxyAgent(config.PROXY_URL);
     private useProxy = config.USE_PROXY;
 
@@ -16,9 +19,18 @@ export class AccountNames {
     private xrpscanUserNames:Map<string, IssuerVerification> = new Map();
     private bithompUserNames:Map<string, IssuerVerification> = new Map();
 
-    constructor() {
+    private constructor() { }
+
+    public static get Instance(): AccountNames
+    {
+        // Do you need arguments? Make it a regular static method instead.
+        return this._instance || (this._instance = new this());
+    }
+
+    public async init(): Promise<void> {
         scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1, hour: 12, minute: 0, second: 0}, () => this.resolveAllUserNames(true));
-        this.loadBithompUserNamesFromFS();
+        await this.loadBithompUserNamesFromFS();
+        await this.resolveAllUserNames();
     }
 
     public async resolveAllUserNames(deleteEmptyNames?: boolean): Promise<void> {
