@@ -1,6 +1,6 @@
 {
   "name": "xrpl-token-tracker-backend",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "tracks periodically the latest issued token on the xrp ledger (every 10 minutes)",
   "main": "src/server.ts",
   "scripts": {
