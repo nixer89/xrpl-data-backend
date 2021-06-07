@@ -22,3 +22,9 @@ export interface IssuerVerification {
     username?: string,
     twitter?: string
 }
+
+export interface AdaptedLedgerObject {
+    data: string,
+    index: string,
+    parsed: any
+}

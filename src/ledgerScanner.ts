@@ -5,6 +5,7 @@ import { LedgerDataRequest, LedgerDataResponse, LedgerResponse } from 'ripple-li
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
+import * as binaryCodec from 'ripple-binary-codec'
 
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
@@ -100,7 +101,8 @@ export class LedgerScanner {
       
       
         let ledger_data:LedgerDataRequest = {
-          limit: 100000
+          limit: 100000,
+          binary: true
         }
       
         if(ledgerIndex)
@@ -137,7 +139,15 @@ export class LedgerScanner {
             console.log("marker: " + newMarker);
             console.log("ledger_index: " + newledgerIndex);
 
-            await this.issuerAccount.resolveIssuerToken(message.state, this.load1);
+            let parsedObjects:any[] = [];
+
+            for(let i = 0; i < message.state.length; i++) {
+              let decoded = binaryCodec.decode(message.state[i].data)
+              parsedObjects.push(decoded);
+              message.state[i].parsed = decoded;
+            }
+
+            await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
             await this.ledgerData.resolveLedgerData(message.state, this.load1);
       
             //console.log("done");
@@ -161,11 +171,10 @@ export class LedgerScanner {
                 
           let ledgerInfo:LedgerResponse = await this.websocket.request('ledger', {ledger_index: ledgerIndex});
       
-         
-            this.setLedgerIndex(ledgerIndex);
-            this.setLedgerHash(ledgerInfo.ledger_hash);
-            this.setLedgerCloseTime(ledgerInfo.ledger.close_time_human);
-            this.setLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
+          this.setLedgerIndex(ledgerIndex);
+          this.setLedgerHash(ledgerInfo.ledger_hash);
+          this.setLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.setLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
 
           //always save resolved user names to file system to make restart of server much faster
           setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);

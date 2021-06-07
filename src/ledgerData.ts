@@ -1,5 +1,6 @@
 var sizeof = require('object-sizeof')
 import * as fs from 'fs';
+import { AdaptedLedgerObject } from './util/types';
 
 export class LedgerData {
 
@@ -23,19 +24,19 @@ export class LedgerData {
     public async resolveLedgerData(ledgerState:any, load1:boolean): Promise<void> {
 
         for(let i = 0; i < ledgerState.length; i++) {
-            let ledgerObject = ledgerState[i];
-            if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]) {
+            let ledgerObject:AdaptedLedgerObject = ledgerState[i];
+            if(this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
               //add entry to existing one
-              this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()].size += sizeof(ledgerObject);
-              this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()].count += 1;
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += sizeof(ledgerObject.data);
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
             } else {
               //create new entry
               let newLedgerObject:any = {
-                size: sizeof(ledgerObject),
+                size: sizeof(ledgerObject.data),
                 count: 1
               }
 
-              this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()] = newLedgerObject;
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
             }
         }
 
@@ -50,11 +51,21 @@ export class LedgerData {
     }
 
     public getLedgerDataV1(load1: boolean) {
-        console.log("loading ledger data: " + load1 + " " + JSON.stringify(this.ledgerData_1));
-        if(!load1)
-            return JSON.parse(JSON.stringify(this.ledgerData_1));
-        else
-            return JSON.parse(JSON.stringify(this.ledgerData_2));
+      let dataToUse = JSON.parse(JSON.stringify(load1 ? this.ledgerData_2 : this.ledgerData_1))
+      let totalBytes:number = 0;
+      for (let data in dataToUse) {
+        if (dataToUse.hasOwnProperty(data)) {
+            totalBytes += dataToUse[data].size;
+        }
+      }
+
+      for (let data in dataToUse) {
+        if (dataToUse.hasOwnProperty(data)) {
+            dataToUse[data].percentage = Math.round(dataToUse[data].size * 100 / totalBytes*1000000)/1000000
+        }
+      }
+
+      return dataToUse;
     }
 
     public clearLedgerData(load1: boolean) {
@@ -89,7 +100,7 @@ export class LedgerData {
         if(fs.existsSync("./../ledgerData.js")) {
             let ledgerData:any = JSON.parse(fs.readFileSync("./../ledgerData.js").toString());
             if(ledgerData) {
-                console.log("ledger data loaded: " + JSON.stringify(ledgerData));
+                //console.log("ledger data loaded: " + JSON.stringify(ledgerData));
                 this.setLedgerData(ledgerData, load1);
             }
         } else {
