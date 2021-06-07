@@ -75,6 +75,24 @@ export class IssuerAccounts {
       let offers:OfferLedgerEntry[] = ledgerState.filter(element => element.LedgerEntryType === 'Offer');
 
       for(let j = 0; j < offers.length; j++) {
+        //check taker gets first
+        let takerGets:any = offers[j].TakerGets
+        if(takerGets.currency) {
+          //we are an issued currency so add offer to the list
+          let issuer:string = takerGets.issuer;
+          let currency:string = takerGets.currency;
+
+          await this.increaseOfferCount(issuer+"_"+currency, load1);
+        }
+
+        let takerPays:any = offers[j].TakerPays
+        if(takerPays.currency) {
+          //we are an issued currency so add offer to the list
+          let issuer:string = takerPays.issuer;
+          let currency:string = takerPays.currency;
+
+          await this.increaseOfferCount(issuer+"_"+currency, load1);
+        }
 
       }
     }
@@ -137,7 +155,10 @@ export class IssuerAccounts {
         let currency:string = key.substring(key.indexOf("_")+1, key.length);
         let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
     
-        if(!transformedIssuers[acc]) {
+        if(data.offers > 0 && data.amount <= 0) {
+          //remove abandoned currencies with only offers
+          //console.log(acc + ": " + currency + ": " + JSON.stringify(data));
+        } else if(!transformedIssuers[acc]) {
           transformedIssuers[acc] = {
             data: issuerData,
             tokens: [{currency: currency, amount: data.amount, trustlines: data.trustlines, offers: data.offers}]
