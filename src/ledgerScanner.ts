@@ -51,7 +51,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        //await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -128,18 +128,24 @@ export class LedgerScanner {
           //console.log("connected to xrplcluster.com");
           //console.log("calling with: " + JSON.stringify(ledger_data));
               
+          console.time("requesting")
+
           let message:LedgerDataResponse = await this.websocket.request('ledger_data', ledger_data);
       
+          console.timeEnd("requesting")
+
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
       
           if(message && message.state && message.ledger_index) {
             let newledgerIndex:string = message.ledger_index;
             let newMarker:string = message.marker;
       
-            console.log("marker: " + newMarker);
-            console.log("ledger_index: " + newledgerIndex);
+            //console.log("marker: " + newMarker);
+            //console.log("ledger_index: " + newledgerIndex);
 
             let parsedObjects:any[] = [];
+
+            console.time("parsing")
 
             for(let i = 0; i < message.state.length; i++) {
               let decoded = binaryCodec.decode(message.state[i].data)
@@ -147,8 +153,14 @@ export class LedgerScanner {
               message.state[i].parsed = decoded;
             }
 
+            console.timeEnd("parsing")
+
+            console.time("resolveIssuerToken")
             await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
+            console.timeEnd("resolveIssuerToken")
+            console.time("resolveLedgerData")
             await this.ledgerData.resolveLedgerData(message.state, this.load1);
+            console.timeEnd("resolveLedgerData")
       
             //console.log("done");
       
