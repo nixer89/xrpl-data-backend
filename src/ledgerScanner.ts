@@ -1,11 +1,11 @@
 import * as config from './util/config';
-import * as ripple from 'ripple-lib';
 import * as scheduler from 'node-schedule';
-import { LedgerDataRequest, LedgerDataResponse, LedgerResponse } from 'ripple-lib';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import * as binaryCodec from 'ripple-binary-codec'
+import { Call, XrplClient } from 'xrpl-client';
+import HttpsProxyAgent = require("https-proxy-agent");
 
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
@@ -18,7 +18,7 @@ export class LedgerScanner {
 
     private load1: boolean = true;
 
-    private websocket:ripple.RippleAPI;
+    private xrplClient:XrplClient;
 
     private ledger_index_1: string;
     private ledger_index_2: string;
@@ -31,6 +31,8 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
+
+    private proxyAgent:HttpsProxyAgent = new HttpsProxyAgent(config.PROXY_URL);
 
     private constructor() {}
 
@@ -51,7 +53,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        //await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -100,37 +102,44 @@ export class LedgerScanner {
         }
       
       
-        let ledger_data:LedgerDataRequest = {
-          limit: 100000,
-          binary: true
+        let ledger_data_command:Call = {
+          command: "ledger_data",
+          limit: 3000,
+          binary: true,
+          "__api": "state"
         }
       
         if(ledgerIndex)
-          ledger_data.ledger_index = ledgerIndex;
+          ledger_data_command.ledger_index = ledgerIndex;
+        else
+          ledger_data_command.ledger_index = "validated";
       
         if(marker)
-          ledger_data.marker = marker;
+          ledger_data_command.marker = marker;
       
         try { 
-          if(!this.websocket || !this.websocket.isConnected()) {
+          if(!this.xrplClient || !this.xrplClient.getState().online) {
             if(this.useProxy)
-                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", proxy: config.PROXY_URL, timeout: 120000});
+                this.xrplClient = new XrplClient("wss://xrplcluster.com", { httpRequestOptions: { agent: this.proxyAgent }});
             else
-                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", timeout: 120000});
+                this.xrplClient = new XrplClient();
       
             try {
-              await this.websocket.connect();
+              await this.xrplClient.ready();
+              console.log("connected!");
+              console.log(JSON.stringify(this.xrplClient.getState()));
             } catch(err) {
               return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
             }
           }
       
-          //console.log("connected to xrplcluster.com");
-          //console.log("calling with: " + JSON.stringify(ledger_data));
+          console.log("connected to xrplcluster.com");
+          console.log("calling with: " + JSON.stringify(ledger_data_command));
               
-          let message:LedgerDataResponse = await this.websocket.request('ledger_data', ledger_data);
+          let message = await this.xrplClient.send(ledger_data_command);
       
-          //console.log("got response: " + JSON.stringify(message).substring(0,1000));
+          console.log("length: " + message.state.length);
+          console.log("got response: " + JSON.stringify(message).substring(0,1000));
       
           if(message && message.state && message.ledger_index) {
             let newledgerIndex:string = message.ledger_index;
@@ -169,7 +178,7 @@ export class LedgerScanner {
       
           console.log("ALL DONE");
                 
-          let ledgerInfo:LedgerResponse = await this.websocket.request('ledger', {ledger_index: ledgerIndex});
+          let ledgerInfo = await this.xrplClient.send({command: "ledger", ledger_index: ledgerIndex});
       
           this.setLedgerIndex(ledgerIndex);
           this.setLedgerHash(ledgerInfo.ledger_hash);
@@ -180,22 +189,12 @@ export class LedgerScanner {
           setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
-      
-          this.websocket.disconnect();
-          this.websocket = null;
-
+    
           return true;
       
         } catch(err) {
           console.log(err);
-          try {
-            if(this.websocket && this.websocket.isConnected())
-              this.websocket.disconnect();
-          } catch(err) {
-            //nothing to do
-          }
           
-          this.websocket = null;
           if(marker != null || (marker == null && ledgerIndex == null))
             return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
           else
