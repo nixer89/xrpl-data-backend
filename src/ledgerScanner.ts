@@ -102,7 +102,7 @@ export class LedgerScanner {
       
         let ledger_data:LedgerDataRequest = {
           limit: 100000,
-          binary: true
+          binary: false
         }
       
         if(ledgerIndex)
@@ -143,7 +143,7 @@ export class LedgerScanner {
             //console.log("marker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
-            let parsedObjects:any[] = [];
+            /** let parsedObjects:any[] = [];
 
             console.time("parsing")
 
@@ -155,12 +155,14 @@ export class LedgerScanner {
 
             console.timeEnd("parsing")
 
+            **/
+
             console.time("resolveIssuerToken")
-            await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
+            await this.issuerAccount.resolveIssuerToken(message.state, this.load1);
             console.timeEnd("resolveIssuerToken")
-            console.time("resolveLedgerData")
-            await this.ledgerData.resolveLedgerData(message.state, this.load1);
-            console.timeEnd("resolveLedgerData")
+            //console.time("resolveLedgerData")
+            //await this.ledgerData.resolveLedgerData(message.state, this.load1);
+            //console.timeEnd("resolveLedgerData")
       
             //console.log("done");
       
