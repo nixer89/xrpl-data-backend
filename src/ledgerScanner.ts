@@ -54,7 +54,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        await this.readLedgerData(null, null, null, 0);
+        //await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -106,7 +106,7 @@ export class LedgerScanner {
         let ledger_data_command:Call = {
           command: "ledger_data",
           limit: 100000,
-          binary: false
+          binary: true
         }
       
         if(ledgerIndex)
@@ -122,11 +122,11 @@ export class LedgerScanner {
             if(this.useProxy)
                 this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
             else
-                this.xrplClient = new XrplClient();
+                this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
       
             try {
               await this.xrplClient.ready();
-              console.log("connected!");
+              console.log("connected to: " + this.xrplClient.getState().server);
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
@@ -134,10 +134,11 @@ export class LedgerScanner {
             }
           }
       
-          console.log("connected to xrplcluster.com");
+          //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
-              
+          console.time("requesting");
           let message = await this.xrplClient.send(ledger_data_command);
+          console.timeEnd("requesting");
       
           console.log("length: " + message.state.length);
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
@@ -151,16 +152,19 @@ export class LedgerScanner {
             console.log("marker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
             
+            console.time("parsing");
+            /**
             let adaptedObjects:AdaptedLedgerObject[] = [];
-            
-            let i = 0;              
+            let i = 0;      
             for(; i < message.state.length; i++) {
               let encode = null;
               try {
                 encode = binaryCodec.encode(message.state[i])
               } catch(err) {
-                //console.log(i);
-                //console.log(message.state[i]);
+                console.log(err)
+                console.log(i);
+                console.log(singleObject);
+                return;
               }
 
               adaptedObjects.push({
@@ -169,9 +173,38 @@ export class LedgerScanner {
                 data: encode
               });
             }
+            **/
 
-            await this.issuerAccount.resolveIssuerToken(message.state, this.load1);
-            await this.ledgerData.resolveLedgerData(adaptedObjects, this.load1);
+            let parsedObjects:any[] = [];
+
+            let i = 0;      
+            for(; i < message.state.length; i++) {
+              let decoded = null;
+              let singleObject = null;
+              try {
+                singleObject = message.state[i];
+
+                decoded = binaryCodec.decode(singleObject.data)
+              } catch(err) {
+                console.log(err)
+                console.log(i);
+                console.log(singleObject);
+                return;
+              }
+
+              message.state[i].parsed = decoded;
+              parsedObjects.push(decoded);
+
+            }
+
+            console.timeEnd("parsing");
+
+            console.time("resolveIssuerToken");
+            await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
+            console.timeEnd("resolveIssuerToken");
+            console.time("resolveLedgerData");
+            await this.ledgerData.resolveLedgerData(message.state, this.load1);
+            console.timeEnd("resolveLedgerData");
       
             //console.log("done");
       
