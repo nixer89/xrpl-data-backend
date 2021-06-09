@@ -103,19 +103,25 @@ export class LedgerScanner {
         }
       
       
-        let ledger_data_command:Call = {
+        let ledger_data_command_binary:Call = {
           command: "ledger_data",
           limit: 100000,
           binary: true
         }
+
+        let ledger_data_command_json:Call = {
+          command: "ledger_data",
+          limit: 100000,
+          binary: false
+        }
       
         if(ledgerIndex)
-          ledger_data_command.ledger_index = ledgerIndex;
+          ledger_data_command_binary.ledger_index = ledgerIndex;
         else
-          ledger_data_command.ledger_index = "validated";
+          ledger_data_command_binary.ledger_index = "validated";
       
         if(marker)
-          ledger_data_command.marker = marker;
+          ledger_data_command_binary.marker = ledger_data_command_json.marker = marker;
       
         try { 
           if(!this.xrplClient || !this.xrplClient.getState().online) {
@@ -126,7 +132,7 @@ export class LedgerScanner {
       
             try {
               await this.xrplClient.ready();
-              console.log("connected to: " + this.xrplClient.getState().server);
+              console.log("connected to: " + JSON.stringify(this.xrplClient.getState().server));
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
@@ -137,7 +143,8 @@ export class LedgerScanner {
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
           console.time("requesting binary");
-          let messageBinary = await this.xrplClient.send(ledger_data_command);
+          console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
+          let messageBinary = await this.xrplClient.send(ledger_data_command_binary);
           console.timeEnd("requesting binary");
       
           console.log("length: " + messageBinary.state.length);
@@ -148,20 +155,27 @@ export class LedgerScanner {
           if(messageBinary && messageBinary.state && messageBinary.ledger_index) {
             let newledgerIndex:string = messageBinary.ledger_index;
             let newMarker:string = messageBinary.marker;
-      
+
             console.log("marker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
-            console.time("resolveLedgerData binary");
-            await this.ledgerData.resolveLedgerData(messageBinary.state, this.load1);
-            console.timeEnd("resolveLedgerData binary");
+            ledger_data_command_json.ledger_index = newledgerIndex;          
 
             console.time("requesting json");
-            ledger_data_command.binary = false;
-            let messageJson = await this.xrplClient.send(ledger_data_command);
+            console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
+            let messageJson = await this.xrplClient.send(ledger_data_command_json);
             console.timeEnd("requesting json");
 
             if(messageJson && messageJson.state && messageJson.ledger_index && messageBinary.ledger_index) {
+
+              for(let i = 0; i < messageBinary.state; i++) {
+                messageBinary.state[i].parsed = messageJson.state[i];
+              }
+
+              console.time("resolveLedgerData binary");
+              await this.ledgerData.resolveLedgerData(messageBinary.state, this.load1);
+              console.timeEnd("resolveLedgerData binary");
+              
               console.time("resolveIssuerToken");
               await this.issuerAccount.resolveIssuerToken(messageJson.state, this.load1);
               console.timeEnd("resolveIssuerToken");
