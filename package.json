@@ -37,7 +37,7 @@
     "object-sizeof": "^1.6.1",
     "ripple-binary-codec": "^1.1.2",
     "ws": "^7.4.6",
-    "xrpl-client": "^1.6.0"
+    "xrpl-client": "^1.7.0"
   },
   "devDependencies": {
     "@types/node": "^10.17.60",

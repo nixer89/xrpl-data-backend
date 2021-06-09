@@ -27,20 +27,46 @@ export class LedgerData {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
             if(this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
               //add entry to existing one
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += sizeof(ledgerObject.data);
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += sizeof(ledgerObject.data ? ledgerObject.data : ledgerObject.parsed);
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
             } else {
               //create new entry
+              let size = ledgerObject.data ? sizeof(ledgerObject.data) : ledgerObject.parsed;
               let newLedgerObject:any = {
-                size: sizeof(ledgerObject.data),
+                size: size,
                 count: 1
               }
 
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
             }
+
+            this.addAdditionalData(load1, ledgerObject.parsed);
         }
 
           //console.log(JSON.stringify(this.getLedgerData(load1)));
+    }
+
+    addAdditionalData(load1: boolean, ledgerObject: any) {
+      this.addAdditionalProperty(load1, ledgerObject, "Domain");
+      this.addAdditionalProperty(load1, ledgerObject, "EmailHash");
+      this.addAdditionalProperty(load1, ledgerObject, "MessageKey");
+      this.addAdditionalProperty(load1, ledgerObject, "TransferRate");
+      this.addAdditionalProperty(load1, ledgerObject, "InvoiceID");
+      this.addAdditionalProperty(load1, ledgerObject, "RegularKey");
+      this.addAdditionalProperty(load1, ledgerObject, "TicketCount");
+      this.addAdditionalProperty(load1, ledgerObject, "TickSize");
+      this.addAdditionalProperty(load1, ledgerObject, "WalletLocator");
+      this.addAdditionalProperty(load1, ledgerObject, "WalletSize");
+      
+    }
+
+    addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
+      if(ledgerObject[property]) {
+        if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property])
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] + 1;
+        else
+          this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] = 1
+      }
     }
 
     public getLedgerData(load1: boolean) {

@@ -6,6 +6,7 @@ import { LedgerData } from './ledgerData';
 import * as binaryCodec from 'ripple-binary-codec'
 import { Call, XrplClient } from 'xrpl-client';
 import HttpsProxyAgent = require("https-proxy-agent");
+import { AdaptedLedgerObject } from './util/types';
 
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
@@ -104,9 +105,8 @@ export class LedgerScanner {
       
         let ledger_data_command:Call = {
           command: "ledger_data",
-          limit: 3000,
-          binary: true,
-          "__api": "state"
+          limit: 100000,
+          binary: false
         }
       
         if(ledgerIndex)
@@ -120,44 +120,58 @@ export class LedgerScanner {
         try { 
           if(!this.xrplClient || !this.xrplClient.getState().online) {
             if(this.useProxy)
-                this.xrplClient = new XrplClient("wss://xrplcluster.com", { httpRequestOptions: { agent: this.proxyAgent }});
+                this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
             else
                 this.xrplClient = new XrplClient();
       
             try {
               await this.xrplClient.ready();
               console.log("connected!");
-              console.log(JSON.stringify(this.xrplClient.getState()));
+              //console.log(JSON.stringify(this.xrplClient.getState()));
+              //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
               return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
             }
           }
       
           console.log("connected to xrplcluster.com");
-          console.log("calling with: " + JSON.stringify(ledger_data_command));
+          //console.log("calling with: " + JSON.stringify(ledger_data_command));
               
           let message = await this.xrplClient.send(ledger_data_command);
       
           console.log("length: " + message.state.length);
-          console.log("got response: " + JSON.stringify(message).substring(0,1000));
+          //console.log("got response: " + JSON.stringify(message).substring(0,1000));
+
+          //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
       
           if(message && message.state && message.ledger_index) {
             let newledgerIndex:string = message.ledger_index;
             let newMarker:string = message.marker;
       
             console.log("marker: " + newMarker);
-            console.log("ledger_index: " + newledgerIndex);
+            //console.log("ledger_index: " + newledgerIndex);
+            
+            let adaptedObjects:AdaptedLedgerObject[] = [];
+            
+            let i = 0;              
+            for(; i < message.state.length; i++) {
+              let encode = null;
+              try {
+                encode = binaryCodec.encode(message.state[i])
+              } catch(err) {
+                //console.log(i);
+                //console.log(message.state[i]);
+              }
 
-            let parsedObjects:any[] = [];
-
-            for(let i = 0; i < message.state.length; i++) {
-              let decoded = binaryCodec.decode(message.state[i].data)
-              parsedObjects.push(decoded);
-              message.state[i].parsed = decoded;
+              adaptedObjects.push({
+                index: "123",
+                parsed: message.state[i],
+                data: encode
+              });
             }
 
-            await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
-            await this.ledgerData.resolveLedgerData(message.state, this.load1);
+            await this.issuerAccount.resolveIssuerToken(message.state, this.load1);
+            await this.ledgerData.resolveLedgerData(adaptedObjects, this.load1);
       
             //console.log("done");
       
