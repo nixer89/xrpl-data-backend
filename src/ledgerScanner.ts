@@ -122,7 +122,7 @@ export class LedgerScanner {
             if(this.useProxy)
                 this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
             else
-                this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
+                this.xrplClient = new XrplClient("ws://127.0.0.1:6005", {assumeOfflineAfterSeconds: 120});
       
             try {
               await this.xrplClient.ready();
