@@ -156,7 +156,7 @@ export class LedgerScanner {
             let newledgerIndex:string = messageBinary.ledger_index;
             let newMarker:string = messageBinary.marker;
 
-            console.log("marker: " + newMarker);
+            console.log("newMarker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
             ledger_data_command_json.ledger_index = newledgerIndex;          
@@ -166,9 +166,9 @@ export class LedgerScanner {
             let messageJson = await this.xrplClient.send(ledger_data_command_json);
             console.timeEnd("requesting json");
 
-            if(messageJson && messageJson.state && messageJson.ledger_index && messageBinary.ledger_index) {
+            if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
 
-              for(let i = 0; i < messageBinary.state; i++) {
+              for(let i = 0; i < messageBinary.state.length; i++) {
                 messageBinary.state[i].parsed = messageJson.state[i];
               }
 
