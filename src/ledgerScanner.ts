@@ -122,7 +122,7 @@ export class LedgerScanner {
             if(this.useProxy)
                 this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
             else
-                this.xrplClient = new XrplClient("ws://127.0.0.1:6005", {assumeOfflineAfterSeconds: 120});
+                this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
       
             try {
               await this.xrplClient.ready();
@@ -136,76 +136,36 @@ export class LedgerScanner {
       
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
-          console.time("requesting");
-          let message = await this.xrplClient.send(ledger_data_command);
-          console.timeEnd("requesting");
+          console.time("requesting binary");
+          let messageBinary = await this.xrplClient.send(ledger_data_command);
+          console.timeEnd("requesting binary");
       
-          console.log("length: " + message.state.length);
+          console.log("length: " + messageBinary.state.length);
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
 
           //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
       
-          if(message && message.state && message.ledger_index) {
-            let newledgerIndex:string = message.ledger_index;
-            let newMarker:string = message.marker;
+          if(messageBinary && messageBinary.state && messageBinary.ledger_index) {
+            let newledgerIndex:string = messageBinary.ledger_index;
+            let newMarker:string = messageBinary.marker;
       
             console.log("marker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
-            
-            console.time("parsing");
-            /**
-            let adaptedObjects:AdaptedLedgerObject[] = [];
-            let i = 0;      
-            for(; i < message.state.length; i++) {
-              let encode = null;
-              try {
-                encode = binaryCodec.encode(message.state[i])
-              } catch(err) {
-                console.log(err)
-                console.log(i);
-                console.log(singleObject);
-                return;
-              }
 
-              adaptedObjects.push({
-                index: "123",
-                parsed: message.state[i],
-                data: encode
-              });
+            console.time("resolveLedgerData binary");
+            await this.ledgerData.resolveLedgerData(messageBinary.state, this.load1);
+            console.timeEnd("resolveLedgerData binary");
+
+            console.time("requesting json");
+            ledger_data_command.binary = false;
+            let messageJson = await this.xrplClient.send(ledger_data_command);
+            console.timeEnd("requesting json");
+
+            if(messageJson && messageJson.state && messageJson.ledger_index && messageBinary.ledger_index) {
+              console.time("resolveIssuerToken");
+              await this.issuerAccount.resolveIssuerToken(messageJson.state, this.load1);
+              console.timeEnd("resolveIssuerToken");
             }
-            **/
-
-            let parsedObjects:any[] = [];
-
-            let i = 0;      
-            for(; i < message.state.length; i++) {
-              let decoded = null;
-              let singleObject = null;
-              try {
-                singleObject = message.state[i];
-
-                decoded = binaryCodec.decode(singleObject.data)
-              } catch(err) {
-                console.log(err)
-                console.log(i);
-                console.log(singleObject);
-                return;
-              }
-
-              message.state[i].parsed = decoded;
-              parsedObjects.push(decoded);
-
-            }
-
-            console.timeEnd("parsing");
-
-            console.time("resolveIssuerToken");
-            await this.issuerAccount.resolveIssuerToken(parsedObjects, this.load1);
-            console.timeEnd("resolveIssuerToken");
-            console.time("resolveLedgerData");
-            await this.ledgerData.resolveLedgerData(message.state, this.load1);
-            console.timeEnd("resolveLedgerData");
-      
             //console.log("done");
       
             console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
