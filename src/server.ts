@@ -44,7 +44,8 @@ const start = async () => {
           ledger_hash: ledgerScanner.getLedgerHash(),
           ledger_close: ledgerScanner.getLedgerCloseTime(),
           ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
-          tokens: issuers
+          tokens: issuers,
+          issuers: issuers
         }
       });
 
