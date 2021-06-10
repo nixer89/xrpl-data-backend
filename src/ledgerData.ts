@@ -27,11 +27,11 @@ export class LedgerData {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
             if(this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
               //add entry to existing one
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += sizeof(ledgerObject.data ? ledgerObject.data : ledgerObject.parsed);
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += ledgerObject.data ? sizeof(ledgerObject.data) : sizeof(ledgerObject.parsed);
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
             } else {
               //create new entry
-              let size = ledgerObject.data ? sizeof(ledgerObject.data) : ledgerObject.parsed;
+              let size = ledgerObject.data ? sizeof(ledgerObject.data) : sizeof(ledgerObject.parsed);
               let newLedgerObject:any = {
                 size: size,
                 count: 1

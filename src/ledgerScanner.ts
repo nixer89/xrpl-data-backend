@@ -3,11 +3,8 @@ import * as scheduler from 'node-schedule';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
-import * as binaryCodec from 'ripple-binary-codec'
 import { Call, XrplClient } from 'xrpl-client';
 import HttpsProxyAgent = require("https-proxy-agent");
-import { AdaptedLedgerObject } from './util/types';
-
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -106,7 +103,7 @@ export class LedgerScanner {
         let ledger_data_command_binary:Call = {
           command: "ledger_data",
           limit: 100000,
-          binary: false
+          binary: true
         }
 
         let ledger_data_command_json:Call = {
@@ -172,7 +169,7 @@ export class LedgerScanner {
                 if(messageBinary.state[i].index == messageJson.state[i].index)
                   messageBinary.state[i].parsed = messageJson.state[i];
                 else {
-                  console.log("#######NOT SAME INDEX!!! ###########")
+                  console.log("####### NOT SAME INDEX!!! ###########")
                   console.log("BINARY: " + messageBinary.state[i].index);
                   console.log("JSON  : "  + messageJson.state[i].index)
                 }
