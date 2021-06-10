@@ -65,7 +65,7 @@ export class LedgerData {
     addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
       if(ledgerObject[property]) {
         if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property])
-            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] + 1;
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] + 1;
         else
           this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = 1
       }
