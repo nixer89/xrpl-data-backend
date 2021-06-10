@@ -169,7 +169,13 @@ export class LedgerScanner {
             if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
 
               for(let i = 0; i < messageBinary.state.length; i++) {
-                messageBinary.state[i].parsed = messageJson.state[i];
+                if(messageBinary.state[i].index == messageJson.state[i].index)
+                  messageBinary.state[i].parsed = messageJson.state[i];
+                else {
+                  console.log("#######NOT SAME INDEX!!! ###########")
+                  console.log("BINARY: " + messageBinary.state[i].index);
+                  console.log("JSON  : "  + messageJson.state[i].index)
+                }
               }
 
               console.time("resolveLedgerData binary");
