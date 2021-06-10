@@ -55,23 +55,6 @@ export class LedgerData {
           this.addAdditionalProperty(load1, ledgerObject, property);
         }
       }
-
-      //special handling directoryNode
-      if(ledgerObject.LedgerEntryType.toLowerCase() == "directorynode") {
-        let propertyName = null;
-        if(ledgerObject.Owner)
-          propertyName = "OwnerDirectory";
-        else
-          propertyName = "OfferDirectory";
-
-        if(propertyName != null) {
-          if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName])
-            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] + 1;
-          else
-            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName] = 1
-        }
-      }
-
       
       /**
       //account root
