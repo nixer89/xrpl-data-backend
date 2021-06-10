@@ -61,7 +61,7 @@ export class LedgerScanner {
         this.load1=!this.load1;
 
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
-        //scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
     }
 
     async scheduleLoadingIssuerData(): Promise<void> {

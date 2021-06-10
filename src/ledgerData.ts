@@ -49,16 +49,61 @@ export class LedgerData {
     }
 
     addAdditionalData(load1: boolean, ledgerObject: any) {
+
+      for (var property in ledgerObject) {
+        if (ledgerObject.hasOwnProperty(property)) {
+          this.addAdditionalProperty(load1, ledgerObject, property);
+        }
+      }
+
+      //special handling directoryNode
+      if(ledgerObject.LedgerEntryType.toLowerCase() == "directorynode") {
+        let propertyName = null;
+        if(ledgerObject.Owner)
+          propertyName = "OwnerDirectory";
+        else
+          propertyName = "OfferDirectory";
+
+        if(propertyName != null) {
+          if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName])
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] + 1;
+          else
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][propertyName] = 1
+        }
+      }
+
+      
+      /**
+      //account root
+      this.addAdditionalProperty(load1, ledgerObject, "AccountTxnID");
       this.addAdditionalProperty(load1, ledgerObject, "Domain");
       this.addAdditionalProperty(load1, ledgerObject, "EmailHash");
       this.addAdditionalProperty(load1, ledgerObject, "MessageKey");
+      this.addAdditionalProperty(load1, ledgerObject, "RegularKey");
       this.addAdditionalProperty(load1, ledgerObject, "TransferRate");
       this.addAdditionalProperty(load1, ledgerObject, "InvoiceID");
-      this.addAdditionalProperty(load1, ledgerObject, "RegularKey");
       this.addAdditionalProperty(load1, ledgerObject, "TicketCount");
       this.addAdditionalProperty(load1, ledgerObject, "TickSize");
       this.addAdditionalProperty(load1, ledgerObject, "WalletLocator");
       this.addAdditionalProperty(load1, ledgerObject, "WalletSize");
+
+      //check
+      this.addAdditionalProperty(load1, ledgerObject, "DestinationNode");
+      this.addAdditionalProperty(load1, ledgerObject, "DestinationTag");
+      this.addAdditionalProperty(load1, ledgerObject, "Expiration");
+      this.addAdditionalProperty(load1, ledgerObject, "SourceTag");
+
+      //Escrows
+      this.addAdditionalProperty(load1, ledgerObject, "Condition");
+      this.addAdditionalProperty(load1, ledgerObject, "CancelAfter");
+      this.addAdditionalProperty(load1, ledgerObject, "FinishAfter");
+
+      //RippleState
+      this.addAdditionalProperty(load1, ledgerObject, "LowQualityIn");
+      this.addAdditionalProperty(load1, ledgerObject, "LowQualityOut");
+      this.addAdditionalProperty(load1, ledgerObject, "HighQualityIn");
+      this.addAdditionalProperty(load1, ledgerObject, "HighQualityOut");
+      **/
       
     }
 
