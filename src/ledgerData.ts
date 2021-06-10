@@ -33,8 +33,9 @@ export class LedgerData {
               //create new entry
               let size = ledgerObject.data ? sizeof(ledgerObject.data) : sizeof(ledgerObject.parsed);
               let newLedgerObject:any = {
+                count: 1,
                 size: size,
-                count: 1
+                percentage: 0
               }
 
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
@@ -62,10 +63,10 @@ export class LedgerData {
 
     addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
       if(ledgerObject[property]) {
-        if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property])
-            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] + 1;
+        if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property])
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] + 1;
         else
-          this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][property] = 1
+          this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = 1
       }
     }
 
