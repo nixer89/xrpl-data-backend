@@ -210,6 +210,14 @@ export class LedgerScanner {
           setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
+
+          //trigger online deletion
+          let onlineDeletionCommand:Call = {
+            command: "can_delete",
+            can_delete: "now"
+          }
+
+          await this.xrplClient.send(onlineDeletionCommand);
     
           return true;
       
