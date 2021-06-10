@@ -1,10 +1,8 @@
 import * as fs from 'fs';
 import consoleStamp = require("console-stamp");
-import { OfferLedgerEntry, RippleStateLedgerEntry } from 'ripple-lib/dist/npm/common/types/objects';
 import { AccountNames } from './accountNames';
 import { IssuerData, IssuerVerification } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
-import { off } from 'process';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -37,7 +35,7 @@ export class IssuerAccounts {
 
     public async resolveIssuerToken(ledgerState:any, load1:boolean): Promise<void> {   
 
-      let rippleStates:RippleStateLedgerEntry[] = ledgerState.filter(element => element.LedgerEntryType === 'RippleState');
+      let rippleStates:any[] = ledgerState.filter(element => element.LedgerEntryType === 'RippleState');
 
       for(let i = 0; i < rippleStates.length; i++) {
         let amount:number = Number.parseFloat(rippleStates[i].Balance.value);
@@ -71,12 +69,12 @@ export class IssuerAccounts {
           }
         }
       }
-      
-      let offers:OfferLedgerEntry[] = ledgerState.filter(element => element.LedgerEntryType === 'Offer');
+
+      let offers:any[] = ledgerState.filter(element => element.LedgerEntryType === 'Offer');
 
       for(let j = 0; j < offers.length; j++) {
         //check taker gets first
-        let takerGets:any = offers[j].TakerGets
+        let takerGets = offers[j].TakerGets
         if(takerGets.currency) {
           //we are an issued currency so add offer to the list
           let issuer:string = takerGets.issuer;

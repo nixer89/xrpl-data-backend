@@ -1,10 +1,10 @@
 import * as config from './util/config'
 import * as fetch from 'node-fetch';
 import * as scheduler from 'node-schedule';
-import * as HttpsProxyAgent from 'https-proxy-agent';
 import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { IssuerVerification } from './util/types';
+import HttpsProxyAgent = require('https-proxy-agent');
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 

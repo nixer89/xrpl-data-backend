@@ -30,13 +30,14 @@
     "fastify-compress": "^2.0.1",
     "fastify-cors": "^3.0.3",
     "fastify-helmet": "^3.0.2",
+    "http-proxy-agent": "^4.0.1",
     "https-proxy-agent": "^4.0.0",
     "node-fetch": "^2.6.1",
     "node-schedule": "^1.3.3",
     "object-sizeof": "^1.6.1",
-    "ripple-binary-codec": "^1.1.2",
-    "ripple-lib": "^1.9.5",
-    "ws": "^7.4.6"
+    "ripple-binary-codec": "^1.1.3-beta.0",
+    "ws": "^7.4.6",
+    "xrpl-client": "^1.7.0"
   },
   "devDependencies": {
     "@types/node": "^10.17.60",

@@ -1,11 +1,12 @@
 import * as config from './util/config';
-import * as ripple from 'ripple-lib';
 import * as scheduler from 'node-schedule';
-import { LedgerDataRequest, LedgerDataResponse, LedgerResponse } from 'ripple-lib';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import * as binaryCodec from 'ripple-binary-codec'
+import { Call, XrplClient } from 'xrpl-client';
+import HttpsProxyAgent = require("https-proxy-agent");
+import { AdaptedLedgerObject } from './util/types';
 
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
@@ -18,7 +19,7 @@ export class LedgerScanner {
 
     private load1: boolean = true;
 
-    private websocket:ripple.RippleAPI;
+    private xrplClient:XrplClient;
 
     private ledger_index_1: string;
     private ledger_index_2: string;
@@ -31,6 +32,8 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
+
+    private proxyAgent:HttpsProxyAgent = new HttpsProxyAgent(config.PROXY_URL);
 
     private constructor() {}
 
@@ -100,70 +103,83 @@ export class LedgerScanner {
         }
       
       
-        let ledger_data:LedgerDataRequest = {
+        let ledger_data_command_binary:Call = {
+          command: "ledger_data",
+          limit: 100000,
+          binary: false
+        }
+
+        let ledger_data_command_json:Call = {
+          command: "ledger_data",
           limit: 100000,
           binary: false
         }
       
         if(ledgerIndex)
-          ledger_data.ledger_index = ledgerIndex;
+          ledger_data_command_binary.ledger_index = ledgerIndex;
+        else
+          ledger_data_command_binary.ledger_index = "validated";
       
         if(marker)
-          ledger_data.marker = marker;
+          ledger_data_command_binary.marker = ledger_data_command_json.marker = marker;
       
         try { 
-          if(!this.websocket || !this.websocket.isConnected()) {
+          if(!this.xrplClient || !this.xrplClient.getState().online) {
             if(this.useProxy)
-                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", proxy: config.PROXY_URL, timeout: 120000});
+                this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
             else
-                this.websocket = new ripple.RippleAPI({server: "wss://xrplcluster.com", timeout: 120000});
+                this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
       
             try {
-              await this.websocket.connect();
+              await this.xrplClient.ready();
+              console.log("connected to: " + JSON.stringify(this.xrplClient.getState().server));
+              //console.log(JSON.stringify(this.xrplClient.getState()));
+              //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
               return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
             }
           }
       
-          //console.log("connected to xrplcluster.com");
-          //console.log("calling with: " + JSON.stringify(ledger_data));
-              
-          console.time("requesting")
-
-          let message:LedgerDataResponse = await this.websocket.request('ledger_data', ledger_data);
+          //console.log("ws://127.0.0.1:6006");
+          //console.log("calling with: " + JSON.stringify(ledger_data_command));
+          console.time("requesting binary");
+          console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
+          let messageBinary = await this.xrplClient.send(ledger_data_command_binary);
+          console.timeEnd("requesting binary");
       
-          console.timeEnd("requesting")
-
+          console.log("length: " + messageBinary.state.length);
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
+
+          //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
       
-          if(message && message.state && message.ledger_index) {
-            let newledgerIndex:string = message.ledger_index;
-            let newMarker:string = message.marker;
-      
-            //console.log("marker: " + newMarker);
+          if(messageBinary && messageBinary.state && messageBinary.ledger_index) {
+            let newledgerIndex:string = messageBinary.ledger_index;
+            let newMarker:string = messageBinary.marker;
+
+            console.log("newMarker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
-            /** let parsedObjects:any[] = [];
+            ledger_data_command_json.ledger_index = newledgerIndex;          
 
-            console.time("parsing")
+            console.time("requesting json");
+            console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
+            let messageJson = await this.xrplClient.send(ledger_data_command_json);
+            console.timeEnd("requesting json");
 
-            for(let i = 0; i < message.state.length; i++) {
-              let decoded = binaryCodec.decode(message.state[i].data)
-              parsedObjects.push(decoded);
-              message.state[i].parsed = decoded;
+            if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
+
+              for(let i = 0; i < messageBinary.state.length; i++) {
+                messageBinary.state[i].parsed = messageJson.state[i];
+              }
+
+              console.time("resolveLedgerData binary");
+              await this.ledgerData.resolveLedgerData(messageBinary.state, this.load1);
+              console.timeEnd("resolveLedgerData binary");
+              
+              console.time("resolveIssuerToken");
+              await this.issuerAccount.resolveIssuerToken(messageJson.state, this.load1);
+              console.timeEnd("resolveIssuerToken");
             }
-
-            console.timeEnd("parsing")
-
-            **/
-
-            console.time("resolveIssuerToken")
-            await this.issuerAccount.resolveIssuerToken(message.state, this.load1);
-            console.timeEnd("resolveIssuerToken")
-            //console.time("resolveLedgerData")
-            //await this.ledgerData.resolveLedgerData(message.state, this.load1);
-            //console.timeEnd("resolveLedgerData")
-      
             //console.log("done");
       
             console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
@@ -183,7 +199,7 @@ export class LedgerScanner {
       
           console.log("ALL DONE");
                 
-          let ledgerInfo:LedgerResponse = await this.websocket.request('ledger', {ledger_index: ledgerIndex});
+          let ledgerInfo = await this.xrplClient.send({command: "ledger", ledger_index: ledgerIndex});
       
           this.setLedgerIndex(ledgerIndex);
           this.setLedgerHash(ledgerInfo.ledger_hash);
@@ -194,22 +210,20 @@ export class LedgerScanner {
           setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
-      
-          this.websocket.disconnect();
-          this.websocket = null;
 
+          //trigger online deletion
+          let onlineDeletionCommand:Call = {
+            command: "can_delete",
+            can_delete: "now"
+          }
+
+          await this.xrplClient.send(onlineDeletionCommand);
+    
           return true;
       
         } catch(err) {
           console.log(err);
-          try {
-            if(this.websocket && this.websocket.isConnected())
-              this.websocket.disconnect();
-          } catch(err) {
-            //nothing to do
-          }
           
-          this.websocket = null;
           if(marker != null || (marker == null && ledgerIndex == null))
             return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
           else
