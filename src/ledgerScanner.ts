@@ -51,7 +51,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        //await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -102,13 +102,13 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:Call = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 10000,
           binary: true
         }
 
         let ledger_data_command_json:Call = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 10000,
           binary: false
         }
       
@@ -166,12 +166,18 @@ export class LedgerScanner {
             if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
 
               for(let i = 0; i < messageBinary.state.length; i++) {
-                if(messageBinary.state[i].index == messageJson.state[i].index)
-                  messageBinary.state[i].parsed = messageJson.state[i];
-                else {
-                  console.log("####### NOT SAME INDEX!!! ###########")
-                  console.log("BINARY: " + messageBinary.state[i].index);
-                  console.log("JSON  : "  + messageJson.state[i].index)
+                try {
+                  if(messageBinary.state[i].index == messageJson.state[i].index)
+                    messageBinary.state[i].parsed = messageJson.state[i];
+                  else {
+                    console.log("####### NOT SAME INDEX!!! ###########")
+                    console.log("BINARY: " + messageBinary.state[i].index);
+                    console.log("JSON  : "  + messageJson.state[i].index)
+                  }
+                } catch(err) {
+                  console.log(err);
+                  console.log("binary: " + JSON.stringify(messageBinary.state[i]));
+                  console.log("json: " + JSON.stringify(messageJson.state[i]));
                 }
               }
 
