@@ -142,9 +142,9 @@ export class LedgerScanner {
           console.time("requesting binary");
           console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
           let messageBinary = await this.xrplClient.send(ledger_data_command_binary);
+          console.log("length binary: " + messageBinary.state.length);
           console.timeEnd("requesting binary");
-      
-          console.log("length: " + messageBinary.state.length);
+                
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
 
           //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
@@ -161,6 +161,7 @@ export class LedgerScanner {
             console.time("requesting json");
             console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson = await this.xrplClient.send(ledger_data_command_json);
+            console.log("length json: " + messageJson.state.length);
             console.timeEnd("requesting json");
 
             if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
