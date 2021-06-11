@@ -62,7 +62,7 @@ const start = async () => {
       });
       
     console.log("declaring 200er reponse")
-    fastify.get('/', async (request, reply) => {
+    fastify.get('/api', async (request, reply) => {
       reply.code(200).send('I am alive!'); 
     });
 
