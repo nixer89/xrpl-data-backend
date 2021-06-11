@@ -51,7 +51,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        await this.readLedgerData(null, null, null, 0);
+        //await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -102,13 +102,13 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:Call = {
           command: "ledger_data",
-          limit: 10000,
+          limit: 100000,
           binary: true
         }
 
         let ledger_data_command_json:Call = {
           command: "ledger_data",
-          limit: 10000,
+          limit: 100000,
           binary: false
         }
       
@@ -164,7 +164,7 @@ export class LedgerScanner {
             console.log("length json: " + messageJson.state.length);
             console.timeEnd("requesting json");
 
-            if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index) {
+            if(messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index && messageBinary.state.length == messageJson.state.length && messageBinary.marker == messageJson.marker) {
 
               for(let i = 0; i < messageBinary.state.length; i++) {
                 try {
@@ -190,6 +190,8 @@ export class LedgerScanner {
               console.time("resolveIssuerToken");
               await this.issuerAccount.resolveIssuerToken(messageJson.state, this.load1);
               console.timeEnd("resolveIssuerToken");
+            } else {
+              throw "binary and json objects not the same!"
             }
             //console.log("done");
       
