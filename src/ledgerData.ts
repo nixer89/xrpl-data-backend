@@ -1,4 +1,3 @@
-var sizeof = require('object-sizeof')
 import * as fs from 'fs';
 import { AdaptedLedgerObject } from './util/types';
 
@@ -27,11 +26,14 @@ export class LedgerData {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
             if(this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
               //add entry to existing one
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += ledgerObject.data ? sizeof(ledgerObject.data) : sizeof(ledgerObject.parsed);
+              let size = Buffer.from(ledgerObject.data, 'utf8').length;
+
+              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += size;
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
             } else {
               //create new entry
-              let size = ledgerObject.data ? sizeof(ledgerObject.data) : sizeof(ledgerObject.parsed);
+              let size = Buffer.from(ledgerObject.data, 'utf8').length;;
+              
               let newLedgerObject:any = {
                 count: 1,
                 size: size,
