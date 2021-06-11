@@ -178,6 +178,7 @@ export class LedgerScanner {
                   console.log(err);
                   console.log("binary: " + JSON.stringify(messageBinary.state[i]));
                   console.log("json: " + JSON.stringify(messageJson.state[i]));
+                  return;
                 }
               }
 
