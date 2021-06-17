@@ -94,10 +94,10 @@ export class LedgerData {
 
     addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
       if(ledgerObject[property]) {
-        if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property])
-            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] + 1;
+        if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['property_count'][property])
+            this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['property_count'][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['property_count'][property] + 1;
         else
-          this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['objects'][property] = 1
+          this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()]['property_count'][property] = 1
       }
     }
 
@@ -108,7 +108,7 @@ export class LedgerData {
             return this.ledgerData_2;
     }
 
-    public getLedgerDataV1(load1: boolean) {
+    public getLedgerDataV1(load1: boolean): any[] {
       let dataToUse = JSON.parse(JSON.stringify(load1 ? this.ledgerData_2 : this.ledgerData_1))
       let totalBytes:number = 0;
       for (let data in dataToUse) {
@@ -123,7 +123,7 @@ export class LedgerData {
         }
       }
 
-      return dataToUse;
+      return [totalBytes, dataToUse];
     }
 
     public clearLedgerData(load1: boolean) {
