@@ -38,7 +38,7 @@ export class LedgerData {
                 count: 1,
                 size: size,
                 percentage: 0,
-                objects: {}
+                property_count: {}
               }
 
               this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
