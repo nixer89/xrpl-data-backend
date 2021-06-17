@@ -56,7 +56,7 @@ const start = async () => {
           ledger_hash: ledgerScanner.getLedgerHash(),
           ledger_close: ledgerScanner.getLedgerCloseTime(),
           ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
-          ledger_size: [0],
+          ledger_size: ledgerDataObjects[0],
           sizeType: "B",
           ledger_data: ledgerDataObjects[1]
         }
