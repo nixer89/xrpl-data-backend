@@ -15,7 +15,7 @@ export class TokenCreation {
     private proxy = new HttpsProxyAgent(config.PROXY_URL);
     private useProxy = config.USE_PROXY;
 
-    private tokenCreation:Map<string, string> = new Map();
+    private tokenCreation:Map<string, any> = new Map();
 
     private constructor() { }
 
@@ -71,12 +71,12 @@ export class TokenCreation {
         }
     }
 
-    async getTokenCreationDate(issuer: string, currency: string): Promise<string> {
+    async getTokenCreationDate(issuer: string, currency: string): Promise<any> {
         let issuerKey = issuer+"_"+currency;
 
-        if(this.tokenCreation.has(issuerKey) && this.tokenCreation.get(issuerKey) != null && this.tokenCreation.get(issuerKey).length > 0 ) {
+        if(this.tokenCreation.has(issuerKey) && this.tokenCreation.get(issuerKey) != null) {
             //take it from cache
-            return this.tokenCreation.get(issuerKey);
+            return JSON.parse(this.tokenCreation.get(issuerKey));
         } else {
             //try to resolve it from xrplorer.com API
             console.log("resolving: " + issuerKey);
@@ -85,14 +85,15 @@ export class TokenCreation {
             if(xrplorerResponse && xrplorerResponse.ok) {
                 let issuerCreation:any = await xrplorerResponse.json();
 
-                if(!issuerCreation)
-                    issuerCreation = "Unkown"
+                if(!issuerCreation || !issuerCreation.date)
+                    issuerCreation = {date: "Unkown"}
 
                 issuerCreation = JSON.stringify(issuerCreation);
         
                 console.log("resolved: " + JSON.stringify(issuerCreation));
+                
                 this.tokenCreation.set(issuerKey, issuerCreation);
-                this.appendIssuerCreationToFS(issuerKey, issuerCreation);
+                this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
 
                 return issuerCreation;
             } else {
