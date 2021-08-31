@@ -29,10 +29,10 @@ export class TokenCreation {
         await this.loadIssuerCreationFromFS();
     }
 
-    private async appendIssuerCreationToFS(issuerKey:string, creation: string): Promise<void> {
-        fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+creation+"\n");
+    private async appendIssuerCreationToFS(issuerKey:string, creation: any): Promise<void> {
+        fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
 
-        console.log("saved " + issuerKey+"="+creation + " to isser creation file on file system");
+        console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to isser creation file on file system");
     }
 
     private async loadIssuerCreationFromFS(): Promise<void> {
@@ -49,7 +49,7 @@ export class TokenCreation {
 
                       let split:string[] = line.split('=');
 
-                      this.tokenCreation.set(split[0], split[1]);
+                      this.tokenCreation.set(split[0], JSON.parse(split[1]));
                     });
                 
                     await once(rl, 'close');
@@ -76,7 +76,7 @@ export class TokenCreation {
 
         if(this.tokenCreation.has(issuerKey) && this.tokenCreation.get(issuerKey) != null) {
             //take it from cache
-            return JSON.parse(this.tokenCreation.get(issuerKey));
+            return this.tokenCreation.get(issuerKey);
         } else {
             try {
                 //try to resolve it from xrplorer.com API
@@ -91,7 +91,7 @@ export class TokenCreation {
                     console.log("resolved: " + JSON.stringify(issuerCreation));
                     
                     this.tokenCreation.set(issuerKey, issuerCreation);
-                    this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
+                    this.appendIssuerCreationToFS(issuerKey, issuerCreation);
 
                     return issuerCreation;
                 } else {
@@ -102,7 +102,7 @@ export class TokenCreation {
                         issuerCreation = {date: "Unkown"}
 
                         this.tokenCreation.set(issuerKey, issuerCreation);
-                        this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
+                        this.appendIssuerCreationToFS(issuerKey, issuerCreation);
 
                         return issuerCreation;
                     } else {
