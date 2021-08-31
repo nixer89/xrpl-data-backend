@@ -78,25 +78,39 @@ export class TokenCreation {
             //take it from cache
             return JSON.parse(this.tokenCreation.get(issuerKey));
         } else {
-            //try to resolve it from xrplorer.com API
-            console.log("resolving: " + issuerKey);
-            let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency, {agent: this.useProxy ? this.proxy : null})
-            
-            if(xrplorerResponse && xrplorerResponse.ok) {
-                let issuerCreation:any = await xrplorerResponse.json();
-
-                if(!issuerCreation || !issuerCreation.date)
-                    issuerCreation = {date: "Unkown"}
-
-                issuerCreation = JSON.stringify(issuerCreation);
-        
-                console.log("resolved: " + JSON.stringify(issuerCreation));
+            try {
+                //try to resolve it from xrplorer.com API
+                console.log("resolving: " + issuerKey);
+                let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency, {agent: this.useProxy ? this.proxy : null})
                 
-                this.tokenCreation.set(issuerKey, issuerCreation);
-                this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
+                if(xrplorerResponse && xrplorerResponse.ok) {
+                    let issuerCreation:any = await xrplorerResponse.json();
 
-                return issuerCreation;
-            } else {
+                    issuerCreation = JSON.stringify(issuerCreation);
+            
+                    console.log("resolved: " + JSON.stringify(issuerCreation));
+                    
+                    this.tokenCreation.set(issuerKey, issuerCreation);
+                    this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
+
+                    return issuerCreation;
+                } else {
+                    
+                    let issuerCreation:any = await xrplorerResponse.json();
+
+                    if(issuerCreation && issuerCreation.error && "No results." == issuerCreation.error) {
+                        issuerCreation = {date: "Unkown"}
+
+                        this.tokenCreation.set(issuerKey, issuerCreation);
+                        this.appendIssuerCreationToFS(issuerKey, JSON.stringify(issuerCreation));
+
+                        return issuerCreation;
+                    } else {
+                        return null;
+                    }       
+                }
+            } catch(err) {
+                console.log(JSON.stringify(err));
                 return null;
             }
         }
