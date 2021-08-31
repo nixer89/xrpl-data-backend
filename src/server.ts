@@ -3,10 +3,12 @@ import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerScanner } from './ledgerScanner';
 import { LedgerData } from './ledgerData';
+import { TokenCreation } from './tokenCreation';
 
 let issuerAccount:IssuerAccounts;
 let ledgerData:LedgerData;
 let ledgerScanner:LedgerScanner;
+let tokenCreation:TokenCreation;
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -21,12 +23,15 @@ fastify.register(require('fastify-helmet'));
 // Run the server!
 const start = async () => {
 
-  issuerAccount = IssuerAccounts.Instance
+  issuerAccount = IssuerAccounts.Instance;
   ledgerData = LedgerData.Instance;
-  ledgerScanner = LedgerScanner.Instance
+  ledgerScanner = LedgerScanner.Instance;
+  tokenCreation = TokenCreation.Instance;
 
     console.log("starting server");
     try {
+      await tokenCreation.init();
+
       //init routes
       console.log("adding cors");
 
@@ -74,6 +79,15 @@ const start = async () => {
           sizeType: "B",
           ledger_objects: ledgerDataObjects[1]
         }
+      });
+
+      fastify.get('/api/v1/tokencreation', async (request, reply) => {
+
+        console.log("query: " + JSON.stringify(request.query));
+        let issuer:string = request.query.issuer;
+        let currency:string = request.query.currency;
+
+        return tokenCreation.getTokenCreationDate(issuer, currency);
       });
       
     console.log("declaring 200er reponse")
