@@ -69,7 +69,7 @@ const start = async () => {
 
       fastify.get('/api/v1/tokencreation', async (request, reply) => {
 
-        console.log("query: " + JSON.stringify(request.query));
+        //console.log("query: " + JSON.stringify(request.query));
         let issuer:string = request.query.issuer;
         let currency:string = request.query.currency;
 
