@@ -5,6 +5,7 @@ import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Call, XrplClient } from 'xrpl-client';
 import HttpsProxyAgent = require("https-proxy-agent");
+import { OfferData } from './offerData';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -29,6 +30,7 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
+    private offerData:OfferData;
 
     private proxyAgent:HttpsProxyAgent = new HttpsProxyAgent(config.PROXY_URL);
 
@@ -47,9 +49,11 @@ export class LedgerScanner {
     public async init(): Promise<void> {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
+        this.offerData = OfferData.Instance;
 
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
+        await this.offerData.init(this.load1);
 
         //await this.readLedgerData(null, null, null, 0);
 
@@ -130,6 +134,11 @@ export class LedgerScanner {
             try {
               await this.xrplClient.ready();
               console.log("connected to: " + JSON.stringify(this.xrplClient.getState().server));
+              let map:Map<string, any> = new Map();
+              map.set("ABC", {a: "b", c: "d"});
+
+              console.log(JSON.stringify(map));
+              console.log(map.size);
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
@@ -190,6 +199,10 @@ export class LedgerScanner {
               console.time("resolveIssuerToken");
               await this.issuerAccount.resolveIssuerToken(messageJson.state, this.load1);
               console.timeEnd("resolveIssuerToken");
+
+              console.time("resolveOfferData");
+              await this.offerData.resolveOfferData(messageJson.state, this.load1);
+              console.timeEnd("resolveOfferData");
             } else {
               throw "binary and json objects not the same!"
             }

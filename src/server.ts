@@ -58,7 +58,21 @@ const start = async () => {
           ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
           ledger_size: ledgerDataObjects[0],
           sizeType: "B",
-          ledger_data: ledgerDataObjects[1]
+          ledger_objects: ledgerDataObjects[1]
+        }
+      });
+
+      fastify.get('/api/v1/ledgerobjects', async (request, reply) => {
+        let ledgerDataObjects: any[] = await ledgerData.getLedgerDataV1(ledgerScanner.getLoad());
+        //console.log("ledgerDataObjects: " + JSON.stringify(ledgerDataObjects));
+        return {
+          ledger_index: ledgerScanner.getLedgerIndex(),
+          ledger_hash: ledgerScanner.getLedgerHash(),
+          ledger_close: ledgerScanner.getLedgerCloseTime(),
+          ledger_close_ms: ledgerScanner.getLedgerCloseTimeMs(),
+          ledger_size: ledgerDataObjects[0],
+          sizeType: "B",
+          ledger_objects: ledgerDataObjects[1]
         }
       });
       
