@@ -49,7 +49,9 @@ export class OfferData {
 
             this.getXrplClient(load1).on('transaction', transaction => {
               if("closed" == transaction.status && "transaction" == transaction.type && "tesSUCCESS" == transaction.engine_result) {
-                if(transaction.transaction.LedgerEntryType == "OfferCreate" || transaction.transaction.LedgerEntryType == "OfferCancel")
+                if(transaction.transaction.LedgerEntryType == "OfferCreate" || transaction.transaction.LedgerEntryType == "OfferCancel") {
+                  
+                }
               }
             });
 
