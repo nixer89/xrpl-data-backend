@@ -144,7 +144,7 @@ export class LedgerData {
 
         if("Flags" === property && ledgerObject[property]) {
 
-          if("account_root" === ledgerObject.LedgerEntryType.toLowerCase()) {
+          if("accountroot" === ledgerObject.LedgerEntryType.toLowerCase()) {
             //Account Root Flags
             if(this.isDefaultRippleEnabled(ledgerObject[property]))
               this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfDefaultRipple", 1);
@@ -184,7 +184,7 @@ export class LedgerData {
               this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfSell", 1);
           }
 
-          if("signer_list" === ledgerObject.LedgerEntryType.toLowerCase()) {
+          if("signerlist" === ledgerObject.LedgerEntryType.toLowerCase()) {
 
             //Signer List Flags
             if(this.isSignerListFlagOneOwnerCount(ledgerObject[property]))
@@ -339,6 +339,8 @@ export class LedgerData {
       return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
   }  
 
+  
+
   isOfferFlagPassive(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
   }
@@ -347,9 +349,13 @@ export class LedgerData {
     return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
   }
 
+
+
   isSignerListFlagOneOwnerCount(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
   }
+
+
 
   isRippleStateFlagLowReserve(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
