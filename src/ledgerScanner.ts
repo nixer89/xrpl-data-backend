@@ -15,6 +15,7 @@ export class LedgerScanner {
     private useProxy = config.USE_PROXY;
 
     private load1: boolean = true;
+    private isRunning:boolean = false;
 
     private xrplClient:XrplClient;
 
@@ -65,12 +66,24 @@ export class LedgerScanner {
     }
 
     async scheduleLoadingIssuerData(): Promise<void> {
-      let success:boolean = await this.readLedgerData(null, null, null, 0);
-      if(success) {
-        this.load1=!this.load1;
-        console.log("loading ledger data successfull. Maps changed.")
-      } else {
-        console.log("loading ledger data not successfull. Not changing maps.")
+      //only let the tool run when it is currently NOT running or else weird stuff happens!
+      if(!this.isRunning) {
+        
+        this.isRunning = true;
+        try {
+          let success:boolean = await this.readLedgerData(null, null, null, 0);
+          if(success) {
+            this.load1=!this.load1;
+            console.log("loading ledger data successfull. Maps changed.")
+          } else {
+            console.log("loading ledger data not successfull. Not changing maps.")
+          }
+
+          this.isRunning = false;
+        } catch(err) {
+          console.log(err);
+          this.isRunning = false;
+        }
       }
     }
 
