@@ -6,3 +6,4 @@ local_config.txt
 
 # IDE - VSCode
 .vscode/*
+historicalData.csv

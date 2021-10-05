@@ -1,19 +1,14 @@
-import * as config from './util/config'
 import * as fetch from 'node-fetch';
 import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { createInterface } from 'readline';
 import { once } from 'events';
-import HttpsProxyAgent = require('https-proxy-agent');
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 export class TokenCreation {
 
     private static _instance: TokenCreation;
-
-    private proxy = new HttpsProxyAgent(config.PROXY_URL);
-    private useProxy = config.USE_PROXY;
 
     private tokenCreation:Map<string, any> = new Map();
 
@@ -81,7 +76,7 @@ export class TokenCreation {
             try {
                 //try to resolve it from xrplorer.com API
                 console.log("resolving: " + issuerKey);
-                let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency, {agent: this.useProxy ? this.proxy : null})
+                let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
                 
                 if(xrplorerResponse && xrplorerResponse.ok) {
                     let issuerCreation:any = await xrplorerResponse.json();

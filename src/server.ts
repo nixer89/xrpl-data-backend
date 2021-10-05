@@ -1,4 +1,3 @@
-import * as config from './util/config';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerScanner } from './ledgerScanner';
@@ -12,7 +11,7 @@ let tokenCreation:TokenCreation;
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
-const fastify = require('fastify')({trustProxy: config.USE_PROXY})
+const fastify = require('fastify')()
 
 console.log("adding response compression");
 fastify.register(require('fastify-compress'));

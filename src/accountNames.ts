@@ -4,16 +4,12 @@ import * as scheduler from 'node-schedule';
 import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { IssuerVerification } from './util/types';
-import HttpsProxyAgent = require('https-proxy-agent');
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 export class AccountNames {
 
     private static _instance: AccountNames;
-
-    private proxy = new HttpsProxyAgent(config.PROXY_URL);
-    private useProxy = config.USE_PROXY;
 
     private bithompServiceNames:Map<string, IssuerVerification> = new Map();
     private xrpscanUserNames:Map<string, IssuerVerification> = new Map();
@@ -59,7 +55,7 @@ export class AccountNames {
     public async loadBithompServiceNames() :Promise<void> {
         try {
             console.log("load service names from bithomp");
-            let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }, agent: this.useProxy ? this.proxy : null})
+            let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
             
             if(bithompResponse && bithompResponse.ok) {
                 let knownServices:any = await bithompResponse.json();
@@ -91,7 +87,7 @@ export class AccountNames {
     private async loadXRPScanNames() :Promise<void> {
         try {
             console.log("load xrpscan names");
-            let xrpscanResponse:any = await fetch.default("https://api.xrpscan.com/api/v1/names/well-known", { agent: this.useProxy ? this.proxy : null})
+            let xrpscanResponse:any = await fetch.default("https://api.xrpscan.com/api/v1/names/well-known")
             
             if(xrpscanResponse && xrpscanResponse.ok) {
                 let knownServices:any[] = await xrpscanResponse.json();
@@ -121,7 +117,7 @@ export class AccountNames {
         try {
             if(!this.bithompServiceNames.has(xrplAccount) && !this.xrpscanUserNames.has(xrplAccount) && !this.bithompUserNames.has(xrplAccount)) {
                 console.log("resolving: " + xrplAccount);
-                let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }, agent: this.useProxy ? this.proxy : null})
+                let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
                 
                 if(bithompResponse && bithompResponse.ok) {
                     let accountInfo:any = await bithompResponse.json();

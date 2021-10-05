@@ -1,18 +1,14 @@
-import * as config from './util/config';
 import * as scheduler from 'node-schedule';
 import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Call, XrplClient } from 'xrpl-client';
-import HttpsProxyAgent = require("https-proxy-agent");
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 export class LedgerScanner {
 
     private static _instance: LedgerScanner;
-
-    private useProxy = config.USE_PROXY;
 
     private load1: boolean = true;
     private isRunning:boolean = false;
@@ -30,8 +26,6 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
-
-    private proxyAgent:HttpsProxyAgent = new HttpsProxyAgent(config.PROXY_URL);
 
     private constructor() {}
 
@@ -135,10 +129,7 @@ export class LedgerScanner {
       
         try { 
           if(!this.xrplClient || !this.xrplClient.getState().online) {
-            if(this.useProxy)
-                this.xrplClient = new XrplClient("wss://xrplcluster.com", {httpRequestOptions: { agent: this.proxyAgent }, assumeOfflineAfterSeconds: 120});
-            else
-                this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
+              this.xrplClient = new XrplClient("ws://127.0.0.1:6006", {assumeOfflineAfterSeconds: 120});
       
             try {
               await this.xrplClient.ready();
