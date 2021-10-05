@@ -29,8 +29,6 @@ export class LedgerScanner {
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
 
-    private index:number = 0;
-
     private constructor() {}
 
     public static get Instance(): LedgerScanner
@@ -207,9 +205,8 @@ export class LedgerScanner {
       
             console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
             console.log("issuer_2 size: " + this.issuerAccount.getIssuer_2().size);
-            if(newledgerIndex != null && newMarker != null && this.index < 10) {
-              this.index++;
-                return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
+            if(newledgerIndex != null && newMarker != null) {
+              return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
               console.log("Done 1");
               console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
