@@ -48,17 +48,17 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        await this.readLedgerData(null, null, null, 0);
+        //await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
-        //if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
-        //    await this.readLedgerData(null, null, null, 0);
-        //}
+        if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
+            await this.readLedgerData(null, null, null, 0);
+        }
 
         this.load1=!this.load1;
 
-        //scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
-        //scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
     }
 
     async scheduleLoadingIssuerData(): Promise<void> {
