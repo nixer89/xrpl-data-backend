@@ -66,10 +66,10 @@ export class TokenCreation {
         }
     }
 
-    async getTokenCreationCacheOnly(issuerCurrency): Promise<any> {
-        if(this.tokenCreation.has(issuerCurrency) && this.tokenCreation.get(issuerCurrency) != null) {
+    getTokenCreationDateFromCacheOnly(issuerCurrency): string {
+        if(this.tokenCreation.has(issuerCurrency) && this.tokenCreation.get(issuerCurrency) != null && this.tokenCreation.get(issuerCurrency).date != null) {
             //take it from cache
-            return this.tokenCreation.get(issuerCurrency);
+            return this.tokenCreation.get(issuerCurrency).date;
         } else {
             return null
         }

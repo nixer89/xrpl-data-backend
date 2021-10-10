@@ -107,7 +107,7 @@ export class IssuerAccounts {
           //initialize user name to have faster access later on
           //this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-          
+
         }
       }
     }
@@ -157,7 +157,7 @@ export class IssuerAccounts {
         let acc:string = key.substring(0, key.indexOf("_"));
         let currency:string = key.substring(key.indexOf("_")+1, key.length);
         let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
-        let tokencreation:any = this.tokenCreation.getTokenCreationCacheOnly(key);
+        let creationDate:string = await this.tokenCreation.getTokenCreationDateFromCacheOnly(key);
 
         //set kyc data
         if(!issuerData) {
@@ -165,14 +165,12 @@ export class IssuerAccounts {
             account: acc,
             verified: false,
             resolvedBy: null,
-            kyc : this.accountInfo.getKycData(acc)
+            kyc : this.accountInfo.getKycData(acc),
+            created: creationDate
           }
         } else {
           issuerData.kyc = this.accountInfo.getKycData(acc);
-        }
-
-        if(tokencreation && tokencreation.date) {
-          issuerData.created = tokencreation.date;
+          issuerData.created = creationDate
         }
     
         if(data.offers > 0 && data.amount <= 0) {
