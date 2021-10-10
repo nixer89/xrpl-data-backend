@@ -157,7 +157,7 @@ export class IssuerAccounts {
         let acc:string = key.substring(0, key.indexOf("_"));
         let currency:string = key.substring(key.indexOf("_")+1, key.length);
         let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
-        let creationDate:string = await this.tokenCreation.getTokenCreationDateFromCacheOnly(key);
+        let creationDate:string = this.tokenCreation.getTokenCreationDateFromCacheOnly(key);
 
         //set kyc data
         if(!issuerData) {
