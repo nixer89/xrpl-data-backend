@@ -14,6 +14,7 @@ export class AccountNames {
     private bithompServiceNames:Map<string, IssuerVerification> = new Map();
     private xrpscanUserNames:Map<string, IssuerVerification> = new Map();
     private bithompUserNames:Map<string, IssuerVerification> = new Map();
+    private kycMap:Map<string, boolean> = new Map();
 
     private constructor() { }
 
@@ -27,6 +28,7 @@ export class AccountNames {
         scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1, hour: 12, minute: 0, second: 0}, () => this.resolveAllUserNames(true));
         await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
+        await this.loadKycDataFromFS();
     }
 
     public async resolveAllUserNames(deleteEmptyNames?: boolean): Promise<void> {
@@ -42,6 +44,13 @@ export class AccountNames {
                 iteratorMap.forEach((value, key, map) => {
                     if(value == null || value.username == null || value.username.trim().length == 0)
                         this.bithompUserNames.delete(key);
+                });
+
+                //reset all no KYC accounts
+                let iteratorMap2: Map<string, boolean> = new Map(this.kycMap);
+                iteratorMap2.forEach((value, key, map) => {
+                    if(!value)
+                        this.kycMap.delete(key);
                 });
             }
         } catch(err) {
@@ -139,6 +148,29 @@ export class AccountNames {
         }   
     }
 
+    async resolveKycStatus(xrplAccount: string): Promise<void> {
+        try {
+            if(!this.kycMap.has(xrplAccount)) {
+                console.log("resolving kyc for: " + xrplAccount);
+                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount)
+                
+                if(kycResponse && kycResponse.ok) {
+                    let kycInfo:any = await kycResponse.json();
+            
+                    console.log("resolved: " + JSON.stringify(kycInfo));
+                    if(kycInfo) {
+                        this.kycMap.set(xrplAccount, kycInfo.kycApproved)
+                    }
+
+                    console.log("kycMap size: " + this.kycMap.size);
+                }
+            }
+        } catch(err) {
+            console.log("err retrieving kyc status for " + xrplAccount);
+            console.log(err);
+        }   
+    }
+
     getUserName(xrplAccount:string): string {
         if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).username.trim().length > 0)
             return this.xrpscanUserNames.get(xrplAccount).username + "_[XRPScan]";
@@ -167,6 +199,13 @@ export class AccountNames {
         else
             //try to resolve user name - seems like it is a new one!
             return null
+    }
+
+    getKycData(xrplAccount:string): boolean {
+        if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null)
+            return this.kycMap.get(xrplAccount)
+        else
+            return false;
     }
 
     async initAccountName(xrplAccount:string): Promise<void> {
@@ -219,6 +258,43 @@ export class AccountNames {
             console.log("error reading bithomp user names from FS");
             console.log(err);
             this.bithompUserNames.clear();
+        }
+    }
+
+    public async saveKycDataToFS(): Promise<void> {
+        if(this.kycMap && this.kycMap.size > 0) {
+            let kycData:any = {};
+            this.kycMap.forEach((value, key, map) => {
+                kycData[key] = value;
+            });
+            fs.writeFileSync("./../kycData.js", JSON.stringify(kycData));
+
+            console.log("saved " + this.kycMap.size + " kyc data to file system");
+        }
+    }
+
+    private async loadKycDataFromFS(): Promise<void> {
+        console.log("loading kyc data from FS");
+        try {
+            if(fs.existsSync("./../kycData.js")) {
+                let kycData:any = JSON.parse(fs.readFileSync("./../kycData.js").toString());
+                //console.log(JSON.stringify(bithompNames));
+                if(kycData) {
+                    for (var account in kycData) {
+                        if (kycData.hasOwnProperty(account)) {
+                            this.kycMap.set(account, kycData[account]);
+                        }
+                    }
+
+                    console.log("loaded " + this.kycMap.size + " kyc data from file system");
+                }
+            } else {
+                console.log("kyc data file does not exist yet.")
+            }
+        } catch(err) {
+            console.log("error reading kyc data file from FS");
+            console.log(err);
+            this.kycMap.clear();
         }
     }
 }

@@ -17,7 +17,9 @@ export interface IssuerData {
 export interface IssuerVerification {
     resolvedBy: string,
     account: string,
-    verified: boolean
+    verified: boolean,
+    kyc?: boolean,
+    created?: string,
     domain?: string,
     username?: string,
     twitter?: string

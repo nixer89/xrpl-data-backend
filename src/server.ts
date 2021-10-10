@@ -3,11 +3,13 @@ import { IssuerAccounts } from './issuerAccounts';
 import { LedgerScanner } from './ledgerScanner';
 import { LedgerData } from './ledgerData';
 import { TokenCreation } from './tokenCreation';
+import { AccountNames } from "./accountNames";
 
 let issuerAccount:IssuerAccounts;
 let ledgerData:LedgerData;
 let ledgerScanner:LedgerScanner;
 let tokenCreation:TokenCreation;
+let accountNames: AccountNames;
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -26,6 +28,7 @@ const start = async () => {
   ledgerData = LedgerData.Instance;
   ledgerScanner = LedgerScanner.Instance;
   tokenCreation = TokenCreation.Instance;
+  accountNames = AccountNames.Instance;
 
     console.log("starting server");
     try {
@@ -35,7 +38,7 @@ const start = async () => {
       console.log("adding cors");
 
       fastify.register(require('fastify-cors'), {
-        origin: ["https://xumm.community", "https://test.xumm.community", "http://localhost:4200"],
+        origin: "*",
         methods: 'GET, OPTIONS',
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Referer']
       });
@@ -64,6 +67,22 @@ const start = async () => {
           sizeType: "B",
           ledger_data: ledgerDataObjects[1]
         }
+      });
+
+      fastify.get('/api/v1/kyc/:account', async (request, reply) => {
+        if(!request.params.account) {
+          reply.code(500).send('Please provide an account. Calls without account are not allowed');
+      } else {
+          try {
+              return {
+                account: request.params.account,
+                kyc: accountNames.getKycData(request.params.account)
+              }
+          } catch(err) {
+              console.log("ERROR: " + JSON.stringify(err));
+              reply.code(500).send('Error occured. Please check your request.');
+          }
+      }
       });
 
       fastify.get('/api/v1/tokencreation', async (request, reply) => {

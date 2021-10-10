@@ -131,8 +131,8 @@ export class LedgerScanner {
       
         try { 
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
-              this.xrpljsClient = new Client("ws://127.0.0.1:6006");
-              //this.xrpljsClient = new Client("wss://xrplcluster.com");
+              //this.xrpljsClient = new Client("ws://127.0.0.1:6006");
+              this.xrpljsClient = new Client("wss://xrplcluster.com");
       
             try {
               await this.xrpljsClient.connect();
@@ -234,6 +234,7 @@ export class LedgerScanner {
 
           //always save resolved user names to file system to make restart of server much faster
           setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);
+          setTimeout(() => this.issuerAccount.saveKycDataToFS(), 12000);
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
 

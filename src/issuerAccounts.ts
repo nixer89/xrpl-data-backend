@@ -3,6 +3,7 @@ import consoleStamp = require("console-stamp");
 import { AccountNames } from './accountNames';
 import { IssuerData, IssuerVerification } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
+import { TokenCreation } from './tokenCreation';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -11,6 +12,7 @@ export class IssuerAccounts {
     private static _instance: IssuerAccounts;
     
     private accountInfo:AccountNames;
+    private tokenCreation:TokenCreation;
 
     private ledgerScanner:LedgerScanner;
 
@@ -26,8 +28,9 @@ export class IssuerAccounts {
     }
 
     public async init(load1:boolean): Promise<void> {
-        this.accountInfo = AccountNames.Instance
-        this.ledgerScanner = LedgerScanner.Instance
+        this.accountInfo = AccountNames.Instance;
+        this.tokenCreation = TokenCreation.Instance;
+        this.ledgerScanner = LedgerScanner.Instance;
 
         await this.accountInfo.init();
         await this.loadIssuerDataFromFS(load1);
@@ -103,6 +106,8 @@ export class IssuerAccounts {
           this.addNewIssuer(issuer, amount, 1, 0,load1);
           //initialize user name to have faster access later on
           //this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+          await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
+          
         }
       }
     }
@@ -152,6 +157,23 @@ export class IssuerAccounts {
         let acc:string = key.substring(0, key.indexOf("_"));
         let currency:string = key.substring(key.indexOf("_")+1, key.length);
         let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
+        let tokencreation:any = this.tokenCreation.getTokenCreationCacheOnly(key);
+
+        //set kyc data
+        if(!issuerData) {
+          issuerData = {
+            account: acc,
+            verified: false,
+            resolvedBy: null,
+            kyc : this.accountInfo.getKycData(acc)
+          }
+        } else {
+          issuerData.kyc = this.accountInfo.getKycData(acc);
+        }
+
+        if(tokencreation && tokencreation.date) {
+          issuerData.created = tokencreation.date;
+        }
     
         if(data.offers > 0 && data.amount <= 0) {
           //remove abandoned currencies with only offers
@@ -198,6 +220,10 @@ export class IssuerAccounts {
 
     public saveBithompNamesToFS(): Promise<void> {
       return this.accountInfo.saveBithompUserNamesToFS();
+    }
+
+    public saveKycDataToFS(): Promise<void> {
+      return this.accountInfo.saveKycDataToFS();
     }
 
     public async saveIssuerDataToFS(load1:boolean): Promise<void> {
