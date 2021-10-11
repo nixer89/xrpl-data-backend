@@ -27,11 +27,11 @@ export class TokenCreation {
     private async appendIssuerCreationToFS(issuerKey:string, creation: any): Promise<void> {
         fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
 
-        console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to isser creation file on file system");
+        console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
     }
 
     private async loadIssuerCreationFromFS(): Promise<void> {
-        console.log("loading isser creation from FS");
+        console.log("loading issuer creation from FS");
         try {
             if(fs.existsSync("./../issuerCreation.txt")) {
                 try {
@@ -89,9 +89,7 @@ export class TokenCreation {
                 
                 if(xrplorerResponse && xrplorerResponse.ok) {
                     let issuerCreation:any = await xrplorerResponse.json();
-
-                    issuerCreation = JSON.stringify(issuerCreation);
-            
+           
                     console.log("resolved: " + JSON.stringify(issuerCreation));
                     
                     this.tokenCreation.set(issuerKey, issuerCreation);
