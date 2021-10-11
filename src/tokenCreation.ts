@@ -67,9 +67,9 @@ export class TokenCreation {
     }
 
     getTokenCreationDateFromCacheOnly(issuerCurrency): string {
-        if(this.tokenCreation.has(issuerCurrency) && this.tokenCreation.get(issuerCurrency) != null && this.tokenCreation.get(issuerCurrency).date != null) {
+        if(this.tokenCreation.has(issuerCurrency) && this.tokenCreation.get(issuerCurrency) != null) {
             //take it from cache
-            return this.tokenCreation.get(issuerCurrency).date;
+            return this.tokenCreation.get(issuerCurrency);
         } else {
             return null
         }
