@@ -15,8 +15,14 @@ export class AccountNames {
     private xrpscanUserNames:Map<string, IssuerVerification> = new Map();
     private bithompUserNames:Map<string, IssuerVerification> = new Map();
     private kycMap:Map<string, boolean> = new Map();
+    private kycDistributorMap:Map<string, string> = new Map();
 
-    private constructor() { }
+    private constructor() {
+        //init kyc distributor account
+        
+        //ChorusX
+        this.kycDistributorMap.set("rKk7mu1dNB25fsPEJ4quoQd5B8QmaxewKi", "rhmaAYX86K1drGCxaenoYH2GSBTReja7XH");
+    }
 
     public static get Instance(): AccountNames
     {
@@ -165,6 +171,24 @@ export class AccountNames {
                     console.log("kycMap size: " + this.kycMap.size);
                 }
             }
+
+            //resolve distributor account status!
+            if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null && !this.kycMap.has(this.kycDistributorMap.get(xrplAccount))) {
+                let distributorAccount:string = this.kycDistributorMap.get(xrplAccount);
+                console.log("resolving kyc for distributor account: " + distributorAccount);
+                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + distributorAccount)
+                
+                if(kycResponse && kycResponse.ok) {
+                    let kycInfo:any = await kycResponse.json();
+            
+                    console.log("resolved: " + JSON.stringify(kycInfo));
+                    if(kycInfo) {
+                        this.kycMap.set(distributorAccount, kycInfo.kycApproved)
+                    }
+
+                    console.log("kycMap size: " + this.kycMap.size);
+                }
+            }
         } catch(err) {
             console.log("err retrieving kyc status for " + xrplAccount);
             console.log(err);
@@ -202,8 +226,13 @@ export class AccountNames {
     }
 
     getKycData(xrplAccount:string): boolean {
-        if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null)
+        //check distributor account KYC status first
+        if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null)
+            return this.kycMap.get(this.kycDistributorMap.get(xrplAccount))
+        //now check the issuer account KYC status
+        else if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null)
             return this.kycMap.get(xrplAccount)
+        //nothing found, no KYC!
         else
             return false;
     }
