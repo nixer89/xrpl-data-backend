@@ -226,12 +226,13 @@ export class AccountNames {
     }
 
     getKycData(xrplAccount:string): boolean {
-        //check distributor account KYC status first
-        if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null)
-            return this.kycMap.get(this.kycDistributorMap.get(xrplAccount))
-        //now check the issuer account KYC status
-        else if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null)
+        //first check the issuer account KYC status
+        if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null && this.kycMap.get(xrplAccount))
             return this.kycMap.get(xrplAccount)
+        //now check distributor account KYC status
+        else if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null)
+            return this.kycMap.get(this.kycDistributorMap.get(xrplAccount))
+        
         //nothing found, no KYC!
         else
             return false;
