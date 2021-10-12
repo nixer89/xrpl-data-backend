@@ -101,7 +101,7 @@ export class TokenCreation {
                     let issuerCreation:any = await xrplorerResponse.json();
 
                     if(issuerCreation && issuerCreation.error && "No results." == issuerCreation.error) {
-                        issuerCreation = {date: "Unkown"}
+                        issuerCreation = {date: "Unknown"}
 
                         this.tokenCreation.set(issuerKey, issuerCreation);
                         this.appendIssuerCreationToFS(issuerKey, issuerCreation);
