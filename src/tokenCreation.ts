@@ -78,43 +78,58 @@ export class TokenCreation {
     async getTokenCreationDate(issuer: string, currency: string): Promise<any> {
         let issuerKey = issuer+"_"+currency;
 
-        if(this.tokenCreation.has(issuerKey) && this.tokenCreation.get(issuerKey) != null) {
+        if(this.isTokenInCache(issuerKey)) {
             //take it from cache
             return this.tokenCreation.get(issuerKey);
         } else {
             try {
-                //try to resolve it from xrplorer.com API
-                console.log("resolving: " + issuerKey);
-                let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
-                
-                if(xrplorerResponse && xrplorerResponse.ok) {
-                    let issuerCreation:any = await xrplorerResponse.json();
-           
-                    console.log("resolved: " + JSON.stringify(issuerCreation));
-                    
-                    this.tokenCreation.set(issuerKey, issuerCreation);
-                    this.appendIssuerCreationToFS(issuerKey, issuerCreation);
-
-                    return issuerCreation;
-                } else {
-                    
-                    let issuerCreation:any = await xrplorerResponse.json();
-
-                    if(issuerCreation && issuerCreation.error && "No results." == issuerCreation.error) {
-                        issuerCreation = {date: "Unknown"}
-
-                        this.tokenCreation.set(issuerKey, issuerCreation);
-                        this.appendIssuerCreationToFS(issuerKey, issuerCreation);
-
-                        return issuerCreation;
-                    } else {
-                        return null;
-                    }       
-                }
+                await this.resolveTokenCreationDateFromXrplorer(issuer, currency);
             } catch(err) {
                 console.log(JSON.stringify(err));
                 return null;
             }
         }
+    }
+
+    async resolveTokenCreationDateFromXrplorer(issuer: string, currency: string): Promise<any> {
+        let issuerKey = issuer+"_"+currency;
+
+        try {
+            //try to resolve it from xrplorer.com API
+            console.log("resolving: " + issuerKey);
+            let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
+            
+            if(xrplorerResponse && xrplorerResponse.ok) {
+                let issuerCreation:any = await xrplorerResponse.json();
+        
+                console.log("resolved: " + JSON.stringify(issuerCreation));
+                
+                this.tokenCreation.set(issuerKey, issuerCreation);
+                this.appendIssuerCreationToFS(issuerKey, issuerCreation);
+
+                return issuerCreation;
+            } else {
+                
+                let issuerCreation:any = await xrplorerResponse.json();
+
+                if(issuerCreation && issuerCreation.error && "No results." == issuerCreation.error) {
+                    issuerCreation = {date: "Unknown"}
+
+                    this.tokenCreation.set(issuerKey, issuerCreation);
+                    this.appendIssuerCreationToFS(issuerKey, issuerCreation);
+
+                    return issuerCreation;
+                } else {
+                    return null;
+                }       
+            }
+        } catch(err) {
+            console.log(JSON.stringify(err));
+            return null;
+        }
+    }
+
+    isTokenInCache(issuerTokenKey:string) {
+        return this.tokenCreation && this.tokenCreation.has(issuerTokenKey) && this.tokenCreation.get(issuerTokenKey) != null;
     }
 }

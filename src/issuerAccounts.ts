@@ -40,6 +40,8 @@ export class IssuerAccounts {
 
       let rippleStates:any[] = ledgerState.filter(element => element.LedgerEntryType === 'RippleState');
 
+      let dateResolved:boolean = false;
+
       for(let i = 0; i < rippleStates.length; i++) {
         let amount:number = Number.parseFloat(rippleStates[i].Balance.value);
         let currency:string = rippleStates[i].Balance.currency;
@@ -62,13 +64,21 @@ export class IssuerAccounts {
         if(issuer != null) {
 
           amount = amount < 0 ? amount * -1 : amount;
-          issuer = issuer + "_" + currency;
+          let issuerKey = issuer + "_" + currency;
+
+          if(!dateResolved && !this.tokenCreation.isTokenInCache(issuerKey)) {
+            //make it asynchronous!
+            console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuerKey);
+            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer, currency);
+            dateResolved = true;
+          }
+            
   
           if(amount >= 0) {
             //console.log("issuer: " + issuer);
             //console.log("balance: " + amount);
   
-            await this.addIssuer(issuer, amount, load1);
+            await this.addIssuer(issuerKey, amount, load1);
           }
         }
       }

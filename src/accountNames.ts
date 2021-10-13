@@ -22,6 +22,9 @@ export class AccountNames {
         
         //ChorusX
         this.kycDistributorMap.set("rKk7mu1dNB25fsPEJ4quoQd5B8QmaxewKi", "rhmaAYX86K1drGCxaenoYH2GSBTReja7XH");
+
+        //PALEOCOIN
+        this.kycDistributorMap.set("rPfuLd1XmVyxkggAiT9fpLQU81GLb6UDZg", "rMuhg6cHRnNr4g4LnHrXvTrra6D47EG5wp");
     }
 
     public static get Instance(): AccountNames
