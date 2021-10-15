@@ -32,6 +32,9 @@ export class AccountNames {
         //SSE
         this.kycDistributorMap.set("rMDQTunsjE32sAkBDbwixpWr8TJdN5YLxu", "rNP3mFp8QGe1yXYMdypU7B5rXM1HK9VbDK");
 
+        //XUM coin
+        this.kycDistributorMap.set("r465PJyGWUE8su1oVoatht6cXZJTg1jc2m", "rGiMPyitoCRm4JpRyaTCzysHrifRQUVFs3");
+
     }
 
     public static get Instance(): AccountNames
