@@ -16,7 +16,7 @@ consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 const fastify = require('fastify')()
 
 console.log("adding response compression");
-fastify.register(require('fastify-compress'));
+fastify.register(require('fastify-compress'), { encodings: ['gzip', 'deflate', 'br'] });
 
 console.log("adding some security headers");
 fastify.register(require('fastify-helmet'));
