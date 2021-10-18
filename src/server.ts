@@ -16,7 +16,7 @@ consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 const fastify = require('fastify')()
 
 console.log("adding response compression");
-fastify.register(require('fastify-compress'), { encodings: ['gzip', 'deflate', 'br'] });
+fastify.register(require('fastify-compress'), { encodings: ['gzip', 'deflate', 'br', '*', 'identity'] });
 
 console.log("adding some security headers");
 fastify.register(require('fastify-helmet'));
@@ -45,9 +45,7 @@ const start = async () => {
 
       fastify.get('/api/v1/tokens', async (request, reply) => {
         //console.log("request params: " + JSON.stringify(request.params));
-        console.time("tokens");
         let issuers = issuerAccount.getLedgerTokensV1(ledgerScanner.getLoad());
-        console.timeEnd("tokens");
 
         return {
           ledger_index: ledgerScanner.getLedgerIndex(),
