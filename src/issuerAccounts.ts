@@ -69,7 +69,7 @@ export class IssuerAccounts {
           if(amount >= 0) {
 
             //only resolve date from issuer which have actually issued some amount
-            if(!dateResolved && !this.tokenCreation.isTokenInCache(issuerKey)) {
+            if(amount > 0 && !dateResolved && !this.tokenCreation.isTokenInCache(issuerKey)) {
               //make it asynchronous!
               console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuerKey);
               this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer, currency);

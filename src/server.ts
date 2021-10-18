@@ -45,7 +45,10 @@ const start = async () => {
 
       fastify.get('/api/v1/tokens', async (request, reply) => {
         //console.log("request params: " + JSON.stringify(request.params));
+        console.time("tokens");
         let issuers = issuerAccount.getLedgerTokensV1(ledgerScanner.getLoad());
+        console.timeEnd("tokens");
+
         return {
           ledger_index: ledgerScanner.getLedgerIndex(),
           ledger_hash: ledgerScanner.getLedgerHash(),
@@ -56,7 +59,9 @@ const start = async () => {
       });
 
       fastify.get('/api/v1/ledgerdata', async (request, reply) => {
+        console.time("ledgerdata");
         let ledgerDataObjects: any[] = await ledgerData.getLedgerDataV1(ledgerScanner.getLoad());
+        console.timeEnd("ledgerdata");
         //console.log("ledgerDataObjects: " + JSON.stringify(ledgerDataObjects));
         return {
           ledger_index: ledgerScanner.getLedgerIndex(),
