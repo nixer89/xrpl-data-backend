@@ -35,6 +35,9 @@ export class AccountNames {
         //XUM coin
         this.kycDistributorMap.set("r465PJyGWUE8su1oVoatht6cXZJTg1jc2m", "rGiMPyitoCRm4JpRyaTCzysHrifRQUVFs3");
 
+        //Calorie Token
+        this.kycDistributorMap.set("rNqGa93B8ewQP9mUwpwqA19SApbf62U7PY", "rUWHYEdNVA7aMCqP5a4WLqtqPAAYd58K83");
+
     }
 
     public static get Instance(): AccountNames
