@@ -38,6 +38,11 @@ export class AccountNames {
         //Calorie Token
         this.kycDistributorMap.set("rNqGa93B8ewQP9mUwpwqA19SApbf62U7PY", "rUWHYEdNVA7aMCqP5a4WLqtqPAAYd58K83");
 
+        //Hadalite
+        this.kycDistributorMap.set("rHiPGSMBbzDGpoTPmk2dXaTk12ZV1pLVCZ", "rwKgwydb7NRHNS8gVpG6QEP2tYqPhroYrK");
+        
+        //Hada
+        this.kycDistributorMap.set("rsR5JSisuXsbipP6sGdKdz5agjxn8BhHUC", "rwKgwydb7NRHNS8gVpG6QEP2tYqPhroYrK");
     }
 
     public static get Instance(): AccountNames
@@ -266,7 +271,7 @@ export class AccountNames {
 
         } else {
             //try to resolve user name - seems like it is a new one!
-            this.loadBithompSingleAccountName(xrplAccount);
+            return this.loadBithompSingleAccountName(xrplAccount);
         }
     }
 

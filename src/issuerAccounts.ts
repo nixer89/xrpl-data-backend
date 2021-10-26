@@ -116,9 +116,8 @@ export class IssuerAccounts {
         if(amount > 0) { //only add issuer if he actually has issued the token -> do not add zero balance trustlines
           this.addNewIssuer(issuer, amount, 1, 0,load1);
           //initialize user name to have faster access later on
-          //this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-
+          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
         }
       }
     }
