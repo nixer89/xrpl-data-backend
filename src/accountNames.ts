@@ -43,6 +43,12 @@ export class AccountNames {
         
         //Hada
         this.kycDistributorMap.set("rsR5JSisuXsbipP6sGdKdz5agjxn8BhHUC", "rwKgwydb7NRHNS8gVpG6QEP2tYqPhroYrK");
+
+        //SEC
+        this.kycDistributorMap.set("rDN4Ux1WFJJsPCdqdfZgrDZ2icxdAmg2w", "rh3uXD4W3xb2EHCVkMHtNsRYuWgCexS5m8");
+
+        //CCN
+        this.kycDistributorMap.set("rG1bDjT25WyvPz757YC9NqdRKyz9ywF8e8", "rEzza37GjHsctYj8XgzRZaXfxt9tC53xST");
     }
 
     public static get Instance(): AccountNames
