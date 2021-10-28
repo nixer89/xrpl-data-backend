@@ -49,6 +49,9 @@ export class AccountNames {
 
         //CCN
         this.kycDistributorMap.set("rG1bDjT25WyvPz757YC9NqdRKyz9ywF8e8", "rEzza37GjHsctYj8XgzRZaXfxt9tC53xST");
+
+        //XPUNK
+        this.kycDistributorMap.set("rHEL3bM4RFsvF8kbQj3cya8YiDvjoEmxLq", "rnakpaiPo3ELjETRZxGmyRjcfTgvkRbF4q");
     }
 
     public static get Instance(): AccountNames
