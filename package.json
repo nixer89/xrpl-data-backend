@@ -1,6 +1,6 @@
 {
   "name": "xrpl-token-tracker-backend",
-  "version": "1.9.7",
+  "version": "2.0.0",
   "description": "tracks periodically the latest issued token on the xrp ledger (every 10 minutes)",
   "main": "src/server.ts",
   "scripts": {
@@ -26,14 +26,9 @@
   "homepage": "https://github.com/nixer89/xrpl-token-tracker-backend#readme",
   "dependencies": {
     "console-stamp": "^0.2.10",
-    "fastify": "^2.15.3",
-    "fastify-compress": "^2.0.1",
-    "fastify-cors": "^3.0.3",
-    "fastify-helmet": "^3.0.2",
-    "http-proxy-agent": "^4.0.1",
-    "node-fetch": "^2.6.5",
+    "node-fetch": "^2.6.6",
     "node-schedule": "^1.3.3",
-    "xrpl": "^2.0.0"
+    "xrpl": "^2.0.1"
   },
   "devDependencies": {
     "@types/node": "^10.17.60",

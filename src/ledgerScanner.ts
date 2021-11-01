@@ -59,6 +59,7 @@ export class LedgerScanner {
 
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
         scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
+        console.log("started ledger scan schedule. Waiting now.");
     }
 
     async scheduleLoadingIssuerData(): Promise<void> {

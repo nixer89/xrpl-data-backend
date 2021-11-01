@@ -292,6 +292,7 @@ export class LedgerData {
             if(ledgerData) {
                 //console.log("ledger data loaded: " + JSON.stringify(ledgerData));
                 this.setLedgerData(ledgerData, load1);
+                console.log("loaded ledger data successfully")
             }
         } else {
           console.log("ledger data file does not exist yet.")

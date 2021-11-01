@@ -66,31 +66,6 @@ export class TokenCreation {
         }
     }
 
-    getTokenCreationDateFromCacheOnly(issuerCurrency): string {
-        if(this.tokenCreation.has(issuerCurrency) && this.tokenCreation.get(issuerCurrency) != null) {
-            //take it from cache
-            return this.tokenCreation.get(issuerCurrency);
-        } else {
-            return null
-        }
-    }
-
-    async getTokenCreationDate(issuer: string, currency: string): Promise<any> {
-        let issuerKey = issuer+"_"+currency;
-
-        if(this.isTokenInCache(issuerKey)) {
-            //take it from cache
-            return this.tokenCreation.get(issuerKey);
-        } else {
-            try {
-                await this.resolveTokenCreationDateFromXrplorer(issuer, currency);
-            } catch(err) {
-                console.log(JSON.stringify(err));
-                return null;
-            }
-        }
-    }
-
     async resolveTokenCreationDateFromXrplorer(issuer: string, currency: string): Promise<any> {
         let issuerKey = issuer+"_"+currency;
 

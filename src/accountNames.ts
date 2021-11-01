@@ -225,49 +225,6 @@ export class AccountNames {
         }   
     }
 
-    getUserName(xrplAccount:string): string {
-        if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null && this.xrpscanUserNames.get(xrplAccount).username.trim().length > 0)
-            return this.xrpscanUserNames.get(xrplAccount).username + "_[XRPScan]";
-
-        else if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null && this.bithompServiceNames.get(xrplAccount).username.trim().length > 0)
-            return this.bithompServiceNames.get(xrplAccount).username + "_[Bithomp]";
-        
-        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null && this.bithompUserNames.get(xrplAccount).username.trim().length > 0)
-            return this.bithompUserNames.get(xrplAccount).username + "_[Bithomp]";
-
-        else
-            //try to resolve user name - seems like it is a new one!
-            return null
-    }
-
-    getAccountData(xrplAccount:string): IssuerVerification {
-        if(this.xrpscanUserNames.has(xrplAccount) && this.xrpscanUserNames.get(xrplAccount) != null)
-            return this.xrpscanUserNames.get(xrplAccount);
-
-        else if(this.bithompServiceNames.has(xrplAccount) && this.bithompServiceNames.get(xrplAccount) != null)
-            return this.bithompServiceNames.get(xrplAccount);
-        
-        else if(this.bithompUserNames.has(xrplAccount) && this.bithompUserNames.get(xrplAccount) != null)
-            return this.bithompUserNames.get(xrplAccount);
-
-        else
-            //try to resolve user name - seems like it is a new one!
-            return null
-    }
-
-    getKycData(xrplAccount:string): boolean {
-        //first check the issuer account KYC status
-        if(this.kycMap && this.kycMap.has(xrplAccount) && this.kycMap.get(xrplAccount) != null && this.kycMap.get(xrplAccount))
-            return this.kycMap.get(xrplAccount)
-        //now check distributor account KYC status
-        else if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null)
-            return this.kycMap.get(this.kycDistributorMap.get(xrplAccount))
-        
-        //nothing found, no KYC!
-        else
-            return false;
-    }
-
     async initAccountName(xrplAccount:string): Promise<void> {
         if(this.bithompServiceNames.has(xrplAccount)) {
             return;
@@ -290,7 +247,8 @@ export class AccountNames {
             this.bithompUserNames.forEach((value, key, map) => {
                 bithompNames[key] = value;
             });
-            fs.writeFileSync("./../bithompUserNames.js", JSON.stringify(bithompNames));
+            fs.writeFileSync("./../bithompUserNames_new.js", JSON.stringify(bithompNames));
+            fs.renameSync("./../bithompUserNames_new.js", "./../bithompUserNames.js");
 
             console.log("saved " + this.bithompUserNames.size + " user names to file system");
         }
@@ -327,7 +285,8 @@ export class AccountNames {
             this.kycMap.forEach((value, key, map) => {
                 kycData[key] = value;
             });
-            fs.writeFileSync("./../kycData.js", JSON.stringify(kycData));
+            fs.writeFileSync("./../kycData_new.js", JSON.stringify(kycData));
+            fs.renameSync("./../kycData.js", "./../kycData.js");
 
             console.log("saved " + this.kycMap.size + " kyc data to file system");
         }

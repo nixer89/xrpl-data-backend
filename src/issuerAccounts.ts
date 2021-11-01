@@ -33,6 +33,7 @@ export class IssuerAccounts {
         this.ledgerScanner = LedgerScanner.Instance;
 
         await this.accountInfo.init();
+        await this.tokenCreation.init();
         await this.loadIssuerDataFromFS(load1);
     }
 
@@ -159,46 +160,7 @@ export class IssuerAccounts {
         this.addNewIssuer(issuer, 0, 0, 1, load1);
       }
     }
-    
-    private transformIssuersV1(issuers: Map<string, IssuerData>): any {
-      let transformedIssuers:any = {}
-    
-      issuers.forEach((data: IssuerData, key: string, map) => {
-        let acc:string = key.substring(0, key.indexOf("_"));
-        let currency:string = key.substring(key.indexOf("_")+1, key.length);
-        let issuerData:IssuerVerification = this.accountInfo.getAccountData(acc);
-        let creationDate:string = this.tokenCreation.getTokenCreationDateFromCacheOnly(key);
-
-        //set kyc data
-        if(!issuerData) {
-          issuerData = {
-            account: acc,
-            verified: false,
-            resolvedBy: null,
-            kyc : this.accountInfo.getKycData(acc),
-            created: creationDate
-          }
-        } else {
-          issuerData.kyc = this.accountInfo.getKycData(acc);
-          issuerData.created = creationDate
-        }
-    
-        if(data.offers > 0 && data.amount <= 0) {
-          //remove abandoned currencies with only offers
-          //console.log(acc + ": " + currency + ": " + JSON.stringify(data));
-        } else if(!transformedIssuers[acc]) {
-          transformedIssuers[acc] = {
-            data: issuerData,
-            tokens: [{currency: currency, amount: data.amount, trustlines: data.trustlines, offers: data.offers}]
-          }
-        } else {
-          transformedIssuers[acc].tokens.push({currency: currency, amount: data.amount, trustlines: data.trustlines, offers: data.offers});
-        }
-    
-      });
-    
-      return transformedIssuers;
-    }
+  
 
   public getIssuer_1():Map<string, IssuerData> {
     return this.issuers_1;
@@ -214,10 +176,6 @@ export class IssuerAccounts {
     else
       this.issuers_2.clear();
   }
-
-    public getLedgerTokensV1(load1:boolean): any {
-        return this.transformIssuersV1(new Map(load1 ? this.issuers_2 : this.issuers_1));
-    }
 
     private setIssuers(issuers: Map<string, IssuerData>, load1:boolean): void{
       if(load1)
@@ -251,7 +209,8 @@ export class IssuerAccounts {
                 issuerData["issuers"][key] = value;
             });
 
-            fs.writeFileSync("./../issuerData.js", JSON.stringify(issuerData));
+            fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
+            fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
 
             console.log("saved " + mapToSave.size + " issuer data to file system");
         } else {
