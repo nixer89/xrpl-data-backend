@@ -187,7 +187,7 @@ export class AccountNames {
     async resolveKycStatus(xrplAccount: string): Promise<void> {
         try {
             if(!this.kycMap.has(xrplAccount)) {
-                console.log("resolving kyc for: " + xrplAccount);
+                console.log("RESOLVING KYC FOR: " + xrplAccount);
                 let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount)
                 
                 if(kycResponse && kycResponse.ok) {

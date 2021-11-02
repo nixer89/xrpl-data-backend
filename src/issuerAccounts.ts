@@ -69,14 +69,6 @@ export class IssuerAccounts {
   
           if(amount >= 0) {
 
-            //only resolve date from issuer which have actually issued some amount
-            if(amount > 0 && !dateResolved && !this.tokenCreation.isTokenInCache(issuerKey)) {
-              //make it asynchronous!
-              console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuerKey);
-              this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer, currency);
-              dateResolved = true;
-            }
-
             //console.log("issuer: " + issuer);
             //console.log("balance: " + amount);
   
@@ -119,6 +111,14 @@ export class IssuerAccounts {
           //initialize user name to have faster access later on
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
           await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+
+          //only resolve date from issuer which have actually issued some amount
+          if(amount > 0 && !this.tokenCreation.isTokenInCache(issuer)) {
+            //make it asynchronous!
+            console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
+            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
+          }
+
         }
       }
     }

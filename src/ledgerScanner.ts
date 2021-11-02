@@ -234,8 +234,8 @@ export class LedgerScanner {
           this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
           //always save resolved user names to file system to make restart of server much faster
-          setTimeout(() => this.issuerAccount.saveBithompNamesToFS(), 10000);
-          setTimeout(() => this.issuerAccount.saveKycDataToFS(), 12000);
+          await this.issuerAccount.saveBithompNamesToFS();
+          await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
 

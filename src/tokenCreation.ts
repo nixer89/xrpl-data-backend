@@ -66,8 +66,10 @@ export class TokenCreation {
         }
     }
 
-    async resolveTokenCreationDateFromXrplorer(issuer: string, currency: string): Promise<any> {
-        let issuerKey = issuer+"_"+currency;
+    async resolveTokenCreationDateFromXrplorer(issuerKey:string): Promise<any> {
+        let splitValues:string[] = issuerKey.split("_");
+        let issuer = splitValues[0];
+        let currency = splitValues[1];
 
         try {
             //try to resolve it from xrplorer.com API
