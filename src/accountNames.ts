@@ -52,6 +52,9 @@ export class AccountNames {
 
         //XPUNK
         this.kycDistributorMap.set("rHEL3bM4RFsvF8kbQj3cya8YiDvjoEmxLq", "rnakpaiPo3ELjETRZxGmyRjcfTgvkRbF4q");
+
+        //SCS
+        this.kycDistributorMap.set("rHYr9XNQJf1Kury1wGkht7Hrb9d43PqSMw", "r9h9mkbZWxbWStY2JSaTgyZXJ93ctSUzyB");
     }
 
     public static get Instance(): AccountNames
