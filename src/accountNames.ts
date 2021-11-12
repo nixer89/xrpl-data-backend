@@ -55,6 +55,15 @@ export class AccountNames {
 
         //SCS
         this.kycDistributorMap.set("rHYr9XNQJf1Kury1wGkht7Hrb9d43PqSMw", "r9h9mkbZWxbWStY2JSaTgyZXJ93ctSUzyB");
+
+        //ZEN
+        this.kycDistributorMap.set("rD2C8cVUEdu1o6hiaouxzMpZELRYnVZnh4", "rPgJHaF44SXda465SJV8qphsgZNZ8QVHvn");
+
+        //Equilibrium
+        this.kycDistributorMap.set("rpakCr61Q92abPXJnVboKENmpKssWyHpwu", "r4j8qfTo2pBV7YLJMn5Uyga13vYBvikEc6");
+
+        //LOVE
+        this.kycDistributorMap.set("rDpdyF9LtYpwRdHZs8sghaPscE8rH9sgfs", "raebqdbssZx9bJaLFo3FtBRYu6UGqSQQv9");
     }
 
     public static get Instance(): AccountNames
