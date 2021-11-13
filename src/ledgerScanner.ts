@@ -265,17 +265,27 @@ export class LedgerScanner {
           let dirsWithLessThan32 = 0;
           let leastDir = 32;
           let dirs:any[] = ownerDirs[maxAccount];
+          let indexNumbers:any = {};
           
           for(let i = 0; i < dirs.length;i++) {
-            if(dirs[i] && dirs[i] && dirs[i].Indexes.length < 32)
+            if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes.length < 32)
               dirsWithLessThan32++;
 
-            if(dirs[i].Indexes.length < leastDir)
+            if(dirs[i] && dirs[i].Indexes &&dirs[i].Indexes.length < leastDir)
               leastDir = dirs[i].Indexes.length;
+
+            if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes) {
+              if(indexNumbers[dirs[i].Indexes.length])
+                indexNumbers[dirs[i].Indexes.length] = indexNumbers[dirs[i].Indexes.length] + 1;
+              else
+                indexNumbers[dirs[i].Indexes.length] = 1;
+            }
           }
 
           console.log("gap dirs: " + dirsWithLessThan32);
-          console.log("least dir: " + leastDir)
+          console.log("least dir: " + leastDir);
+          console.log("indexnumbers: " + JSON.stringify(indexNumbers));
+          console.log(indexNumbers);
     
           return true;
       
