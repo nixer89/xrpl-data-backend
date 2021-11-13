@@ -258,8 +258,23 @@ export class LedgerScanner {
             }
           }
 
-          console.log("agg with max dirs: " + maxAccount);
+          console.log("acc with max dirs: " + maxAccount);
           console.log("dirs: " + maxDirs);
+
+          //analyse dirs
+          let dirsWithLessThan32 = 0;
+          let leastDir = 32;
+          let dirs:any[] = ownerDirs[maxAccount];
+          for(let i = 0; i <= dirs.length;i++) {
+            if(dirs[i].Indexes.length < 32)
+              dirsWithLessThan32++;
+
+            if(dirs[i].Indexes.length < leastDir)
+              leastDir = dirs[i].Indexes.length;
+          }
+
+          console.log("gap dirs: " + dirsWithLessThan32);
+          console.log("least dir: " + leastDir)
     
           return true;
       
