@@ -265,8 +265,9 @@ export class LedgerScanner {
           let dirsWithLessThan32 = 0;
           let leastDir = 32;
           let dirs:any[] = ownerDirs[maxAccount];
-          for(let i = 0; i <= dirs.length;i++) {
-            if(dirs[i].Indexes.length < 32)
+          
+          for(let i = 0; i < dirs.length;i++) {
+            if(dirs[i] && dirs[i] && dirs[i].Indexes.length < 32)
               dirsWithLessThan32++;
 
             if(dirs[i].Indexes.length < leastDir)
