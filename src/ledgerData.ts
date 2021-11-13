@@ -8,6 +8,8 @@ export class LedgerData {
     private ledgerData_1: any;
     private ledgerData_2: any;
 
+    private ownerDirs:any = {};
+
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
     FLAG_262144:number = 262144;
@@ -64,6 +66,18 @@ export class LedgerData {
       for (var property in ledgerObject) {
         if (ledgerObject.hasOwnProperty(property)) {
           this.addAdditionalProperty(load1, ledgerObject, property);
+        }
+      }
+
+      //handle directory nodes
+      if("directorynode" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        if(ledgerObject.Owner) {
+          //we are an owner dir
+          if(this.ownerDirs[ledgerObject.Owner]) {
+            this.ownerDirs[ledgerObject.Owner].push(ledgerObject)
+          } else {
+            this.ownerDirs[ledgerObject.Owner] = [ledgerObject]
+          }
         }
       }
       
@@ -233,6 +247,14 @@ export class LedgerData {
         this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] = increaseBy;
     }
 
+    public getOwnerDir() {
+      return this.ownerDirs;
+    }
+
+    public clearOwnerDir() {
+      this.ownerDirs = {};
+    }
+
     public getLedgerData(load1: boolean) {
         if(load1)
             return this.ledgerData_1;
@@ -340,8 +362,6 @@ export class LedgerData {
       return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
   }  
 
-  
-
   isOfferFlagPassive(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
   }
@@ -350,13 +370,9 @@ export class LedgerData {
     return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
   }
 
-
-
   isSignerListFlagOneOwnerCount(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
   }
-
-
 
   isRippleStateFlagLowReserve(flags:number) {
     return flags && (flags & this.FLAG_65536) == this.FLAG_65536;

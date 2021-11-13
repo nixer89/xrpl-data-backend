@@ -48,7 +48,7 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
-        //await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
         if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
@@ -107,6 +107,7 @@ export class LedgerScanner {
             this.setLedgerCloseTimeMs(null);
             this.setLedgerIndex(null);
             this.setLedgerHash(null);
+            this.ledgerData.clearOwnerDir();
         }
       
         let ledger_data_command_binary:LedgerDataRequest = {
@@ -132,8 +133,8 @@ export class LedgerScanner {
       
         try { 
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
-              this.xrpljsClient = new Client("ws://127.0.0.1:6006");
-              //this.xrpljsClient = new Client("wss://xrplcluster.com");
+              //this.xrpljsClient = new Client("ws://127.0.0.1:6006");
+              this.xrpljsClient = new Client("wss://xrplcluster.com");
       
             try {
               await this.xrpljsClient.connect();
@@ -241,6 +242,24 @@ export class LedgerScanner {
 
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
+
+          //doing some owner dir magic
+          let ownerDirs = this.ledgerData.getOwnerDir();
+
+          let maxDirs = 0;
+          let maxAccount = "";
+
+          for (var property in ownerDirs) {
+            if (ownerDirs.hasOwnProperty(property)) {
+              if(ownerDirs[property].length > maxDirs) {
+                maxDirs = ownerDirs[property].length;
+                maxAccount = property;
+              }
+            }
+          }
+
+          console.log("agg with max dirs: " + maxAccount);
+          console.log("dirs: " + maxDirs);
     
           return true;
       
