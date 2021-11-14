@@ -258,6 +258,9 @@ export class LedgerScanner {
             }
           }
 
+          maxAccount= "rpP2JgiMyTF5jR5hLG3xHCPi1knBb1v9cM";
+          maxDirs = ownerDirs[maxAccount].length
+
           console.log("acc with max dirs: " + maxAccount);
           console.log("dirs: " + maxDirs);
 
