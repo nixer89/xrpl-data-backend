@@ -107,7 +107,6 @@ export class LedgerScanner {
             this.setLedgerCloseTimeMs(null);
             this.setLedgerIndex(null);
             this.setLedgerHash(null);
-            this.ledgerData.clearOwnerDir();
         }
       
         let ledger_data_command_binary:LedgerDataRequest = {
@@ -242,50 +241,6 @@ export class LedgerScanner {
 
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
-
-          //doing some owner dir magic
-          let ownerDirs = this.ledgerData.getOwnerDir();
-
-          let maxDirs = 0;
-          let maxAccount = "";
-
-          for (var property in ownerDirs) {
-            if (ownerDirs.hasOwnProperty(property)) {
-              if(ownerDirs[property].length > maxDirs) {
-                maxDirs = ownerDirs[property].length;
-                maxAccount = property;
-              }
-            }
-          }
-
-          console.log("acc with max dirs: " + maxAccount);
-          console.log("dirs: " + maxDirs);
-
-          //analyse dirs
-          let dirsWithLessThan32 = 0;
-          let leastDir = 32;
-          let dirs:any[] = ownerDirs[maxAccount];
-          let indexNumbers:any = {};
-          
-          for(let i = 0; i < dirs.length;i++) {
-            if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes.length < 32)
-              dirsWithLessThan32++;
-
-            if(dirs[i] && dirs[i].Indexes &&dirs[i].Indexes.length < leastDir)
-              leastDir = dirs[i].Indexes.length;
-
-            if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes) {
-              if(indexNumbers[dirs[i].Indexes.length])
-                indexNumbers[dirs[i].Indexes.length] = indexNumbers[dirs[i].Indexes.length] + 1;
-              else
-                indexNumbers[dirs[i].Indexes.length] = 1;
-            }
-          }
-
-          console.log("gap dirs: " + dirsWithLessThan32);
-          console.log("least dir: " + leastDir);
-          console.log("indexnumbers: " + JSON.stringify(indexNumbers));
-          console.log(indexNumbers);
     
           return true;
       
