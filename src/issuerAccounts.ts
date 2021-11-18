@@ -64,11 +64,6 @@ export class IssuerAccounts {
 
           amount = amount < 0 ? amount * -1 : amount;
           let issuerKey = issuer + "_" + currency;      
-          
-          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf" && amount > 0) {
-            console.log("###############################################")
-            console.log("FOUND ISSUER WITH AMOUNT: " + amount);
-          }
   
           if(amount >= 0) {
 
@@ -101,7 +96,6 @@ export class IssuerAccounts {
 
           await this.increaseOfferCount(issuer+"_"+currency, load1);
         }
-
       }
     }
     
@@ -116,11 +110,6 @@ export class IssuerAccounts {
         this.addExistingIssuer(issuer, amount, load1);
       } else {
         // add issuer now but remove him later if the issued value is 0!
-        if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
-          console.log("#############################################################")
-          console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER: " + issuer + " amount: " + amount + " load: " + JSON.stringify(0));
-          console.log("#############################################################")
-        }
         this.addNewIssuer(issuer, amount, 1, 0, load1);
 
         if(amount > 0) {
