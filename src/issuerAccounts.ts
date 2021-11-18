@@ -107,7 +107,19 @@ export class IssuerAccounts {
     
     private async addIssuer(issuer:string, amount:number, load1:boolean): Promise<void> {
       if(this.hasIssuer(issuer, load1)) {
-          this.addExistingIssuer(issuer, amount, load1);
+
+        if(this.getIssuerData(issuer, load1).amount == 0 && amount > 0) {
+          //initialize user name to have faster access later on
+          await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
+          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+
+          if(!this.tokenCreation.isTokenInCache(issuer)) {
+            console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
+            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
+          }
+        }
+
+        this.addExistingIssuer(issuer, amount, load1);
       } else {
         // add issuer now but remove him later if the issued value is 0!
         if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
@@ -116,11 +128,8 @@ export class IssuerAccounts {
           console.log("#############################################################")
         }
         this.addNewIssuer(issuer, amount, 1, 0, load1);
-      }
 
-      if(this.hasIssuer(issuer, load1)) {
-        //check if we have this issuer and if he has an amount of 0 and now > 0 -> actually issued some value, so resolve it!
-        if(this.getIssuerData(issuer, load1).amount == 0 && amount > 0) {
+        if(amount > 0) {
           //initialize user name to have faster access later on
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
           await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
