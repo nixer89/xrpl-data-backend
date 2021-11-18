@@ -110,13 +110,7 @@ export class IssuerAccounts {
 
         if(this.getIssuerData(issuer, load1).amount == 0 && amount > 0) {
           //initialize user name to have faster access later on
-          await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
-
-          if(!this.tokenCreation.isTokenInCache(issuer)) {
-            console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
-            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
-          }
+          await this.resolveIssuerInfos(issuer);
         }
 
         this.addExistingIssuer(issuer, amount, load1);
@@ -131,14 +125,18 @@ export class IssuerAccounts {
 
         if(amount > 0) {
           //initialize user name to have faster access later on
-          await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
-
-          if(!this.tokenCreation.isTokenInCache(issuer)) {
-            console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
-            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
-          }
+          await this.resolveIssuerInfos(issuer);
         }
+      }
+    }
+
+    private async resolveIssuerInfos(issuer): Promise<void> {
+      await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
+      await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+
+      if(!this.tokenCreation.isTokenInCache(issuer)) {
+        console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
+        this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
       }
     }
     
