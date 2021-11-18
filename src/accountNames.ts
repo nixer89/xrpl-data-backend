@@ -198,7 +198,13 @@ export class AccountNames {
 
     async resolveKycStatus(xrplAccount: string): Promise<void> {
         try {
+            if(xrplAccount === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")
+                console.log("################ RESOLVING KYC FOR rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ");
+
             if(!this.kycMap.has(xrplAccount)) {
+                if(xrplAccount === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")
+                    console.log("################ NOT IN KYC MAP rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ");
+
                 console.log("RESOLVING KYC FOR: " + xrplAccount);
                 let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount)
                 
@@ -212,6 +218,9 @@ export class AccountNames {
 
                     console.log("kycMap size: " + this.kycMap.size);
                 }
+            } else {
+                if(xrplAccount === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")
+                    console.log("################ IS ALREADY IN KYC MAP rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ");
             }
 
             //resolve distributor account status!

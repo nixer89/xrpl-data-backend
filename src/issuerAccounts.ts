@@ -41,8 +41,6 @@ export class IssuerAccounts {
 
       let rippleStates:any[] = ledgerState.filter(element => element.LedgerEntryType === 'RippleState');
 
-      let dateResolved:boolean = false;
-
       for(let i = 0; i < rippleStates.length; i++) {
         let amount:number = Number.parseFloat(rippleStates[i].Balance.value);
         let currency:string = rippleStates[i].Balance.currency;
@@ -107,6 +105,11 @@ export class IssuerAccounts {
           this.addExistingIssuer(issuer, amount, load1);
       } else {
         if(amount > 0) { //only add issuer if he actually has issued the token -> do not add zero balance trustlines
+          if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
+            console.log("#############################################################")
+            console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER")
+            console.log("#############################################################")
+          }
           this.addNewIssuer(issuer, amount, 1, 0, load1);
           //initialize user name to have faster access later on
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
@@ -115,6 +118,9 @@ export class IssuerAccounts {
           //only resolve date from issuer which have actually issued some amount
           if(amount > 0 && !this.tokenCreation.isTokenInCache(issuer)) {
             //make it asynchronous!
+            if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
+                  console.log("################ RESOLVING TOKEN CREATION FOR rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ");
+            }
             console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
             this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
           }
