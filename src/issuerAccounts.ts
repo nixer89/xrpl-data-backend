@@ -62,8 +62,18 @@ export class IssuerAccounts {
 
         if(issuer != null) {
 
+          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf") {
+            console.log("###############################################")
+            console.log("FOUND ISSUER");
+          }
+
           amount = amount < 0 ? amount * -1 : amount;
-          let issuerKey = issuer + "_" + currency;            
+          let issuerKey = issuer + "_" + currency;      
+          
+          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf") {
+            console.log("###############################################")
+            console.log("FOUND ISSUER WITH AMOUNT: " + amount);
+          }
   
           if(amount >= 0) {
 
@@ -125,6 +135,12 @@ export class IssuerAccounts {
             this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
           }
 
+        } else {
+          if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
+            console.log("#############################################################")
+            console.log("AMOUNT NULL")
+            console.log("#############################################################")
+          }
         }
       }
     }
