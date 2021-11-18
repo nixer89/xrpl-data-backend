@@ -147,11 +147,11 @@ export class LedgerScanner {
       
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
-          console.time("requesting binary");
-          console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
+          //console.time("requesting binary");
+          //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
           let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
-          console.log("length binary: " + messageBinary.result.state.length);
-          console.timeEnd("requesting binary");
+          //console.log("length binary: " + messageBinary.result.state.length);
+          //console.timeEnd("requesting binary");
                 
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
 
@@ -159,19 +159,19 @@ export class LedgerScanner {
       
           if(messageBinary && messageBinary.result && messageBinary.result.state && messageBinary.result.ledger_index) {
             let newledgerIndex:number = messageBinary.result.ledger_index;
-            console.log("marker: " + messageBinary.result.marker);
+            //console.log("marker: " + messageBinary.result.marker);
             let newMarker:unknown = messageBinary.result.marker;
 
-            console.log("newMarker: " + newMarker);
+            //console.log("newMarker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
             ledger_data_command_json.ledger_index = newledgerIndex;          
 
-            console.time("requesting json");
-            console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
+            //console.time("requesting json");
+            //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
-            console.log("length json: " + messageJson.result.state.length);
-            console.timeEnd("requesting json");
+            //console.log("length json: " + messageJson.result.state.length);
+            //console.timeEnd("requesting json");
 
             if(messageJson && messageJson.result && messageJson.result.state && messageJson.result.ledger_index == messageBinary.result.ledger_index && messageBinary.result.state.length == messageJson.result.state.length && messageBinary.result.marker == messageJson.result.marker) {
 
@@ -192,13 +192,13 @@ export class LedgerScanner {
                 }
               }
 
-              console.time("resolveLedgerData binary");
+              //console.time("resolveLedgerData binary");
               await this.ledgerData.resolveLedgerData(messageBinary.result.state, this.load1);
-              console.timeEnd("resolveLedgerData binary");
+              //console.timeEnd("resolveLedgerData binary");
               
-              console.time("resolveIssuerToken");
+              //console.time("resolveIssuerToken");
               await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
-              console.timeEnd("resolveIssuerToken");
+              //console.timeEnd("resolveIssuerToken");
             } else {
               throw "binary and json objects not the same!"
             }
