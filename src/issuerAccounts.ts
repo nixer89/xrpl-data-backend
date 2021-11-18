@@ -62,15 +62,10 @@ export class IssuerAccounts {
 
         if(issuer != null) {
 
-          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf") {
-            console.log("###############################################")
-            console.log("FOUND ISSUER");
-          }
-
           amount = amount < 0 ? amount * -1 : amount;
           let issuerKey = issuer + "_" + currency;      
           
-          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf") {
+          if(issuer === "rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf" && amount > 0) {
             console.log("###############################################")
             console.log("FOUND ISSUER WITH AMOUNT: " + amount);
           }
@@ -114,32 +109,25 @@ export class IssuerAccounts {
       if(this.hasIssuer(issuer, load1)) {
           this.addExistingIssuer(issuer, amount, load1);
       } else {
-        if(amount > 0) { //only add issuer if he actually has issued the token -> do not add zero balance trustlines
-          if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
-            console.log("#############################################################")
-            console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER")
-            console.log("#############################################################")
-          }
-          this.addNewIssuer(issuer, amount, 1, 0, load1);
+        // add issuer now but remove him later if the issued value is 0!
+        if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
+          console.log("#############################################################")
+          console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER")
+          console.log("#############################################################")
+        }
+        this.addNewIssuer(issuer, amount, 1, 0, load1);
+      }
+
+      if(this.hasIssuer(issuer, load1)) {
+        //check if we have this issuer and if he has an amount of 0 and now > 0 -> actually issued some value, so resolve it!
+        if(this.getIssuerData(issuer, load1).amount == 0 && amount > 0) {
           //initialize user name to have faster access later on
           await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
           await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
 
-          //only resolve date from issuer which have actually issued some amount
-          if(amount > 0 && !this.tokenCreation.isTokenInCache(issuer)) {
-            //make it asynchronous!
-            if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
-                  console.log("################ RESOLVING TOKEN CREATION FOR rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ");
-            }
+          if(!this.tokenCreation.isTokenInCache(issuer)) {
             console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
             this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
-          }
-
-        } else {
-          if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
-            console.log("#############################################################")
-            console.log("AMOUNT NULL")
-            console.log("#############################################################")
           }
         }
       }
