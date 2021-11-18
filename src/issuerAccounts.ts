@@ -112,7 +112,7 @@ export class IssuerAccounts {
         // add issuer now but remove him later if the issued value is 0!
         if(issuer.startsWith("rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf")) {
           console.log("#############################################################")
-          console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER")
+          console.log("ADDING rLC88EkvQUmVM3PVzDejTBzRGx1hKwBsUf ISSUER: " + issuer + " amount: " + amount + " load: " + JSON.stringify(0));
           console.log("#############################################################")
         }
         this.addNewIssuer(issuer, amount, 1, 0, load1);
@@ -216,7 +216,8 @@ export class IssuerAccounts {
             };
 
             mapToSave.forEach((value, key, map) => {
-                issuerData["issuers"][key] = value;
+                if(value.amount > 0)
+                  issuerData["issuers"][key] = value;
             });
 
             fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
