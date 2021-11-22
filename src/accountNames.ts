@@ -64,6 +64,9 @@ export class AccountNames {
 
         //LOVE
         this.kycDistributorMap.set("rDpdyF9LtYpwRdHZs8sghaPscE8rH9sgfs", "raebqdbssZx9bJaLFo3FtBRYu6UGqSQQv9");
+
+        //AFA
+        this.kycDistributorMap.set("ratAFAXeeKaVuAxuWB9W1LuXD5m7Aqf2BH", "ratAFANfrYBBcJetey1ogtafrUfwjWsxi6");
     }
 
     public static get Instance(): AccountNames
