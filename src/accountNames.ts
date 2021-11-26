@@ -76,10 +76,26 @@ export class AccountNames {
     }
 
     public async init(): Promise<void> {
-        scheduler.scheduleJob("reloadUserNames", {dayOfWeek: 1, hour: 12, minute: 0, second: 0}, () => this.resolveAllUserNames(true));
+        scheduler.scheduleJob("reloadUserNames1", {dayOfWeek: 1, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
+        scheduler.scheduleJob("reloadUserNames2", {dayOfWeek: 4, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
+        scheduler.scheduleJob("reloadKYC", {hour: 18, minute: 59, second: 0}, () => this.resetKyc());
         await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
         await this.loadKycDataFromFS();
+    }
+
+    public async resetKyc() {
+        try {
+            //reset all no KYC accounts
+            let iteratorMap2: Map<string, boolean> = new Map(this.kycMap);
+            iteratorMap2.forEach((value, key, map) => {
+                if(!value)
+                    this.kycMap.delete(key);
+            });
+        } catch(err) {
+            console.log(err);
+            console.log("some weird error happened while resetting KYC!");
+        }
     }
 
     public async resolveAllUserNames(deleteEmptyNames?: boolean): Promise<void> {
@@ -96,20 +112,11 @@ export class AccountNames {
                     if(value == null || value.username == null || value.username.trim().length == 0)
                         this.bithompUserNames.delete(key);
                 });
-
-                //reset all no KYC accounts
-                let iteratorMap2: Map<string, boolean> = new Map(this.kycMap);
-                iteratorMap2.forEach((value, key, map) => {
-                    if(!value)
-                        this.kycMap.delete(key);
-                });
             }
         } catch(err) {
             console.log(err);
             console.log("some weird error happened!");
         }
-        
-
     }
 
     public async loadBithompServiceNames() :Promise<void> {
