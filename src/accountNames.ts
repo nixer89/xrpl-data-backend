@@ -67,6 +67,9 @@ export class AccountNames {
 
         //AFA
         this.kycDistributorMap.set("ratAFAXeeKaVuAxuWB9W1LuXD5m7Aqf2BH", "ratAFANfrYBBcJetey1ogtafrUfwjWsxi6");
+
+        //DUCK
+        this.kycDistributorMap.set("rT5pAVAokKezWrjqnMBF3G8ah4fxVWVVx", "rNyPe9WWBcYGAMwdm4PP1Dj4M1wcjX4EAP");
     }
 
     public static get Instance(): AccountNames
