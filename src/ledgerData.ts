@@ -306,6 +306,17 @@ export class LedgerData {
         }
     }
 
+    public async saveOwnerDirs(ownerDirs:any): Promise<void> {
+      if(ownerDirs) {
+
+          fs.writeFileSync("./../ownerDirs.js", JSON.stringify(ownerDirs));
+
+          console.log("saved ownerDirs to file system");
+      } else {
+        console.log("ownerDirs is empty! Nothing saved");
+      }
+  }
+
     private async loadLedgerDataFromFS(load1:boolean): Promise<void> {
       try {
         console.log("loading ledger data from FS");

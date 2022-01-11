@@ -246,6 +246,8 @@ export class LedgerScanner {
           //doing some owner dir magic
           let ownerDirs = this.ledgerData.getOwnerDir();
 
+          await this.ledgerData.saveOwnerDirs(ownerDirs);
+
           let accountsWithOwnerDir:number = 0;
           let accountsWithMoreThanOneDir:number = 0;
           let maxDirs = 0;
