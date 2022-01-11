@@ -243,72 +243,78 @@ export class LedgerScanner {
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
 
-          //doing some owner dir magic
-          let ownerDirs = this.ledgerData.getOwnerDir();
+          try {
 
-          await this.ledgerData.saveOwnerDirs(ownerDirs);
+            //doing some owner dir magic
+            let ownerDirs = this.ledgerData.getOwnerDir();
 
-          let accountsWithOwnerDir:number = 0;
-          let accountsWithMoreThanOneDir:number = 0;
-          let maxDirs = 0;
-          let maxAccount = "";
-          let indexNumbers:any = {};
+            let accountsWithOwnerDir:number = 0;
+            let accountsWithMoreThanOneDir:number = 0;
+            let maxDirs = 0;
+            let maxAccount = "";
+            let indexNumbers:any = {};
 
-          for (var property in ownerDirs) {
-            if (ownerDirs.hasOwnProperty(property) && property === 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz') {
-              accountsWithOwnerDir++;
+            for (var property in ownerDirs) {
+              if (ownerDirs.hasOwnProperty(property) && property === 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz') {
+                accountsWithOwnerDir++;
 
-              if(ownerDirs[property].length > maxDirs) {
-                maxDirs = ownerDirs[property].length;
-                maxAccount = property;
-              }
+                if(ownerDirs[property].length > maxDirs) {
+                  maxDirs = ownerDirs[property].length;
+                  maxAccount = property;
+                }
 
-              if(ownerDirs[property].length > 1) {
-                accountsWithMoreThanOneDir++;
-                let accountDirs:any[] = ownerDirs[property];
+                if(ownerDirs[property].length > 1) {
+                  accountsWithMoreThanOneDir++;
+                  let accountDirs:any[] = ownerDirs[property];
 
-                for(let i = 0; i < accountDirs.length;i++) {
-                  if(accountDirs[i] && accountDirs[i].Indexes && accountDirs[i].Indexes) {
-                    if(indexNumbers[accountDirs[i].Indexes.length])
-                      indexNumbers[accountDirs[i].Indexes.length] = indexNumbers[accountDirs[i].Indexes.length] + 1;
-                    else
-                      indexNumbers[accountDirs[i].Indexes.length] = 1;
+                  for(let i = 0; i < accountDirs.length;i++) {
+                    if(accountDirs[i] && accountDirs[i].Indexes && accountDirs[i].Indexes) {
+                      if(indexNumbers[accountDirs[i].Indexes.length])
+                        indexNumbers[accountDirs[i].Indexes.length] = indexNumbers[accountDirs[i].Indexes.length] + 1;
+                      else
+                        indexNumbers[accountDirs[i].Indexes.length] = 1;
+                    }
                   }
                 }
               }
             }
+
+            console.log("acc with max dirs: " + maxAccount);
+            console.log("dirs: " + maxDirs);
+
+            //analyse dirs
+            let dirsWithLessThan32 = 0;
+            let leastDir = 32;
+            let dirs:any[] = ownerDirs[maxAccount];
+            
+            
+            for(let i = 0; i < dirs.length;i++) {
+              if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes.length < 32)
+                dirsWithLessThan32++;
+
+              if(dirs[i] && dirs[i].Indexes &&dirs[i].Indexes.length < leastDir)
+                leastDir = dirs[i].Indexes.length;
+
+              //if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes) {
+              //  if(indexNumbers[dirs[i].Indexes.length])
+              //    indexNumbers[dirs[i].Indexes.length] = indexNumbers[dirs[i].Indexes.length] + 1;
+              //  else
+              //    indexNumbers[dirs[i].Indexes.length] = 1;
+              //}
+            }
+
+            console.log("gap dirs: " + dirsWithLessThan32);
+            console.log("least dir: " + leastDir);
+            console.log("accounts with owner dirs: " + accountsWithOwnerDir);
+            console.log("accounts with more than one owner dir: " + accountsWithMoreThanOneDir);
+            console.log("indexnumbers: " + JSON.stringify(indexNumbers));
+            console.log(indexNumbers);
+
+            await this.ledgerData.saveOwnerDirs(ownerDirs);
+          } catch(err) {
+            //ignore
+            console.log(JSON.stringify(err));
           }
-
-          console.log("acc with max dirs: " + maxAccount);
-          console.log("dirs: " + maxDirs);
-
-          //analyse dirs
-          let dirsWithLessThan32 = 0;
-          let leastDir = 32;
-          let dirs:any[] = ownerDirs[maxAccount];
-          
-          
-          for(let i = 0; i < dirs.length;i++) {
-            if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes.length < 32)
-              dirsWithLessThan32++;
-
-            if(dirs[i] && dirs[i].Indexes &&dirs[i].Indexes.length < leastDir)
-              leastDir = dirs[i].Indexes.length;
-
-            //if(dirs[i] && dirs[i].Indexes && dirs[i].Indexes) {
-            //  if(indexNumbers[dirs[i].Indexes.length])
-            //    indexNumbers[dirs[i].Indexes.length] = indexNumbers[dirs[i].Indexes.length] + 1;
-            //  else
-            //    indexNumbers[dirs[i].Indexes.length] = 1;
-            //}
-          }
-
-          console.log("gap dirs: " + dirsWithLessThan32);
-          console.log("least dir: " + leastDir);
-          console.log("accounts with owner dirs: " + accountsWithOwnerDir);
-          console.log("accounts with more than one owner dir: " + accountsWithMoreThanOneDir);
-          console.log("indexnumbers: " + JSON.stringify(indexNumbers));
-          console.log(indexNumbers);
     
           return true;
       
