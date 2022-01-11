@@ -32,7 +32,6 @@ export class IssuerAccounts {
         this.tokenCreation = TokenCreation.Instance;
         this.ledgerScanner = LedgerScanner.Instance;
 
-        await this.accountInfo.init();
         await this.tokenCreation.init();
         await this.loadIssuerDataFromFS(load1);
     }
@@ -109,14 +108,14 @@ export class IssuerAccounts {
         if(amount > 0) { //only add issuer if he actually has issued the token -> do not add zero balance trustlines
           this.addNewIssuer(issuer, amount, 1, 0,load1);
           //initialize user name to have faster access later on
-          await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-          await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+          //await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
+          //await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
 
           //only resolve date from issuer which have actually issued some amount
           if(amount > 0 && !this.tokenCreation.isTokenInCache(issuer)) {
             //make it asynchronous!
             console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
-            this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
+            //this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
           }
 
         }
@@ -182,40 +181,6 @@ export class IssuerAccounts {
         this.issuers_1 = new Map(issuers);
       else
         this.issuers_2 = new Map(issuers);
-    }
-
-    public saveBithompNamesToFS(): Promise<void> {
-      return this.accountInfo.saveBithompUserNamesToFS();
-    }
-
-    public saveKycDataToFS(): Promise<void> {
-      return this.accountInfo.saveKycDataToFS();
-    }
-
-    public async saveIssuerDataToFS(load1:boolean): Promise<void> {
-        let mapToSave:Map<string, IssuerData> = new Map(load1 ? this.issuers_1 : this.issuers_2);
-        if(mapToSave && mapToSave.size > 0) {
-            let issuerData:any = {
-              "ledger_index": this.ledgerScanner.getLedgerIndexNew(),
-              "ledger_date": this.ledgerScanner.getLedgerCloseTimeNew(),
-              "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMsNew(),
-              "ledger_hash": this.ledgerScanner.getLedgerHashNew(),
-              "issuers": {
-
-              }
-            };
-
-            mapToSave.forEach((value, key, map) => {
-                issuerData["issuers"][key] = value;
-            });
-
-            fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
-            fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
-
-            console.log("saved " + mapToSave.size + " issuer data to file system");
-        } else {
-          console.log("issuer data is empty!");
-        }
     }
 
     private async loadIssuerDataFromFS(load1:boolean): Promise<void> {

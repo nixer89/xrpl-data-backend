@@ -197,9 +197,9 @@ export class LedgerScanner {
               await this.ledgerData.resolveLedgerData(messageBinary.result.state, this.load1);
               console.timeEnd("resolveLedgerData binary");
               
-              //console.time("resolveIssuerToken");
-              //await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
-              //console.timeEnd("resolveIssuerToken");
+              console.time("resolveIssuerToken");
+              await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
+              console.timeEnd("resolveIssuerToken");
             } else {
               throw "binary and json objects not the same!"
             }
