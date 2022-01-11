@@ -253,7 +253,7 @@ export class LedgerScanner {
           let indexNumbers:any = {};
 
           for (var property in ownerDirs) {
-            if (ownerDirs.hasOwnProperty(property)) {
+            if (ownerDirs.hasOwnProperty(property) && property === 'rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz') {
               accountsWithOwnerDir++;
 
               if(ownerDirs[property].length > maxDirs) {
