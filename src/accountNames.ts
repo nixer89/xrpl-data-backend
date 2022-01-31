@@ -70,6 +70,9 @@ export class AccountNames {
 
         //DUCK
         this.kycDistributorMap.set("rT5pAVAokKezWrjqnMBF3G8ah4fxVWVVx", "rNyPe9WWBcYGAMwdm4PP1Dj4M1wcjX4EAP");
+
+        //Daric Token
+        this.kycDistributorMap.set("rK9AtihZZYWAwZQnJCYzZnyW833vbcPXPf", "r4saqLswxQJRqUw6829X35Qv62dQAJqS1h");
     }
 
     public static get Instance(): AccountNames
