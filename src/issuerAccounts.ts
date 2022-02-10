@@ -60,7 +60,7 @@ export class IssuerAccounts {
             issuer = null; //can not determine issuer!
         }
 
-        if(issuer != null) {
+        if(issuer != null && issuer != 'rhrFfvzZAytd8UHPH87UHMgHQ18nnLbpgN') { //remove gatehub SGB hotwallet on their request
 
           amount = amount < 0 ? amount * -1 : amount;
           let issuerKey = issuer + "_" + currency;      
