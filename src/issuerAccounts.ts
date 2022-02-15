@@ -110,7 +110,7 @@ export class IssuerAccounts {
         this.addExistingIssuer(issuer, amount, load1);
       } else {
         // add issuer now but remove him later if the issued value is 0!
-        this.addNewIssuer(issuer, amount, 1, 0, load1);
+        this.addNewIssuer(issuer, amount, 1, 0, 1, load1);
 
         if(amount > 0) {
           //initialize user name to have faster access later on
@@ -136,11 +136,11 @@ export class IssuerAccounts {
         return this.issuers_2.has(issuer);
     }
     
-    private addNewIssuer(issuer:string, amount: number, trustlines: number, offers: number, load1:boolean): void {
+    private addNewIssuer(issuer:string, amount: number, trustlines: number, offers: number, holders:number, load1:boolean): void {
       if(load1)
-          this.issuers_1.set(issuer, {amount: amount, trustlines: trustlines, offers: offers});
+          this.issuers_1.set(issuer, {amount: amount, trustlines: trustlines, offers: offers, holders: holders});
       else
-          this.issuers_2.set(issuer, {amount: amount, trustlines: trustlines, offers: offers});
+          this.issuers_2.set(issuer, {amount: amount, trustlines: trustlines, offers: offers, holders: holders});
     }
     
     private getIssuerData(issuer:string, load1:boolean): IssuerData {
@@ -154,16 +154,16 @@ export class IssuerAccounts {
       let issuerData:IssuerData = this.getIssuerData(issuer, load1);
       let newAmount = issuerData.amount + amount
       //console.log("setting issuer old");
-      this.addNewIssuer(issuer, newAmount, ++issuerData.trustlines, issuerData.offers, load1);
+      this.addNewIssuer(issuer, newAmount, ++issuerData.trustlines, issuerData.offers, (amount > 0 ? ++issuerData.holders : issuerData.holders) ,load1);
     }
 
     private increaseOfferCount(issuer: string, load1: boolean) {
       if(this.hasIssuer(issuer, load1)) {
         let issuerData:IssuerData = this.getIssuerData(issuer, load1);
         //console.log("setting issuer old");
-        this.addNewIssuer(issuer, issuerData.amount, issuerData.trustlines, ++issuerData.offers, load1);
+        this.addNewIssuer(issuer, issuerData.amount, issuerData.trustlines, ++issuerData.offers, issuerData.holders, load1);
       } else {
-        this.addNewIssuer(issuer, 0, 0, 1, load1);
+        this.addNewIssuer(issuer, 0, 0, 1, 0, load1);
       }
     }
   

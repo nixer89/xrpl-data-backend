@@ -11,7 +11,8 @@ export interface IssuerAccount {
 export interface IssuerData {
     amount: number,
     trustlines: number,
-    offers: number
+    offers: number,
+    holders:number
 }
  
 export interface IssuerVerification {
