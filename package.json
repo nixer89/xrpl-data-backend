@@ -26,8 +26,10 @@
   "homepage": "https://github.com/nixer89/xrpl-token-tracker-backend#readme",
   "dependencies": {
     "console-stamp": "^0.2.10",
+    "JSONStream": "^1.3.5",
     "node-fetch": "^2.6.6",
     "node-schedule": "^1.3.3",
+    "numeral": "^2.0.6",
     "xrpl": "^2.0.1"
   },
   "devDependencies": {

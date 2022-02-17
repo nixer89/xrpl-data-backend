@@ -3,6 +3,7 @@ import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
+import { AccountData } from './accountData';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -28,6 +29,7 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
+    private accountData: AccountData;
 
     private constructor() {}
 
@@ -44,6 +46,7 @@ export class LedgerScanner {
     public async init(): Promise<void> {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
+        this.accountData = AccountData.Instance;
 
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
@@ -133,11 +136,11 @@ export class LedgerScanner {
         try { 
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
               this.xrpljsClient = new Client("ws://127.0.0.1:6006");
-              //this.xrpljsClient = new Client("wss://xrplcluster.com");
+              //this.xrpljsClient = new Client("wss://s2.ripple.com");
       
             try {
               await this.xrpljsClient.connect();
-              console.log("connected: " + JSON.stringify(this.xrpljsClient.isConnected()));
+              console.log("connected: " + JSON.stringify(this.xrpljsClient.getLedgerIndex()));
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
@@ -149,8 +152,7 @@ export class LedgerScanner {
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
           //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
-          let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
-          //console.log("length binary: " + messageBinary.result.state.length);
+          let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);          
           //console.timeEnd("requesting binary");
                 
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
@@ -170,8 +172,14 @@ export class LedgerScanner {
             //console.time("requesting json");
             //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
+            //console.log("length binary: " + messageBinary.result.state.length);
             //console.log("length json: " + messageJson.result.state.length);
             //console.timeEnd("requesting json");
+            //console.log("index binary: " + messageBinary.result.ledger_index);
+            //console.log("index json: " + messageJson.result.ledger_index);
+
+            //console.log("marker binary: " + messageBinary.result.marker);
+            //console.log("marker json: " + messageJson.result.marker);
 
             if(messageJson && messageJson.result && messageJson.result.state && messageJson.result.ledger_index == messageBinary.result.ledger_index && messageBinary.result.state.length == messageJson.result.state.length && messageBinary.result.marker == messageJson.result.marker) {
 
@@ -193,12 +201,14 @@ export class LedgerScanner {
               }
 
               //console.time("resolveLedgerData binary");
-              await this.ledgerData.resolveLedgerData(messageBinary.result.state, this.load1);
+              //await this.ledgerData.resolveLedgerData(messageBinary.result.state, this.load1);
               //console.timeEnd("resolveLedgerData binary");
               
               //console.time("resolveIssuerToken");
-              await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
+              //await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
               //console.timeEnd("resolveIssuerToken");
+
+              await this.accountData.resolveAccountData(messageJson);
             } else {
               throw "binary and json objects not the same!"
             }
