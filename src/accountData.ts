@@ -27,6 +27,7 @@ export class AccountData {
     public async resolveAccountData(wsMessage:any): Promise<void> {   
 
       const r = wsMessage;
+      this.calls++;
 
       if (this.ledger === null) {
         if (typeof r.error_message === 'undefined') {
@@ -38,6 +39,8 @@ export class AccountData {
           console.log(' -- Total XRP existing: ', numeral(parseInt(this.ledger.total_coins) / 1000000).format('0,0.000000'))
           console.log('')
 
+
+            
           let filename = this.ledger.ledger_index + '.json'
           let stats = {
             hash: this.ledger.hash,
@@ -46,18 +49,21 @@ export class AccountData {
             total_coins: parseInt(this.ledger.total_coins) / 1000000
           }
           this.transformStream = JSONStream.stringify('{\n  "stats": ' + JSON.stringify(stats) + ',\n  "balances": [\n    ', ',\n    ', '\n  ]\n}\n')
-          this.outputStream = fs.createWriteStream('./../ledgerdata/' + filename)
+          this.outputStream = fs.createWriteStream('./../accountdata/' + filename)
           this.transformStream.pipe(this.outputStream)
           this.outputStream.on('finish', function handleFinish () {
             console.log('')
             console.log('Done! wrote records:', this.records, 'to:', './data/' + filename)
             console.log('')
-            console.log('Now you can retrieve the stats for this ledger by running:')
-            console.log('  npm run stats ' + this.ledger.ledger_index)
-            console.log('')
-            process.exit(0)
-          })
+            fs.copyFileSync('./../accountdata/' + filename, './../accountdata/latest.json');
 
+            this.ledger = null
+            this.calls = 0
+            this.records = 0
+            this.lastMarker = ''
+            this.transformStream = null;
+            this.outputStream = null;
+          });
         }
       } else {
         //console.log("r.status: " + r.status);
