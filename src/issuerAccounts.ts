@@ -125,6 +125,7 @@ export class IssuerAccounts {
 
       if(!this.tokenCreation.isTokenInCache(issuer)) {
         console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
+        this.tokenCreation.setDummyValueInCache(issuer);
         this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
       }
     }

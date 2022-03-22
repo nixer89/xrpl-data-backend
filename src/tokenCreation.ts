@@ -25,6 +25,7 @@ export class TokenCreation {
     }
 
     private async appendIssuerCreationToFS(issuerKey:string, creation: any): Promise<void> {
+        this.tokenCreation.set(issuerKey, creation);
         fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
 
         console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
@@ -66,47 +67,39 @@ export class TokenCreation {
         }
     }
 
-    async resolveTokenCreationDateFromXrplorer(issuerKey:string): Promise<any> {
+    async resolveTokenCreationDateFromXrplorer(issuerKey:string): Promise<void> {
         let splitValues:string[] = issuerKey.split("_");
         let issuer = splitValues[0];
         let currency = splitValues[1];
 
+        
         try {
+            let issuerCreation = {date: "Unknown"};
+
             //try to resolve it from xrplorer.com API
             console.log("resolving: " + issuerKey);
+            
             let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
             
             if(xrplorerResponse && xrplorerResponse.ok) {
-                let issuerCreation:any = await xrplorerResponse.json();
+                issuerCreation = await xrplorerResponse.json();
         
-                console.log("resolved: " + JSON.stringify(issuerCreation));
-                
-                this.tokenCreation.set(issuerKey, issuerCreation);
-                this.appendIssuerCreationToFS(issuerKey, issuerCreation);
-
-                return issuerCreation;
-            } else {
-                
-                let issuerCreation:any = await xrplorerResponse.json();
-
-                if(issuerCreation && issuerCreation.error && "No results." == issuerCreation.error) {
-                    issuerCreation = {date: "Unknown"}
-
-                    this.tokenCreation.set(issuerKey, issuerCreation);
-                    this.appendIssuerCreationToFS(issuerKey, issuerCreation);
-
-                    return issuerCreation;
-                } else {
-                    return null;
-                }       
+                console.log("resolved: " + JSON.stringify(issuerCreation));   
             }
+
+            await this.appendIssuerCreationToFS(issuerKey, issuerCreation);
+
         } catch(err) {
-            console.log(JSON.stringify(err));
-            return null;
+            console.log("ERR RESOLVING TOKEN CREATION");
+            console.log(err);
         }
     }
 
     isTokenInCache(issuerTokenKey:string) {
         return this.tokenCreation && this.tokenCreation.has(issuerTokenKey) && this.tokenCreation.get(issuerTokenKey) != null;
+    }
+
+    setDummyValueInCache(issuerTokenKey:string) {
+        this.tokenCreation.set(issuerTokenKey, {date: "Resolving..."});
     }
 }
