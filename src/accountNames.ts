@@ -73,6 +73,9 @@ export class AccountNames {
 
         //Daric Token
         this.kycDistributorMap.set("rK9AtihZZYWAwZQnJCYzZnyW833vbcPXPf", "r4saqLswxQJRqUw6829X35Qv62dQAJqS1h");
+
+        //XRdoge
+        this.kycDistributorMap.set("rLqUC2eCPohYvJCEBJ77eCCqVL2uEiczjA", "rJyeLbeNKrMB2ZVcvqLQLQtB2tsGSw3u1F");
     }
 
     public static get Instance(): AccountNames
