@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import consoleStamp = require("console-stamp");
 import { AccountNames } from './accountNames';
-import { IssuerData, IssuerVerification } from "./util/types"
+import { IssuerData } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
 import { TokenCreation } from './tokenCreation';
 
