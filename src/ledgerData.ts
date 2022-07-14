@@ -276,11 +276,11 @@ export class LedgerData {
           this.ledgerData_2 = ledgerData;
       }
 
-    public async saveLedgerDataToFS(load1:boolean): Promise<void> {
+    public async saveLedgerDataToFS(load1:boolean, ledgerIndex: number): Promise<void> {
         let ledgerDataToSave:string = JSON.stringify(load1 ? this.ledgerData_1 : this.ledgerData_2);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
 
-            let fileName = "./../data/" + this.ledgerScanner.getLedgerIndex() + ".js"
+            let fileName = "./../data/" + ledgerIndex + ".js"
 
             fs.writeFileSync(fileName, ledgerDataToSave);
 

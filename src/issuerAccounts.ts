@@ -204,7 +204,7 @@ export class IssuerAccounts {
 
      */
 
-    public async saveIssuerDataToFS(load1:boolean): Promise<void> {
+    public async saveIssuerDataToFS(load1:boolean, ledgerIndex: number): Promise<void> {
         let mapToSave:Map<string, IssuerData> = new Map(load1 ? this.issuers_1 : this.issuers_2);
         if(mapToSave && mapToSave.size > 0) {
             let issuerData:any = {
@@ -222,7 +222,7 @@ export class IssuerAccounts {
                   issuerData["issuers"][key] = value;
             });
 
-            let fileName = "./../tokens/" + this.ledgerScanner.getLedgerIndex() + ".js"
+            let fileName = "./../tokens/" + ledgerIndex + ".js"
 
             fs.writeFileSync(fileName, JSON.stringify(issuerData));
             //fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
