@@ -247,7 +247,7 @@ export class LedgerData {
     }
 
     public getLedgerDataV1(load1: boolean): any[] {
-      let dataToUse = JSON.parse(JSON.stringify(load1 ? this.ledgerData_2 : this.ledgerData_1))
+      let dataToUse = JSON.parse(JSON.stringify(load1 ? this.ledgerData_1 : this.ledgerData_2))
       let totalBytes:number = 0;
       for (let data in dataToUse) {
         if (dataToUse.hasOwnProperty(data)) {
