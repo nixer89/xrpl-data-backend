@@ -11,8 +11,8 @@ export class IssuerAccounts {
 
     private static _instance: IssuerAccounts;
     
-    private accountInfo:AccountNames;
-    private tokenCreation:TokenCreation;
+    //private accountInfo:AccountNames;
+    //private tokenCreation:TokenCreation;
 
     private ledgerScanner:LedgerScanner;
 
@@ -28,13 +28,13 @@ export class IssuerAccounts {
     }
 
     public async init(load1:boolean): Promise<void> {
-        this.accountInfo = AccountNames.Instance;
-        this.tokenCreation = TokenCreation.Instance;
+        //this.accountInfo = AccountNames.Instance;
+        //this.tokenCreation = TokenCreation.Instance;
         this.ledgerScanner = LedgerScanner.Instance;
 
-        await this.accountInfo.init();
-        await this.tokenCreation.init();
-        await this.loadIssuerDataFromFS(load1);
+        //await this.accountInfo.init();
+        //await this.tokenCreation.init();
+        //await this.loadIssuerDataFromFS(load1);
     }
 
     public async resolveIssuerToken(ledgerState:any, load1:boolean): Promise<void> {   
@@ -104,7 +104,7 @@ export class IssuerAccounts {
 
         if(this.getIssuerData(issuer, load1).amount == 0 && amount > 0) {
           //initialize user name to have faster access later on
-          await this.resolveIssuerInfos(issuer);
+          //await this.resolveIssuerInfos(issuer);
         }
 
         this.addExistingIssuer(issuer, amount, load1);
@@ -114,11 +114,12 @@ export class IssuerAccounts {
 
         if(amount > 0) {
           //initialize user name to have faster access later on
-          await this.resolveIssuerInfos(issuer);
+          //await this.resolveIssuerInfos(issuer);
         }
       }
     }
 
+    /**
     private async resolveIssuerInfos(issuer): Promise<void> {
       await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
       await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
@@ -129,6 +130,7 @@ export class IssuerAccounts {
         this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
       }
     }
+    */
     
     private hasIssuer(issuer: string, load1:boolean) : boolean {
       if(load1)
@@ -191,6 +193,7 @@ export class IssuerAccounts {
         this.issuers_2 = new Map(issuers);
     }
 
+    /**
     public saveBithompNamesToFS(): Promise<void> {
       return this.accountInfo.saveBithompUserNamesToFS();
     }
@@ -198,6 +201,8 @@ export class IssuerAccounts {
     public saveKycDataToFS(): Promise<void> {
       return this.accountInfo.saveKycDataToFS();
     }
+
+     */
 
     public async saveIssuerDataToFS(load1:boolean): Promise<void> {
         let mapToSave:Map<string, IssuerData> = new Map(load1 ? this.issuers_1 : this.issuers_2);
@@ -217,8 +222,10 @@ export class IssuerAccounts {
                   issuerData["issuers"][key] = value;
             });
 
-            fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
-            fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
+            let fileName = "./../tokens/" + this.ledgerScanner.getLedgerIndex() + ".js"
+
+            fs.writeFileSync(fileName, JSON.stringify(issuerData));
+            //fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
 
             console.log("saved " + mapToSave.size + " issuer data to file system");
         } else {

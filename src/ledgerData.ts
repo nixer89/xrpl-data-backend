@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { LedgerScanner } from './ledgerScanner';
 import { AdaptedLedgerObject } from './util/types';
 
 export class LedgerData {
@@ -7,6 +8,8 @@ export class LedgerData {
 
     private ledgerData_1: any;
     private ledgerData_2: any;
+
+    private ledgerScanner:LedgerScanner;
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -27,7 +30,8 @@ export class LedgerData {
     }
 
     public async init(load1:boolean): Promise<void> {
-        await this.loadLedgerDataFromFS(load1);
+        //await this.loadLedgerDataFromFS(load1);
+        this.ledgerScanner = LedgerScanner.Instance;
     }
 
     public async resolveLedgerData(ledgerState:any, load1:boolean): Promise<void> {
@@ -275,6 +279,10 @@ export class LedgerData {
     public async saveLedgerDataToFS(load1:boolean): Promise<void> {
         let ledgerDataToSave:string = JSON.stringify(load1 ? this.ledgerData_1 : this.ledgerData_2);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
+
+            let fileName = "./../data/" + this.ledgerScanner.getLedgerIndex() + ".js"
+
+            fs.writeFileSync(fileName, ledgerDataToSave);
 
             fs.writeFileSync("./../ledgerData.js", ledgerDataToSave);
 

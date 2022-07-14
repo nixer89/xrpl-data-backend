@@ -48,6 +48,14 @@ export class LedgerScanner {
         await this.issuerAccount.init(this.load1);
         await this.ledgerData.init(this.load1);
 
+        //read first ledger!
+        await this.readLedgerData(32750, null, null, 0);
+
+        for(let i = 100000; i < 72998332; i = i + 100000) {
+          await this.readLedgerData(i, null, null, 0);
+        }
+
+        /**
         await this.readLedgerData(null, null, null, 0);
 
         //load issuer data if it could not be read from the file system
@@ -60,6 +68,7 @@ export class LedgerScanner {
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
         scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
         console.log("started ledger scan schedule. Waiting now.");
+         */
     }
 
     async scheduleLoadingIssuerData(): Promise<void> {
@@ -234,8 +243,8 @@ export class LedgerScanner {
           this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
           //always save resolved user names to file system to make restart of server much faster
-          await this.issuerAccount.saveBithompNamesToFS();
-          await this.issuerAccount.saveKycDataToFS();
+          //await this.issuerAccount.saveBithompNamesToFS();
+          //await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS(this.load1);
           await this.ledgerData.saveLedgerDataToFS(this.load1);
 
