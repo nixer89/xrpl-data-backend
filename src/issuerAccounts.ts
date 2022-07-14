@@ -250,7 +250,7 @@ export class IssuerAccounts {
         if(returnValue ) {
             let fileName = "./../tokens/" + ledgerIndex + ".js"
 
-            fs.writeFileSync(fileName, returnValue);
+            fs.writeFileSync(fileName, JSON.stringify(returnValue));
             //fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
 
             console.log("saved " + returnValue.issuers.size + " issuer data to file system");

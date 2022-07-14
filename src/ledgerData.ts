@@ -297,7 +297,7 @@ export class LedgerData {
 
             let fileName = "./../data/" + ledgerIndex + ".js"
 
-            fs.writeFileSync(fileName, returnValue);
+            fs.writeFileSync(fileName, JSON.stringify(returnValue));
 
             console.log("saved ledger data to file system");
         } else {
