@@ -204,30 +204,56 @@ export class IssuerAccounts {
 
      */
 
-    public async saveIssuerDataToFS(load1:boolean, ledgerIndex: number): Promise<void> {
-        let mapToSave:Map<string, IssuerData> = new Map(load1 ? this.issuers_1 : this.issuers_2);
-        if(mapToSave && mapToSave.size > 0) {
-            let issuerData:any = {
-              "ledger_index": this.ledgerScanner.getLedgerIndexNew(),
-              "ledger_date": this.ledgerScanner.getLedgerCloseTimeNew(),
-              "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMsNew(),
-              "ledger_hash": this.ledgerScanner.getLedgerHashNew(),
-              "issuers": {
+    public getTokenIssuer(load1:boolean):Map<string, IssuerData> {
+      return load1 ? this.issuers_1 : this.issuers_2;
+    }
 
-              }
-            };
+    public getLedgerTokensV1(load1:boolean): any {
+      return this.transformIssuersV1(new Map(this.getTokenIssuer(load1)));
+    }
 
-            mapToSave.forEach((value, key, map) => {
-                if(value.amount > 0)
-                  issuerData["issuers"][key] = value;
-            });
+    private transformIssuersV1(issuers: Map<string, IssuerData>): any {
+      let transformedIssuers:any = {}
+    
+      issuers.forEach((data: IssuerData, key: string, map) => {
 
+        let acc:string = key.substring(0, key.indexOf("_"));
+        let currency:string = key.substring(key.indexOf("_")+1, key.length);
+    
+        if(data.offers > 0 && data.amount <= 0) {
+          //remove abandoned currencies with only offers
+          //console.log(acc + ": " + currency + ": " + JSON.stringify(data));
+        } else if(!transformedIssuers[acc]) {
+          transformedIssuers[acc] = {
+            tokens: [{currency: currency, amount: data.amount, trustlines: data.trustlines, holders: data.holders, offers: data.offers}]
+          }
+        } else {
+          transformedIssuers[acc].tokens.push({currency: currency, amount: data.amount, trustlines: data.trustlines, holders: data.holders, offers: data.offers});
+        }
+      });
+    
+      return transformedIssuers;
+    }
+
+    public async saveIssuerDataToFS(load1:boolean, ledgerIndex: number, hash:string, closeTime: string, closeTimeMs: number,): Promise<void> {
+
+        let issuers = this.getLedgerTokensV1(load1);
+
+        let returnValue = {
+          ledger_index: ledgerIndex,
+          ledger_hash: hash,
+          ledger_close: closeTime,
+          ledger_close_ms: closeTimeMs,
+          issuers: issuers
+        }
+
+        if(returnValue ) {
             let fileName = "./../tokens/" + ledgerIndex + ".js"
 
-            fs.writeFileSync(fileName, JSON.stringify(issuerData));
+            fs.writeFileSync(fileName, returnValue);
             //fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
 
-            console.log("saved " + mapToSave.size + " issuer data to file system");
+            console.log("saved " + returnValue.issuers.size + " issuer data to file system");
         } else {
           console.log("issuer data is empty!");
         }

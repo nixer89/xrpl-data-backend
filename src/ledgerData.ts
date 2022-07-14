@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { IssuerAccounts } from './issuerAccounts';
 import { LedgerScanner } from './ledgerScanner';
 import { AdaptedLedgerObject } from './util/types';
 
@@ -9,7 +10,8 @@ export class LedgerData {
     private ledgerData_1: any;
     private ledgerData_2: any;
 
-    private ledgerScanner:LedgerScanner;
+    private issuerAccount:IssuerAccounts;
+
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -31,7 +33,7 @@ export class LedgerData {
 
     public async init(load1:boolean): Promise<void> {
         //await this.loadLedgerDataFromFS(load1);
-        this.ledgerScanner = LedgerScanner.Instance;
+        this.issuerAccount = IssuerAccounts.Instance;
     }
 
     public async resolveLedgerData(ledgerState:any, load1:boolean): Promise<void> {
@@ -276,13 +278,26 @@ export class LedgerData {
           this.ledgerData_2 = ledgerData;
       }
 
-    public async saveLedgerDataToFS(load1:boolean, ledgerIndex: number): Promise<void> {
-        let ledgerDataToSave:string = JSON.stringify(load1 ? this.ledgerData_1 : this.ledgerData_2);
-        if(ledgerDataToSave && ledgerDataToSave.length > 0) {
+    public async saveLedgerDataToFS(load1:boolean, ledgerIndex: number, hash:string, closeTime: string, closeTimeMs: number): Promise<void> {
+
+        let ledgerDataObjects: any[] = await this.getLedgerDataV1(load1);
+        //console.log("ledgerDataObjects: " + JSON.stringify(ledgerDataObjects));
+
+        let returnValue = {
+          ledger_index: ledgerIndex,
+          ledger_hash: hash,
+          ledger_close: closeTime,
+          ledger_close_ms: closeTimeMs,
+          ledger_size: ledgerDataObjects[0],
+          sizeType: "B",
+          ledger_data: ledgerDataObjects[1]
+        }
+
+        if(returnValue) {
 
             let fileName = "./../data/" + ledgerIndex + ".js"
 
-            fs.writeFileSync(fileName, ledgerDataToSave);
+            fs.writeFileSync(fileName, returnValue);
 
             console.log("saved ledger data to file system");
         } else {

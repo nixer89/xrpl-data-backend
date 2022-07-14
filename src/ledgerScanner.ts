@@ -245,8 +245,8 @@ export class LedgerScanner {
           //always save resolved user names to file system to make restart of server much faster
           //await this.issuerAccount.saveBithompNamesToFS();
           //await this.issuerAccount.saveKycDataToFS();
-          await this.issuerAccount.saveIssuerDataToFS(this.load1, ledgerIndex);
-          await this.ledgerData.saveLedgerDataToFS(this.load1, ledgerIndex);
+          await this.issuerAccount.saveIssuerDataToFS(this.load1, ledgerIndex,  ledgerInfo.result.ledger_hash, ledgerInfo.result.ledger.close_time_human, ledgerInfo.result.ledger.close_time);
+          await this.ledgerData.saveLedgerDataToFS(this.load1, ledgerIndex, ledgerInfo.result.ledger_hash, ledgerInfo.result.ledger.close_time_human, ledgerInfo.result.ledger.close_time);
 
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
