@@ -10,7 +10,7 @@ consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 // Run the server!
 const start = async () => {
   setTimeout(() => {
-    selfAssessments.init();
+    //selfAssessments.init();
     ledgerScanner.init();
   },0);
 }
