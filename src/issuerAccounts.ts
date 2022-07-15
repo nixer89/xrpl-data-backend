@@ -60,10 +60,10 @@ export class IssuerAccounts {
             issuer = null; //can not determine issuer!
         }
 
-        if(issuer != null && issuer != 'rhrFfvzZAytd8UHPH87UHMgHQ18nnLbpgN') { //remove gatehub SGB hotwallet on their request
+        if(issuer != null && issuer != 'rhrFfvzZAytd8UHPH87UHMgHQ18nnLbpgN' && issuer != "rG9Fo4mgx5DEZp7zKUEchs3R3jSMbx3NhR") {  //remove gatehub issuer for SGB on their request and LCC fake issuer
 
           amount = amount < 0 ? amount * -1 : amount;
-          let issuerKey = issuer + "_" + currency;      
+          let issuerKey = issuer + "_" + currency;
   
           if(amount >= 0) {
 

@@ -220,7 +220,7 @@ export class AccountNames {
             if(!this.kycMap.has(xrplAccount)) {
 
                 console.log("RESOLVING KYC FOR: " + xrplAccount);
-                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount)
+                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount + "?include_globalid=true")
                 
                 if(kycResponse && kycResponse.ok) {
                     let kycInfo:any = await kycResponse.json();
@@ -238,7 +238,7 @@ export class AccountNames {
             if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null && !this.kycMap.has(this.kycDistributorMap.get(xrplAccount))) {
                 let distributorAccount:string = this.kycDistributorMap.get(xrplAccount);
                 console.log("resolving kyc for distributor account: " + distributorAccount);
-                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + distributorAccount)
+                let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + distributorAccount + "?include_globalid=true")
                 
                 if(kycResponse && kycResponse.ok) {
                     let kycInfo:any = await kycResponse.json();
