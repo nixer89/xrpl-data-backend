@@ -51,7 +51,7 @@ export class LedgerScanner {
         //read first ledger!
         //await this.readLedgerData(32570, null, null, 0);
 
-        for(let i = 50000; i < 73051000; i = i + 100000) {
+        for(let i = 75000; i < 73080000; i = i + 100000) {
           await this.readLedgerData(i, null, null, 0);
         }
 
