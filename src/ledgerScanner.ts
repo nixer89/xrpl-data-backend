@@ -50,9 +50,10 @@ export class LedgerScanner {
 
         //read first ledger!
         //await this.readLedgerData(32570, null, null, 0);
+        let missingLedgers:number[] = [73100000,73150000,73175000,73200000,73250000,73275000,73300000,73350000,73375000,73400000,73450000,73475000,73500000,73550000,73575000,73600000,73650000,73675000,73700000,73750000,73775000,73800000,73850000,73875000,73900000,73950000,73975000,74000000,74050000,74075000,74100000,74150000,74175000,74200000,74250000,74275000,74300000]
 
-        for(let i = 125000; i < 74338388; i = i + 100000) {
-          await this.readLedgerData(i, null, null, 0);
+        for(let i = 0; i < missingLedgers.length-1; i++) {
+          await this.readLedgerData(missingLedgers[i], null, null, 0);
         }
 
         /**
@@ -141,8 +142,8 @@ export class LedgerScanner {
       
         try { 
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
-              this.xrpljsClient = new Client("ws://127.0.0.1:6006");
-              //this.xrpljsClient = new Client("wss://xrplcluster.com");
+              //this.xrpljsClient = new Client("ws://127.0.0.1:6006");
+              this.xrpljsClient = new Client("wss://xrplcluster.com");
       
             try {
               await this.xrpljsClient.connect();
