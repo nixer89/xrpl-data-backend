@@ -51,9 +51,9 @@ export class LedgerScanner {
         //read first ledger!
         //await this.readLedgerData(32570, null, null, 0);
 
-        let missingLedgers:number[] = [74300000,74350000,74375000,74400000]
+        let missingLedgers:number[] = [74400000]
 
-        for(let i = 0; i < missingLedgers.length-1; i++) {
+        for(let i = 0; i < missingLedgers.length; i++) {
           await this.readLedgerData(missingLedgers[i], null, null, 0);
         }
 
