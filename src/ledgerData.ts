@@ -77,8 +77,10 @@ export class LedgerData {
 
         if(ledgerObject["Owner"])
           this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", "0", 1);
-        else
+        else if (ledgerObject["TakerGetsCurrency"])
           this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", "0", 1);
+        else
+          this.increaseCountForProperty(load1, ledgerObject, "page_sizes", "0", 1);
       }
 
       if("ledgerhashes" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["Hashes"]) {
@@ -144,8 +146,10 @@ export class LedgerData {
           if("directorynode" === ledgerObject.LedgerEntryType.toLowerCase()) {
             if(ledgerObject["Owner"]) {
               this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", ledgerObject[property].length+"", 1);
-            } else {
+            } else if(ledgerObject["TakerGetsCurrency"]) {
               this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", ledgerObject[property].length+"", 1);
+            } else {
+              this.increaseCountForProperty(load1, ledgerObject, "page_sizes", ledgerObject[property].length+"", 1);
             }
           } else {
             this.increaseCountForProperty(load1, ledgerObject, "page_sizes", ledgerObject[property].length+"", 1);
