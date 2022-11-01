@@ -18,6 +18,8 @@ export class LedgerData {
     FLAG_8388608:number = 8388608;
     FLAG_16777216:number = 16777216;
 
+    FLAG_SELL_NFT:number = 0x00000001;
+
     private constructor() { }
 
     public static get Instance(): LedgerData
@@ -66,39 +68,27 @@ export class LedgerData {
           this.addAdditionalProperty(load1, ledgerObject, property);
         }
       }
-      
-      /**
-      //account root
-      this.addAdditionalProperty(load1, ledgerObject, "AccountTxnID");
-      this.addAdditionalProperty(load1, ledgerObject, "Domain");
-      this.addAdditionalProperty(load1, ledgerObject, "EmailHash");
-      this.addAdditionalProperty(load1, ledgerObject, "MessageKey");
-      this.addAdditionalProperty(load1, ledgerObject, "RegularKey");
-      this.addAdditionalProperty(load1, ledgerObject, "TransferRate");
-      this.addAdditionalProperty(load1, ledgerObject, "InvoiceID");
-      this.addAdditionalProperty(load1, ledgerObject, "TicketCount");
-      this.addAdditionalProperty(load1, ledgerObject, "TickSize");
-      this.addAdditionalProperty(load1, ledgerObject, "WalletLocator");
-      this.addAdditionalProperty(load1, ledgerObject, "WalletSize");
 
-      //check
-      this.addAdditionalProperty(load1, ledgerObject, "DestinationNode");
-      this.addAdditionalProperty(load1, ledgerObject, "DestinationTag");
-      this.addAdditionalProperty(load1, ledgerObject, "Expiration");
-      this.addAdditionalProperty(load1, ledgerObject, "SourceTag");
+      if("nftokenpage" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["NFTokens"]) {
+        this.increaseCountForProperty(load1, ledgerObject, "nftoken_page_sizes","0", 1);
+      }
 
-      //Escrows
-      this.addAdditionalProperty(load1, ledgerObject, "Condition");
-      this.addAdditionalProperty(load1, ledgerObject, "CancelAfter");
-      this.addAdditionalProperty(load1, ledgerObject, "FinishAfter");
+      if("directorynode" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["Indexes"]) {
 
-      //RippleState
-      this.addAdditionalProperty(load1, ledgerObject, "LowQualityIn");
-      this.addAdditionalProperty(load1, ledgerObject, "LowQualityOut");
-      this.addAdditionalProperty(load1, ledgerObject, "HighQualityIn");
-      this.addAdditionalProperty(load1, ledgerObject, "HighQualityOut");
-      **/
-      
+        if(ledgerObject["Owner"])
+          this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", "0", 1);
+        else
+          this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", "0", 1);
+      }
+
+      if("ledgerhashes" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["Hashes"]) {
+        this.increaseCountForProperty(load1, ledgerObject, "ledger_hashes_array_sizes", "0", 1);
+      }
+
+      if("signerlist" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["SignerEntries"]) {
+        this.increaseCountForProperty(load1, ledgerObject, "signer_list_sizes", "0", 1);
+      }
+
     }
 
     addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
@@ -140,6 +130,37 @@ export class LedgerData {
         if("TakerPays" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
           this.increaseCountForProperty(load1, ledgerObject, "special_data", "XrpTotal", Number(ledgerObject[property]));
+        }
+
+        if("NFTokens" === property) {
+          //count not owner count!
+          this.increaseCountForProperty(load1, ledgerObject, "special_data", "NftTotal", ledgerObject[property].length);
+
+          this.increaseCountForProperty(load1, ledgerObject, "nftoken_page_sizes", ledgerObject[property].length+"", 1);
+        }
+
+        if("Indexes" === property) {
+          if(ledgerObject["Owner"]) {
+            this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", ledgerObject[property].length+"", 1);
+          } else if(ledgerObject["ExchangeRate"]) {
+            this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", ledgerObject[property].length+"", 1);
+          } else {
+            this.increaseCountForProperty(load1, ledgerObject, "page_sizes", ledgerObject[property].length+"", 1);
+          }
+        }
+
+        if("Hashes" === property) {
+          //count not owner count!
+          this.increaseCountForProperty(load1, ledgerObject, "special_data", "LedgerHashesTotal", ledgerObject[property].length);
+
+          this.increaseCountForProperty(load1, ledgerObject, "ledger_hashes_array_sizes", ledgerObject[property].length+"", 1);
+        }
+
+        if("SignerEntries" === property) {
+          //count not owner count!
+          this.increaseCountForProperty(load1, ledgerObject, "special_data", "SignerListEntryTotals", ledgerObject[property].length);
+
+          this.increaseCountForProperty(load1, ledgerObject, "signer_list_sizes", ledgerObject[property].length+"", 1);
         }
 
         if("Flags" === property && ledgerObject[property]) {
@@ -216,6 +237,12 @@ export class LedgerData {
 
             if(this.isRippleStateFlagHighFreeze(ledgerObject[property]))
               this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfHighFreeze", 1);
+          }
+
+          if("nftokenoffer" === ledgerObject.LedgerEntryType.toLowerCase()) {
+
+            if(this.isNFTokenOfferFlagSell(ledgerObject[property]))
+              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfSellNFToken", 1);
           }
         }
       }
@@ -382,5 +409,9 @@ export class LedgerData {
 
   isRippleStateFlagHighFreeze(flags:number) {
     return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
+  }
+
+  isNFTokenOfferFlagSell(flags:number) {
+    return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
   }
 }
