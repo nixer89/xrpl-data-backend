@@ -47,7 +47,7 @@ export class NftIssuerAccounts {
 
         if(nftokens && nftokens.length > 0) {
           for(let j = 0; j < nftokens.length; j++) {
-            let singleNFTFromPage = nftokens[j];
+            let singleNFTFromPage = nftokens[j]["NFToken"];
 
             if(singleNFTFromPage["NFTokenID"]) {
               let parsedNft = parseNFTokenID(singleNFTFromPage["NFTokenID"]);
