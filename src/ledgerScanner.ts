@@ -10,21 +10,16 @@ export class LedgerScanner {
 
     private static _instance: LedgerScanner;
 
-    private load1: boolean = true;
     private isRunning:boolean = false;
 
     //private xrplClient:XrplClient;
 
     private xrpljsClient:Client;
 
-    private ledger_index_1: number;
-    private ledger_index_2: number;
-    private ledger_date_1: string;
-    private ledger_date_2: string;
-    private ledger_time_ms_1: number;
-    private ledger_time_ms_2: number;
-    private ledger_hash_1: string;
-    private ledger_hash_2: string;
+    private ledger_index: number;
+    private ledger_date: string;
+    private ledger_time_ms: number;
+    private ledger_hash: string;
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
@@ -37,25 +32,13 @@ export class LedgerScanner {
         return this._instance || (this._instance = new this());
     }
 
-    public getLoad() {
-        return this.load1;
-    }
-
     public async init(): Promise<void> {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
 
-        await this.issuerAccount.init(this.load1);
-        await this.ledgerData.init(this.load1);
+        await this.issuerAccount.init();
 
         await this.readLedgerData(null, null, null, 0);
-
-        //load issuer data if it could not be read from the file system
-        if(this.load1 && this.issuerAccount.getIssuer_1().size == 0 || !this.load1 && this.issuerAccount.getIssuer_1().size == 0) {
-            await this.readLedgerData(null, null, null, 0);
-        }
-
-        this.load1=!this.load1;
 
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
         scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
@@ -70,10 +53,9 @@ export class LedgerScanner {
         try {
           let success:boolean = await this.readLedgerData(null, null, null, 0);
           if(success) {
-            this.load1=!this.load1;
-            console.log("loading ledger data successfull. Maps changed.")
+            console.log("loading ledger data successfull.")
           } else {
-            console.log("loading ledger data not successfull. Not changing maps.")
+            console.log("loading ledger data not successfull.")
           }
 
           this.isRunning = false;
@@ -101,8 +83,8 @@ export class LedgerScanner {
         console.log("new call: marker: " + marker);
 
         if(!marker) {
-            this.issuerAccount.clearIssuer(this.load1);
-            this.ledgerData.clearLedgerData(this.load1);
+            this.issuerAccount.clearIssuer();
+            this.ledgerData.clearLedgerData();
             this.setLedgerCloseTime(null)
             this.setLedgerCloseTimeMs(null);
             this.setLedgerIndex(null);
@@ -193,30 +175,28 @@ export class LedgerScanner {
               }
 
               //console.time("resolveLedgerData binary");
-              await this.ledgerData.resolveLedgerData(messageBinary.result.state, this.load1);
+              await this.ledgerData.resolveLedgerData(messageBinary.result.state);
               //console.timeEnd("resolveLedgerData binary");
               
               //console.time("resolveIssuerToken");
-              await this.issuerAccount.resolveIssuerToken(messageJson.result.state, this.load1);
+              await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
               //console.timeEnd("resolveIssuerToken");
             } else {
               throw "binary and json objects not the same!"
             }
             //console.log("done");
       
-            console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
-            console.log("issuer_2 size: " + this.issuerAccount.getIssuer_2().size);
+            console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+
             if(newledgerIndex != null && newMarker != null) {
               return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
               console.log("Done 1");
-              console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
-              console.log("issuer_2 size: " + this.issuerAccount.getIssuer_2().size);
+              console.log("issuer size: " + this.issuerAccount.getIssuer().size);
             }
           } else {
             console.log("Done 2");
-            console.log("issuer_1 size: " + this.issuerAccount.getIssuer_1().size);
-            console.log("issuer_2 size: " + this.issuerAccount.getIssuer_2().size);
+            console.log("issuer size: " + this.issuerAccount.getIssuer().size);
           }
       
           console.log("ALL DONE");
@@ -236,8 +216,8 @@ export class LedgerScanner {
           //always save resolved user names to file system to make restart of server much faster
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
-          await this.issuerAccount.saveIssuerDataToFS(this.load1);
-          await this.ledgerData.saveLedgerDataToFS(this.load1);
+          await this.issuerAccount.saveIssuerDataToFS();
+          await this.ledgerData.saveLedgerDataToFS();
 
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
@@ -255,62 +235,50 @@ export class LedgerScanner {
       }
     
       public getLedgerIndex(): number {
-        return this.load1 ? this.ledger_index_2 : this.ledger_index_1;
+        return this.ledger_index;
     }
 
     public getLedgerIndexNew(): number {
-      return this.load1 ? this.ledger_index_1 : this.ledger_index_2;
+      return this.ledger_index;
     }
 
     public setLedgerIndex(index:number): void {
-      if(this.load1)
-        this.ledger_index_1 = index;
-      else
-        this.ledger_index_2 = index;
+        this.ledger_index = index;
     }
 
     public getLedgerHash(): string {
-        return this.load1 ? this.ledger_hash_2 : this.ledger_hash_1;
+        return this.ledger_hash;
     }
 
     public getLedgerHashNew(): string {
-      return this.load1 ? this.ledger_hash_1 : this.ledger_hash_2;
+      return this.ledger_hash;
   }
 
     public setLedgerHash(hash:string): void {
-      if(this.load1)
-        this.ledger_hash_1 = hash;
-      else
-        this.ledger_hash_2 = hash;
+        this.ledger_hash = hash;
     }
 
     public getLedgerCloseTime(): string {
-        return this.load1 ? this.ledger_date_2 : this.ledger_date_1;
+        return this.ledger_date;
     }
 
     public getLedgerCloseTimeNew(): string {
-      return this.load1 ? this.ledger_date_1 : this.ledger_date_2;
+      return this.ledger_date;
   }
 
     public setLedgerCloseTime(closeTime: string): void {
-      if(this.load1)
-        this.ledger_date_1 = closeTime;
-      else
-        this.ledger_date_2 = closeTime;
+        this.ledger_date = closeTime;
     }
 
     public getLedgerCloseTimeMs(): number {
-        return this.load1 ? this.ledger_time_ms_2 : this.ledger_time_ms_1;
+        return this.ledger_time_ms;
     }
 
     public getLedgerCloseTimeMsNew(): number {
-      return this.load1 ? this.ledger_time_ms_1 : this.ledger_time_ms_2;
+      return this.ledger_time_ms;
   }
 
     public setLedgerCloseTimeMs(closeTimeInMs: number): void {
-      if(this.load1)
-        this.ledger_time_ms_1 = closeTimeInMs;
-      else
-        this.ledger_time_ms_2 = closeTimeInMs;
+        this.ledger_time_ms = closeTimeInMs;
     }
 }

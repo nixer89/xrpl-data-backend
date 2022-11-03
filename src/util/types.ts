@@ -14,6 +14,19 @@ export interface IssuerData {
     offers: number,
     holders:number
 }
+
+export interface NFT {
+    NFTokenID: string,
+    TransferFee: number,
+    Issuer: string,
+    Owner: string,
+    Taxon: number,
+    Sequence: number,
+    URI: string,
+    Flags?: number,
+    buy_offers: number,
+    sell_offers: number
+}
  
 export interface IssuerVerification {
     resolvedBy: string,

@@ -5,8 +5,7 @@ export class LedgerData {
 
     private static _instance: LedgerData;
 
-    private ledgerData_1: any;
-    private ledgerData_2: any;
+    private ledgerData: any;
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -28,20 +27,16 @@ export class LedgerData {
         return this._instance || (this._instance = new this());
     }
 
-    public async init(load1:boolean): Promise<void> {
-        await this.loadLedgerDataFromFS(load1);
-    }
-
-    public async resolveLedgerData(ledgerState:any, load1:boolean): Promise<void> {
+    public async resolveLedgerData(ledgerState:any): Promise<void> {
 
         for(let i = 0; i < ledgerState.length; i++) {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
-            if(this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
+            if(this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
               //add entry to existing one
               let size = Buffer.from(ledgerObject.data, 'utf8').length;
 
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += size;
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
+              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += size;
+              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
             } else {
               //create new entry
               let size = Buffer.from(ledgerObject.data, 'utf8').length;;
@@ -52,122 +47,132 @@ export class LedgerData {
                 percentage: 0
               }
 
-              this.getLedgerData(load1)[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
+              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
             }
 
-            this.addAdditionalData(load1, ledgerObject.parsed);
+            this.addAdditionalData(ledgerObject.parsed);
         }
 
           //console.log(JSON.stringify(this.getLedgerData(load1)));
     }
 
-    addAdditionalData(load1: boolean, ledgerObject: any) {
+    addAdditionalData(ledgerObject: any) {
 
       for (var property in ledgerObject) {
         if (ledgerObject.hasOwnProperty(property)) {
-          this.addAdditionalProperty(load1, ledgerObject, property);
+          this.addAdditionalProperty(ledgerObject, property);
         }
       }
 
       if("nftokenpage" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["NFTokens"]) {
-        this.increaseCountForProperty(load1, ledgerObject, "nftoken_page_sizes","0", 1);
+        this.increaseCountForProperty(ledgerObject, "nftoken_page_sizes","0", 1);
       }
 
       if("directorynode" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["Indexes"]) {
 
         if(ledgerObject["Owner"])
-          this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", "0", 1);
+          this.increaseCountForProperty(ledgerObject, "owner_page_sizes", "0", 1);
         else if (ledgerObject["NFTokenID"])
-          this.increaseCountForProperty(load1, ledgerObject, "nft_offer_page_sizes", "0", 1);
+          this.increaseCountForProperty(ledgerObject, "nft_offer_page_sizes", "0", 1);
         else
-          this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", "0", 1);
+          this.increaseCountForProperty(ledgerObject, "offer_page_sizes", "0", 1);
       }
 
       if("ledgerhashes" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["Hashes"]) {
-        this.increaseCountForProperty(load1, ledgerObject, "ledger_hashes_array_sizes", "0", 1);
+        this.increaseCountForProperty(ledgerObject, "ledger_hashes_array_sizes", "0", 1);
       }
 
       if("signerlist" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["SignerEntries"]) {
-        this.increaseCountForProperty(load1, ledgerObject, "signer_list_sizes", "0", 1);
+        this.increaseCountForProperty(ledgerObject, "signer_list_sizes", "0", 1);
       }
 
     }
 
-    addAdditionalProperty(load1: boolean, ledgerObject: any, property: string) {
+    addAdditionalProperty(ledgerObject: any, property: string) {
       if(ledgerObject[property]) {
-        this.increaseCountForProperty(load1, ledgerObject, "property_count", property, 1);
+        this.increaseCountForProperty(ledgerObject, "property_count", property, 1);
 
         //special handling for some properties:
         if("Balance" === property) {
           if((ledgerObject[property].value && ledgerObject[property].value != "0") || (!ledgerObject[property].value && ledgerObject[property] != "0")) {
-            this.increaseCountForProperty(load1, ledgerObject, "special_data", "BalanceNotZero", 1);
+            this.increaseCountForProperty(ledgerObject, "special_data", "BalanceNotZero", 1);
           }
         }
 
         if("OwnerCount" === property) {
           //count not owner count!
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "OwnerCountTotal", ledgerObject[property]);
+          this.increaseCountForProperty(ledgerObject, "special_data", "OwnerCountTotal", ledgerObject[property]);
         }
 
         if("Amount" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "AmountValueTotal", Number(ledgerObject[property]));
+          this.increaseCountForProperty(ledgerObject, "special_data", "AmountValueTotal", Number(ledgerObject[property]));
         }
 
         if("Balance" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "BalanceValueTotal", Number(ledgerObject[property]));
+          this.increaseCountForProperty(ledgerObject, "special_data", "BalanceValueTotal", Number(ledgerObject[property]));
         }
 
         if("SendMax" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "SendMaxValueTotal", Number(ledgerObject[property]));
+          this.increaseCountForProperty(ledgerObject, "special_data", "SendMaxValueTotal", Number(ledgerObject[property]));
         }
 
         if("TakerGets" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "XrpTotal", Number(ledgerObject[property]));
+          this.increaseCountForProperty(ledgerObject, "special_data", "XrpTotal", Number(ledgerObject[property]));
         }
 
         if("TakerPays" === property && !ledgerObject[property].value && !ledgerObject[property].issuer) {
           //count total amount of XRP
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "XrpTotal", Number(ledgerObject[property]));
+          this.increaseCountForProperty(ledgerObject, "special_data", "XrpTotal", Number(ledgerObject[property]));
         }
 
         if("NFTokens" === property) {
           //count not owner count!
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "NftTotal", ledgerObject[property].length);
+          this.increaseCountForProperty(ledgerObject, "special_data", "NftTotal", ledgerObject[property].length);
 
-          this.increaseCountForProperty(load1, ledgerObject, "nftoken_page_sizes", ledgerObject[property].length+"", 1);
+          this.increaseCountForProperty(ledgerObject, "nftoken_page_sizes", ledgerObject[property].length+"", 1);
+        }
+
+        if("MintedNFTokens" === property) {
+          //count total amount of XRP
+          this.increaseCountForProperty(ledgerObject, "special_data", "TotalMintedNFTs", Number(ledgerObject[property]));
+        }
+
+        if("BurnedNFTokens" === property) {
+          //count total amount of XRP
+          this.increaseCountForProperty(ledgerObject, "special_data", "TotalBurnedNFTs", Number(ledgerObject[property]));
         }
 
         if("Indexes" === property) {
 
           if("directorynode" === ledgerObject.LedgerEntryType.toLowerCase()) {
             if(ledgerObject["Owner"]) {
-              this.increaseCountForProperty(load1, ledgerObject, "owner_page_sizes", ledgerObject[property].length+"", 1);
+              this.increaseCountForProperty(ledgerObject, "owner_page_sizes", ledgerObject[property].length+"", 1);
             } else if(ledgerObject["NFTokenID"]) {
-              this.increaseCountForProperty(load1, ledgerObject, "nft_offer_page_sizes", ledgerObject[property].length+"", 1);
+              this.increaseCountForProperty(ledgerObject, "nft_offer_page_sizes", ledgerObject[property].length+"", 1);
             } else {
-              this.increaseCountForProperty(load1, ledgerObject, "offer_page_sizes", ledgerObject[property].length+"", 1);
+              this.increaseCountForProperty(ledgerObject, "offer_page_sizes", ledgerObject[property].length+"", 1);
             }
           } else {
-            this.increaseCountForProperty(load1, ledgerObject, "page_sizes", ledgerObject[property].length+"", 1);
+            this.increaseCountForProperty(ledgerObject, "page_sizes", ledgerObject[property].length+"", 1);
           }
         }
 
         if("Hashes" === property) {
           //count not owner count!
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "LedgerHashesTotal", ledgerObject[property].length);
+          this.increaseCountForProperty(ledgerObject, "special_data", "LedgerHashesTotal", ledgerObject[property].length);
 
-          this.increaseCountForProperty(load1, ledgerObject, "ledger_hashes_array_sizes", ledgerObject[property].length+"", 1);
+          this.increaseCountForProperty(ledgerObject, "ledger_hashes_array_sizes", ledgerObject[property].length+"", 1);
         }
 
         if("SignerEntries" === property) {
           //count not owner count!
-          this.increaseCountForProperty(load1, ledgerObject, "special_data", "SignerListEntryTotals", ledgerObject[property].length);
+          this.increaseCountForProperty(ledgerObject, "special_data", "SignerListEntryTotals", ledgerObject[property].length);
 
-          this.increaseCountForProperty(load1, ledgerObject, "signer_list_sizes", ledgerObject[property].length+"", 1);
+          this.increaseCountForProperty(ledgerObject, "signer_list_sizes", ledgerObject[property].length+"", 1);
         }
 
         if("Flags" === property && ledgerObject[property]) {
@@ -175,107 +180,104 @@ export class LedgerData {
           if("accountroot" === ledgerObject.LedgerEntryType.toLowerCase()) {
             //Account Root Flags
             if(this.isDefaultRippleEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfDefaultRipple", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDefaultRipple", 1);
 
             if(this.isDepositAuthEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfDepositAuth", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDepositAuth", 1);
 
             if(this.isMasterKeyDisabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfDisableMaster", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisableMaster", 1);
 
             if(this.isDisallowXRPEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfDisallowXRP", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowXRP", 1);
 
             if(this.isGlobalFreezeEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfGlobalFreeze", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfGlobalFreeze", 1);
 
             if(this.isNoFreezeEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfNoFreeze", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfNoFreeze", 1);
 
             if(this.isPasswordSpentEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfPasswordSpent", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfPasswordSpent", 1);
 
             if(this.isRequireAuthEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfRequireAuth", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfRequireAuth", 1);
 
             if(this.isRequireDestinationTagEnabled(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfRequireDestTag", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfRequireDestTag", 1);
           }
 
           if("offer" === ledgerObject.LedgerEntryType.toLowerCase()) {
             
             //Offer Flags
             if(this.isOfferFlagPassive(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfPassive", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfPassive", 1);
 
             if(this.isOfferFlagSell(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfSell", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfSell", 1);
           }
 
           if("signerlist" === ledgerObject.LedgerEntryType.toLowerCase()) {
 
             //Signer List Flags
             if(this.isSignerListFlagOneOwnerCount(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfOneOwnerCount", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfOneOwnerCount", 1);
           }
 
           if("ripplestate" === ledgerObject.LedgerEntryType.toLowerCase()) {
 
             if(this.isRippleStateFlagLowReserve(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfLowReserve", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfLowReserve", 1);
             
             if(this.isRippleStateFlagHighReserve(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfHighReserve", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfHighReserve", 1);
 
             if(this.isRippleStateFlagLowAuth(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfLowAuth", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfLowAuth", 1);
 
             if(this.isRippleStateFlagHighAuth(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfHighAuth", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfHighAuth", 1);
 
             if(this.isRippleStateFlagLowNoRipple(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfLowNoRipple", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfLowNoRipple", 1);
 
             if(this.isRippleStateFlagHighNoRipple(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfHighNoRipple", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfHighNoRipple", 1);
 
             if(this.isRippleStateFlagLowFreeze(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfLowFreeze", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfLowFreeze", 1);
 
             if(this.isRippleStateFlagHighFreeze(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfHighFreeze", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfHighFreeze", 1);
           }
 
           if("nftokenoffer" === ledgerObject.LedgerEntryType.toLowerCase()) {
 
             if(this.isNFTokenOfferFlagSell(ledgerObject[property]))
-              this.increaseCountForProperty(load1, ledgerObject, "flags", "lsfSellNFToken", 1);
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfSellNFToken", 1);
           }
         }
       }
     }
 
-    increaseCountForProperty(load1: boolean, ledgerObject: any, storageType:string, property: string, increaseBy: number) {
+    increaseCountForProperty(ledgerObject: any, storageType:string, property: string, increaseBy: number) {
       //create storage type if not set yet
-      if(!this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType])
-        this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType] = {}
+      if(!this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType])
+        this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType] = {}
 
       //add property to storage and set a value
-      if(this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property])
-        this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] = this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] + increaseBy;
+      if(this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property])
+        this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] = this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] + increaseBy;
       else
-        this.getLedgerData(load1)[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] = increaseBy;
+        this.getLedgerData()[ledgerObject.LedgerEntryType.toLowerCase()][storageType][property] = increaseBy;
     }
 
-    public getLedgerData(load1: boolean) {
-        if(load1)
-            return this.ledgerData_1;
-        else
-            return this.ledgerData_2;
+    public getLedgerData() {
+      return this.ledgerData;
     }
 
-    public getLedgerDataV1(load1: boolean): any[] {
-      let dataToUse = JSON.parse(JSON.stringify(load1 ? this.ledgerData_2 : this.ledgerData_1))
+    public getLedgerDataV1(): any[] {
+      let dataToUse = JSON.parse(JSON.stringify(this.ledgerData))
       let totalBytes:number = 0;
       for (let data in dataToUse) {
         if (dataToUse.hasOwnProperty(data)) {
@@ -292,22 +294,12 @@ export class LedgerData {
       return [totalBytes, dataToUse];
     }
 
-    public clearLedgerData(load1: boolean) {
-        if(load1)
-            this.ledgerData_1 = {};
-        else
-            this.ledgerData_2 = {};
+    public clearLedgerData() {
+      this.ledgerData = {};
     }
 
-    private setLedgerData(ledgerData: any, load1:boolean): void{
-        if(load1)
-          this.ledgerData_1 = ledgerData;
-        else
-          this.ledgerData_2 = ledgerData;
-      }
-
-    public async saveLedgerDataToFS(load1:boolean): Promise<void> {
-        let ledgerDataToSave:string = JSON.stringify(load1 ? this.ledgerData_1 : this.ledgerData_2);
+    public async saveLedgerDataToFS(): Promise<void> {
+        let ledgerDataToSave:string = JSON.stringify(this.ledgerData);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
 
             fs.writeFileSync("./../ledgerData.js", ledgerDataToSave);
@@ -316,26 +308,6 @@ export class LedgerData {
         } else {
           console.log("ledger data is empty! Nothing saved");
         }
-    }
-
-    private async loadLedgerDataFromFS(load1:boolean): Promise<void> {
-      try {
-        console.log("loading ledger data from FS");
-        if(fs.existsSync("./../ledgerData.js")) {
-            let ledgerData:any = JSON.parse(fs.readFileSync("./../ledgerData.js").toString());
-            if(ledgerData) {
-                //console.log("ledger data loaded: " + JSON.stringify(ledgerData));
-                this.setLedgerData(ledgerData, load1);
-                console.log("loaded ledger data successfully")
-            }
-        } else {
-          console.log("ledger data file does not exist yet.")
-        }
-      } catch(err) {
-        console.log("error reading issuer data from FS");
-        console.log(err);
-        this.setLedgerData({}, load1);
-      }  
     }
 
   isDefaultRippleEnabled(flags:number) {
