@@ -1,20 +1,16 @@
 import * as fs from 'fs';
 import consoleStamp = require("console-stamp");
 import { AccountNames } from './accountNames';
-import { IssuerData, NFT } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
-import { TokenCreation } from './tokenCreation';
 import { encodeAccountID } from 'ripple-address-codec';
 import { parseNFTokenID } from 'xrpl';
+import { NFT } from './util/types';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
 export class NftIssuerAccounts {
 
     private static _instance: NftIssuerAccounts;
-    
-    private accountInfo:AccountNames;
-    private tokenCreation:TokenCreation;
 
     private ledgerScanner:LedgerScanner;
 
@@ -29,11 +25,7 @@ export class NftIssuerAccounts {
     }
 
     public async init(): Promise<void> {
-        this.accountInfo = AccountNames.Instance;
         this.ledgerScanner = LedgerScanner.Instance;
-
-        await this.accountInfo.init();
-        await this.tokenCreation.init();
     }
 
     public async resolveNFToken(ledgerState:any): Promise<void> {   

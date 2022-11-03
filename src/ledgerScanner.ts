@@ -40,6 +40,7 @@ export class LedgerScanner {
         this.nftIssuerAccounts = NftIssuerAccounts.Instance;
 
         await this.issuerAccount.init();
+        await this.nftIssuerAccounts.init();
 
         await this.readLedgerData(null, null, null, 0);
 
