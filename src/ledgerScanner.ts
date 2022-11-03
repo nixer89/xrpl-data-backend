@@ -192,16 +192,19 @@ export class LedgerScanner {
             //console.log("done");
       
             console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
 
             if(newledgerIndex != null && newMarker != null) {
               return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
               console.log("Done 1");
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+              console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
             }
           } else {
             console.log("Done 2");
             console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
           }
       
           console.log("ALL DONE");
@@ -223,6 +226,7 @@ export class LedgerScanner {
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
           await this.ledgerData.saveLedgerDataToFS();
+          await this.nftIssuerAccounts.saveNFTDataToFS();
 
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
