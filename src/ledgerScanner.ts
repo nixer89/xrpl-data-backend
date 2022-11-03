@@ -225,9 +225,9 @@ export class LedgerScanner {
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
-          await this.ledgerData.saveLedgerDataToFS();
           await this.nftIssuerAccounts.saveNFTDataToFS();
-
+          await this.ledgerData.saveLedgerDataToFS();
+          
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
     
@@ -247,10 +247,6 @@ export class LedgerScanner {
         return this.ledger_index;
     }
 
-    public getLedgerIndexNew(): number {
-      return this.ledger_index;
-    }
-
     public setLedgerIndex(index:number): void {
         this.ledger_index = index;
     }
@@ -258,10 +254,6 @@ export class LedgerScanner {
     public getLedgerHash(): string {
         return this.ledger_hash;
     }
-
-    public getLedgerHashNew(): string {
-      return this.ledger_hash;
-  }
 
     public setLedgerHash(hash:string): void {
         this.ledger_hash = hash;
@@ -271,10 +263,6 @@ export class LedgerScanner {
         return this.ledger_date;
     }
 
-    public getLedgerCloseTimeNew(): string {
-      return this.ledger_date;
-  }
-
     public setLedgerCloseTime(closeTime: string): void {
         this.ledger_date = closeTime;
     }
@@ -282,10 +270,6 @@ export class LedgerScanner {
     public getLedgerCloseTimeMs(): number {
         return this.ledger_time_ms;
     }
-
-    public getLedgerCloseTimeMsNew(): number {
-      return this.ledger_time_ms;
-  }
 
     public setLedgerCloseTimeMs(closeTimeInMs: number): void {
         this.ledger_time_ms = closeTimeInMs;

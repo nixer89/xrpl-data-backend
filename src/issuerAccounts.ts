@@ -178,10 +178,10 @@ export class IssuerAccounts {
         let mapToSave:Map<string, IssuerData> = new Map(this.issuers);
         if(mapToSave && mapToSave.size > 0) {
             let issuerData:any = {
-              "ledger_index": this.ledgerScanner.getLedgerIndexNew(),
-              "ledger_date": this.ledgerScanner.getLedgerCloseTimeNew(),
-              "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMsNew(),
-              "ledger_hash": this.ledgerScanner.getLedgerHashNew(),
+              "ledger_index": this.ledgerScanner.getLedgerIndex(),
+              "ledger_date": this.ledgerScanner.getLedgerCloseTime(),
+              "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMs(),
+              "ledger_hash": this.ledgerScanner.getLedgerHash(),
               "issuers": {
 
               }
