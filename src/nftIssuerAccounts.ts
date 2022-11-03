@@ -49,25 +49,30 @@ export class NftIssuerAccounts {
           for(let j = 0; j < nftokens.length; j++) {
             let singleNFTFromPage = nftokens[j];
 
-            let parsedNft = parseNFTokenID(singleNFTFromPage["NFTokenID"]);
-            let uri = singleNFTFromPage["URI"];
+            if(singleNFTFromPage["NFTokenID"]) {
+              let parsedNft = parseNFTokenID(singleNFTFromPage["NFTokenID"]);
+              let uri = singleNFTFromPage["URI"];
 
-            let nftIssuer = parsedNft.Issuer;
+              let nftIssuer = parsedNft.Issuer;
 
-            let newNftEntry:NFT = {
-              NFTokenID: parsedNft.NFTokenID,
-              Issuer: nftIssuer,
-              Owner: nftOwner,
-              Taxon: parsedNft.Taxon,
-              TransferFee: parsedNft.TransferFee,
-              Flags: parsedNft.Flags,
-              Sequence: parsedNft.Sequence,
-              URI: uri,
-              buy_offers: 0,
-              sell_offers: 0
+              let newNftEntry:NFT = {
+                NFTokenID: parsedNft.NFTokenID,
+                Issuer: nftIssuer,
+                Owner: nftOwner,
+                Taxon: parsedNft.Taxon,
+                TransferFee: parsedNft.TransferFee,
+                Flags: parsedNft.Flags,
+                Sequence: parsedNft.Sequence,
+                URI: uri,
+                buy_offers: 0,
+                sell_offers: 0
+              }
+
+              await this.addNewToken(newNftEntry.NFTokenID, newNftEntry);
+            } else {
+              console.log("NO TOKEN ID?????????????????????");
+              console.log(JSON.stringify(singleNFTFromPage));
             }
-
-            await this.addNewToken(newNftEntry.NFTokenID, newNftEntry);
           }
         }
       }
