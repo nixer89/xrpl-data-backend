@@ -3,6 +3,7 @@ import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
+import { NftIssuerAccounts } from './nftIssuerAccounts';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -23,6 +24,7 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
+    private nftIssuerAccounts: NftIssuerAccounts;
 
     private constructor() {}
 
@@ -35,6 +37,7 @@ export class LedgerScanner {
     public async init(): Promise<void> {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
+        this.nftIssuerAccounts = NftIssuerAccounts.Instance;
 
         await this.issuerAccount.init();
 
@@ -181,6 +184,8 @@ export class LedgerScanner {
               //console.time("resolveIssuerToken");
               await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
               //console.timeEnd("resolveIssuerToken");
+
+              await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
             } else {
               throw "binary and json objects not the same!"
             }
