@@ -134,6 +134,8 @@ export class NftIssuerAccounts {
 
   public clearIssuer() {
       this.nftokensMap.clear();
+      this.nftOffersArray = [];
+      
   }
 
   public async saveNFTDataToFS(): Promise<void> {
