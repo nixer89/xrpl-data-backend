@@ -204,7 +204,7 @@ export class NftIssuerAccounts {
         if(marginNft.hasOwnProperty(nft)) {
           let nftOffers = marginNft[nft];
 
-          if(nftOffers && nftOffers.buy && nftOffers.sell && (parseInt(nftOffers.buy) > parseInt(nftOffers.sell))) {
+          if(nftOffers && nftOffers.buy && nftOffers.sell) {
             marginOption.push({offers: nftOffers})
           }
         }
