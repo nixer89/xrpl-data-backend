@@ -1,7 +1,5 @@
 import * as fs from 'fs';
 import consoleStamp = require("console-stamp");
-import { AccountNames } from './accountNames';
-import { LedgerScanner } from './ledgerScanner';
 import { encodeAccountID } from 'ripple-address-codec';
 import { parseNFTokenID } from 'xrpl';
 import { NFT } from './util/types';
@@ -12,7 +10,7 @@ export class NftIssuerAccounts {
 
     private static _instance: NftIssuerAccounts;
 
-    private ledgerScanner:LedgerScanner;
+    private nftOffersMap:Map<string, any> = new Map();
 
     private nftokensMap: Map<string, NFT> = new Map();
 
@@ -22,10 +20,6 @@ export class NftIssuerAccounts {
     {
         // Do you need arguments? Make it a regular static method instead.
         return this._instance || (this._instance = new this());
-    }
-
-    public async init(): Promise<void> {
-        this.ledgerScanner = LedgerScanner.Instance;
     }
 
     public async resolveNFToken(ledgerState:any): Promise<void> {   
@@ -75,8 +69,18 @@ export class NftIssuerAccounts {
         try {
           let offer = nftOffers[j];
 
-          if(typeof(offer.Amount) === 'string' && (offer.Amount === "0" || Number(offer.Amount) <= 1000000) && (!offer.Destination || offer.Destination === "") && offer.Flags && offer.Flags == 1 ) {
-            console.log(offer);
+          if(typeof(offer.Amount) === 'string' && (!offer.Destination || offer.Destination === "") && offer.Flags && offer.Flags == 1 ) {
+            if(!this.nftOffersMap.has(offer.NFTokenID))
+              this.nftOffersMap.set(offer.NFTokenID, {buy: [], sell: []});
+
+            if(!offer.Flags || offer.Flags === 0) {
+              //buy offer
+              this.nftOffersMap.get(offer.NFTokenID).buy.push(offer);
+                
+            } else if(offer.Flags && offer.Flags == 1) {
+              //sell offer
+              this.nftOffersMap.get(offer.NFTokenID).sell.push(offer);
+            }
           }
 
         } catch(err) {
@@ -160,6 +164,18 @@ export class NftIssuerAccounts {
         console.log("saved " + mapToSave.size + " nft data to file system");
     } else {
       console.log("nft data is empty!");
+    }
+
+    if(this.nftOffersMap && this.nftOffersMap.size > 0) {
+      let withBothOffers:string = "";
+
+      mapToSave.forEach((value, key, map) => {
+        withBothOffers += key + "\n";
+      });
+
+      fs.writeFileSync("./../nftWithBothOffers.js", JSON.stringify(withBothOffers));
+
+      console.log("saved nft offer stuff data to file system");
     }
   }
 }
