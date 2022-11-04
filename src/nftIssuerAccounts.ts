@@ -10,7 +10,7 @@ export class NftIssuerAccounts {
 
     private static _instance: NftIssuerAccounts;
 
-    private nftOffersMap:Map<string, any> = new Map();
+    private nftOffersArray:any[] = [];
 
     private nftokensMap: Map<string, NFT> = new Map();
 
@@ -69,20 +69,9 @@ export class NftIssuerAccounts {
         try {
           let offer = nftOffers[j];
 
-          if(typeof(offer.Amount) === 'string' && (!offer.Destination || offer.Destination === "") && offer.Flags && offer.Flags == 1 ) {
-            if(!this.nftOffersMap.has(offer.NFTokenID))
-              this.nftOffersMap.set(offer.NFTokenID, {buy: [], sell: []});
-
-            if(!offer.Flags || offer.Flags === 0) {
-              //buy offer
-              this.nftOffersMap.get(offer.NFTokenID).buy.push(offer);
-                
-            } else if(offer.Flags && offer.Flags == 1) {
-              //sell offer
-              this.nftOffersMap.get(offer.NFTokenID).sell.push(offer);
-            }
+          if(typeof(offer.Amount) === 'string' && (!offer.Destination || offer.Destination === "")) {
+            this.nftOffersArray.push(offer);
           }
-
         } catch(err) {
           //nothing
         }
@@ -166,16 +155,69 @@ export class NftIssuerAccounts {
       console.log("nft data is empty!");
     }
 
-    if(this.nftOffersMap && this.nftOffersMap.size > 0) {
-      let withBothOffers:string = "";
+    try {
 
-      mapToSave.forEach((value, key, map) => {
-        withBothOffers += key + "\n";
-      });
+      let marginNft:any = {}
 
-      fs.writeFileSync("./../nftWithBothOffers.js", JSON.stringify(withBothOffers));
+      for(let i = 0; i < this.nftOffersArray.length; i++) {
+        let offer = this.nftOffersArray[i];
+        let offerAmount = parseInt(offer.Amount);
 
-      console.log("saved nft offer stuff data to file system");
+        if(!offer.Destination || offer.Destination === "") {
+
+          if(!marginNft[offer.NFTokenID]) {
+            marginNft[offer.NFTokenID] = {
+              buy: null,
+              sell: null
+            }
+          }
+    
+          if(!offer.Flags || offer.Flags === 0) {
+            //buy offer, compare to current buy offer!
+            if(!marginNft[offer.NFTokenID].buy) {
+              marginNft[offer.NFTokenID].buy = offer;
+            } else if(offerAmount > parseInt(marginNft[offer.NFTokenID].buy.Amount)) {
+              //replace offer if better!
+              marginNft[offer.NFTokenID].buy = offer;
+            }
+              
+          } else if(offer.Flags && offer.Flags == 1) {
+            //sell offer
+            //first check if seller == owner
+            if(this.nftokensMap.get(offer.NFTokenID).Owner === offer.Owner) {
+              //owner == seller, go ahead!
+              if(!marginNft[offer.NFTokenID].sell) {
+                marginNft[offer.NFTokenID].sell = offer;
+              } else if(offerAmount < parseInt(marginNft[offer.NFTokenID].sell.Amount)) {
+                //replace offer if better!
+                marginNft[offer.NFTokenID].sell = offer;
+              }
+            }
+          }
+        }
+      }
+
+
+      let marginOption:any[] = [];
+
+      for(let nft in marginNft) {
+        if(marginNft.hasOwnProperty(nft)) {
+          let nftOffers = marginNft[nft];
+
+          if(nftOffers && nftOffers.buy && nftOffers.sell && (parseInt(nftOffers.buy) > parseInt(nftOffers.sell))) {
+            marginOption.push({offers: nftOffers})
+          }
+        }
+      }
+
+      if(marginOption) {
+  
+        fs.writeFileSync("./../marginOptions.js", JSON.stringify(marginOption));
+  
+        console.log("saved nft margin option data to file system");
+      }
+    } catch(err) {
+      console.log(err);
     }
   }
 }
