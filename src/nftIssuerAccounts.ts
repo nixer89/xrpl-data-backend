@@ -72,6 +72,16 @@ export class NftIssuerAccounts {
       let nftOffers:any[] = ledgerState.filter(element => element.LedgerEntryType === 'NFTokenOffer');
 
       for(let j = 0; j < nftOffers.length; j++) {
+        try {
+          let offer = nftOffers[j];
+
+          if(typeof(offer.Amount) === 'string' && (offer.Amount === "0" || Number(offer.Amount) <= 1000000) && (!offer.Destination || offer.Destination === "") && offer.Flags && offer.Flags == 1 ) {
+            console.log(offer);
+          }
+
+        } catch(err) {
+          //nothing
+        }
         let nfTokenId = nftOffers[j].NFTokenID;
 
         await this.increaseOfferCount(nfTokenId, nftOffers[j].Flags && nftOffers[j].Flags === 1);
