@@ -216,7 +216,7 @@ export class NftIssuerAccounts {
         }
       }
 
-      if(marginOption) {
+      if(marginOption && marginOption.length > 0) {
   
         fs.writeFileSync("./../marginOptions.js", JSON.stringify(marginOption));
   
