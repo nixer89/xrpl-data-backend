@@ -134,20 +134,14 @@ export class NftIssuerAccounts {
   }
 
   public async saveNFTDataToFS(): Promise<void> {
-    let mapToSave:Map<string, NFT[]> = this.transformNFTData(this.nftokensMap);
+    let mapToSave:Map<string, NFT> = this.nftokensMap;
     if(mapToSave && mapToSave.size > 0) {
         let nftData:any = {
-          "ledger_index": this.ledgerScanner.getLedgerIndex(),
-          "ledger_date": this.ledgerScanner.getLedgerCloseTime(),
-          "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMs(),
-          "ledger_hash": this.ledgerScanner.getLedgerHash(),
-          "nfts": {
-
-          }
+          "nfts": []
         };
 
         mapToSave.forEach((value, key, map) => {
-          nftData["nfts"][key] = value;
+          nftData["nfts"].push(value);
         });
 
         fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
@@ -157,20 +151,5 @@ export class NftIssuerAccounts {
     } else {
       console.log("nft data is empty!");
     }
-  }
-
-  private transformNFTData(nftMap: Map<string, NFT>): Map<string, NFT[]> {
-    let mapToTransform:Map<string, NFT> = new Map(nftMap);
-    let finalMap: Map<string, NFT[]> = new Map();
-
-    mapToTransform.forEach((value, key, map) => {
-      if(finalMap.has(value.Issuer)) {
-        finalMap.get(value.Issuer).push(value);
-      } else {
-        finalMap.set(value.Issuer, [value]);
-      }
-    });
-
-    return finalMap;
   }
 }
