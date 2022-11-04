@@ -172,7 +172,7 @@ export class NftIssuerAccounts {
             }
           }
     
-          if(!offer.Flags || offer.Flags === 0) {
+          if(!offer.Flags || offer.Flags == 0) {
             //buy offer, compare to current buy offer!
             if(!marginNft[offer.NFTokenID].buy) {
               marginNft[offer.NFTokenID].buy = offer;
@@ -205,7 +205,11 @@ export class NftIssuerAccounts {
           let nftOffers = marginNft[nft];
 
           if(nftOffers && nftOffers.buy && nftOffers.sell) {
-            marginOption.push({offers: nftOffers})
+            let buyAmount = parseInt(nftOffers.buy.Amount);
+            let sellAmount = parseInt(nftOffers.sell.Amount);
+            
+            if(buyAmount > sellAmount)
+              marginOption.push({offers: nftOffers})
           }
         }
       }
