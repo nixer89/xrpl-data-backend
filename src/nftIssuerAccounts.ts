@@ -199,6 +199,7 @@ export class NftIssuerAccounts {
     
     
           let marginOption:any[] = [];
+          let lowSellOffers:any [] = [];
     
           for(let nft in marginNft) {
             if(marginNft.hasOwnProperty(nft)) {
@@ -210,13 +211,27 @@ export class NftIssuerAccounts {
                 
                 if(buyAmount > sellAmount)
                   marginOption.push({offers: nftOffers})
+              } else if(nftOffers.sell) {
+                let sellAmount = parseInt(nftOffers.sell.Amount);
+
+                if(sellAmount <= 1000000) {
+                  lowSellOffers.push(nftOffers.sell);
+                }
               }
+
             }
           }
     
           if(marginOption && marginOption.length > 0) {
       
             fs.writeFileSync("./../marginOptions.js", JSON.stringify(marginOption));
+      
+            console.log("saved nft margin option data to file system");
+          }
+
+          if(lowSellOffers && lowSellOffers.length > 0) {
+      
+            fs.writeFileSync("./../lowSellOffers.js", JSON.stringify(lowSellOffers));
       
             console.log("saved nft margin option data to file system");
           }
