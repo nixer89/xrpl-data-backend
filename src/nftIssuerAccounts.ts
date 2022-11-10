@@ -158,6 +158,8 @@ export class NftIssuerAccounts {
         try {
 
           let marginNft:any = {}
+          let sellOffersWithoutDestination = 0;
+          let buyOffersWithoutDestination = 0;
     
           for(let i = 0; i < this.nftOffersArray.length; i++) {
             let offer = this.nftOffersArray[i];
@@ -173,6 +175,7 @@ export class NftIssuerAccounts {
               }
         
               if(!offer.Flags || offer.Flags == 0) {
+                buyOffersWithoutDestination++;
                 //buy offer, compare to current buy offer!
                 if(!marginNft[offer.NFTokenID].buy) {
                   marginNft[offer.NFTokenID].buy = offer;
@@ -182,6 +185,7 @@ export class NftIssuerAccounts {
                 }
                   
               } else if(offer.Flags && offer.Flags == 1) {
+                sellOffersWithoutDestination++;
                 //sell offer
                 //first check if seller == owner
                 if(this.nftokensMap.get(offer.NFTokenID).Owner === offer.Owner) {
@@ -196,6 +200,9 @@ export class NftIssuerAccounts {
               }
             }
           }
+
+          console.log("sellOffersWithoutDestination: " + sellOffersWithoutDestination);
+          console.log("buyOffersWithoutDestination: " + buyOffersWithoutDestination);
     
     
           let marginOption:any[] = [];
