@@ -242,7 +242,7 @@ export class LedgerScanner {
             await this.nftIssuerAccounts.saveNFTDataToFS();
 
             //init sync!
-            this.ledgerSync.init();
+            this.ledgerSync.start();
           }
           
           //trigger online deletion
