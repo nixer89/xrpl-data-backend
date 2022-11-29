@@ -4,6 +4,7 @@ import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
+import { LedgerSync } from './syncLedger';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -25,6 +26,7 @@ export class LedgerScanner {
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
     private nftIssuerAccounts: NftIssuerAccounts;
+    private ledgerSync: LedgerSync;
 
     private constructor() {}
 
@@ -38,6 +40,7 @@ export class LedgerScanner {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
         this.nftIssuerAccounts = NftIssuerAccounts.Instance;
+        this.ledgerSync = LedgerSync.Instance;
 
         await this.issuerAccount.init();
 
@@ -185,7 +188,9 @@ export class LedgerScanner {
               await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
               //console.timeEnd("resolveIssuerToken");
 
-              await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
+              if(!this.nftIssuerAccounts.getCurrentLedgerIndex() || newledgerIndex > this.nftIssuerAccounts.getCurrentLedgerIndex() ) {
+                await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
+              }
             } else {
               throw "binary and json objects not the same!"
             }
@@ -221,17 +226,24 @@ export class LedgerScanner {
           this.setLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
           this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
-          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
+          
 
           //always save resolved user names to file system to make restart of server much faster
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
-          await this.nftIssuerAccounts.saveNFTDataToFS();
           await this.ledgerData.saveLedgerDataToFS();
+
+          if(!this.nftIssuerAccounts.getCurrentLedgerIndex() || ledgerIndex > this.nftIssuerAccounts.getCurrentLedgerIndex() ) {
+            this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
+            this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
+            this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
+            this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
+            await this.nftIssuerAccounts.saveNFTDataToFS();
+
+            //init sync!
+            this.ledgerSync.init();
+          }
           
           //trigger online deletion
           //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});

@@ -96,16 +96,12 @@ export class NftIssuerAccounts {
           "nfts": []
         };
 
-          mapToSave.forEach((value, key, map) => {
-            nftData["nfts"].push(value);
-          });
+        mapToSave.forEach((value, key, map) => {
+          nftData["nfts"].push(value);
+        });
 
-          if(!fs.existsSync("./../nftData.js")) {
-            fs.writeFileSync("./../nftData.js", JSON.stringify(nftData));
-            console.log("saved " + mapToSave.size + " nft data to file system");
-          } else {
-            console.log("not writing nft data. exists already")
-          }
+        fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
+        fs.renameSync("./../nftData_new.js", "./../nftData.js");
 
       } else {
         console.log("nft data is empty!");
