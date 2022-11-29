@@ -113,6 +113,8 @@ export class LedgerSync {
           //we have a closed ledger. Request the transactions and try to analyze them!
           if(this.finishedIteration) {
             console.log("ledger closed! " + ledgerClose.ledger_index);
+            console.log("currentKnownLedger: " + this.currentKnownLedger);
+
             if((this.currentKnownLedger+1) == ledgerClose.ledger_index) {
 
               console.log("getting transactions!");
@@ -149,6 +151,8 @@ export class LedgerSync {
               this.nftIssuer.setCurrentLedgerCloseTimeMs(ledgerResponse.result.ledger.close_time);
 
               await this.nftIssuer.saveNFTDataToFS();
+
+              this.currentKnownLedger = ledgerResponse.result.ledger_index;
 
             } else {
               console.log("something is wrong, reset!");
