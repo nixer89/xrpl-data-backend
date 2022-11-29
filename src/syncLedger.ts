@@ -114,25 +114,33 @@ export class LedgerSync {
 
     private async startListeningOnLedgerClose() {
 
-      this.client.on('ledgerClosed', ledgerClose => {
-        //we have a closed ledger. Request the transactions and try to analyze them!
-        if(this.finishedIteration) {
-          console.log("ledger closed! " + ledgerClose.ledger_index);
-          if((this.currentKnownLedger+1) == ledgerClose.ledger_index) {
+      this.client.on('ledgerClosed', async ledgerClose => {
 
-            setTimeout(async () => {
+        try {
+          //we have a closed ledger. Request the transactions and try to analyze them!
+          if(this.finishedIteration) {
+            console.log("ledger closed! " + ledgerClose.ledger_index);
+            if((this.currentKnownLedger+1) == ledgerClose.ledger_index) {
+
               console.log("getting transactions!")
               let ledgerRequest:LedgerRequest = {
                 command: 'ledger',
                 ledger_index: ledgerClose.ledger_index,
                 transactions: true,
-                expand: true              
+                accounts: false,
+                binary: false,
+                owner_funds: false,
+                queue: false,
+                full: false,
+                expand: true
               }
-  
+
               let ledgerResponse:LedgerResponse = await this.client.request(ledgerRequest);
 
               if(ledgerResponse?.result?.ledger?.transactions) {
                 let transactions = ledgerResponse.result.ledger.transactions;
+
+                console.log("having transactions: " + transactions.length);
 
                 for(let i = 0; i < transactions.length; i++) {
                   if(transactions[i] && typeof(transactions[i]) === 'object') {
@@ -148,16 +156,20 @@ export class LedgerSync {
 
               await this.nftIssuer.saveNFTDataToFS();
 
-            },0)
-
+            } else {
+              //something is wrong, reset!
+              this.client.disconnect();
+              this.client.removeAllListeners();
+              this.init();
+            }
           } else {
-            //something is wrong, reset!
-            this.client.disconnect();
-            this.client.removeAllListeners();
-            this.init();
+            console.log("Ledger closed but waiting for catch up! current ledger: " + this.currentKnownLedger + " | last closed ledger: " + ledgerClose.ledger_index);
           }
-        } else {
-          console.log("Ledger closed but waiting for catch up! current ledger: " + this.currentKnownLedger + " | last closed ledger: " + ledgerClose.ledger_index);
+        } catch(err) {
+          console.log(err);
+          this.client.disconnect();
+          this.client.removeAllListeners();
+          this.init();
         }
       });     
     }
