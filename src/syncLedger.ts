@@ -137,7 +137,7 @@ export class LedgerSync {
                 console.log("having transactions: " + transactions.length);
 
                 for(let i = 0; i < transactions.length; i++) {
-                  if(transactions[i] && typeof(transactions[i]) === 'object') {
+                  if(transactions[i]) {
                     await this.analyzeTransaction(transactions[i]);
                   }
                 }
@@ -178,6 +178,8 @@ export class LedgerSync {
 
           if(mintedTokenId) {
 
+            console.log("minted token: " + mintedTokenId);
+
             let parsedNft = parseNFTokenID(mintedTokenId);
 
             let newNftEntry:NFT = {
@@ -209,7 +211,7 @@ export class LedgerSync {
           let newOwnerAccount = newNftOwner[1];
 
           if(nftokenId && newOwnerAccount) {
-            console.log("nftoken: " + nftokenId);
+            console.log("changed nftoken: " + nftokenId);
             console.log("new owner: " + newOwnerAccount);
 
             let existingNft = this.nftIssuer.getNft(nftokenId);
