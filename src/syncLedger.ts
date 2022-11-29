@@ -117,8 +117,6 @@ export class LedgerSync {
 
             if((this.currentKnownLedger+1) == ledgerClose.ledger_index) {
 
-              console.log("getting transactions!");
-
               let ledgerRequest:LedgerRequest = {
                 command: 'ledger',
                 ledger_index: ledgerClose.ledger_index,
@@ -173,27 +171,37 @@ export class LedgerSync {
     private analyzeTransaction(transaction:any) {
       if(transaction && transaction?.metadata?.TransactionResult == "tesSUCCESS" && (transaction.transaction.TransactionType == "NFTokenAcceptOffer" || transaction.transaction.TransactionType == "NFTokenCancelOffer" || transaction.transaction.TransactionType == "NFTokenCreateOffer" || transaction.transaction.TransactionType == "NFTokenBurn" || transaction.transaction.TransactionType == "NFTokenMint")) {
 
+        console.log("analyzing NFT Transaction!")
+
         if(transaction.transaction.TransactionType == "NFTokenMint") { // NEW NFT
           let mintedTokenId = this.getMintedTokenId(transaction.metadata);
 
-          let parsedNft = parseNFTokenID(mintedTokenId);
+          if(mintedTokenId) {
 
-          let newNftEntry:NFT = {
-            NFTokenID: parsedNft.NFTokenID,
-            Issuer: transaction.transaction.Account,
-            Owner: transaction.transaction.Account,
-            Taxon: parsedNft.Taxon,
-            TransferFee: parsedNft.TransferFee,
-            Flags: parsedNft.Flags,
-            Sequence: parsedNft.Sequence,
-            URI: transaction.transaction.URI
+            let parsedNft = parseNFTokenID(mintedTokenId);
+
+            let newNftEntry:NFT = {
+              NFTokenID: parsedNft.NFTokenID,
+              Issuer: transaction.transaction.Account,
+              Owner: transaction.transaction.Account,
+              Taxon: parsedNft.Taxon,
+              TransferFee: parsedNft.TransferFee,
+              Flags: parsedNft.Flags,
+              Sequence: parsedNft.Sequence,
+              URI: transaction.transaction.URI
+            }
+
+            this.nftIssuer.addNFT(newNftEntry);
           }
-
-          this.nftIssuer.addNFT(newNftEntry);
 
         } else if(transaction.transaction.TransactionType == "NFTokenBurn") { // BURNED NFT
           let burnedTokenId = this.getBurnedTokenId(transaction.metadata);
-          this.nftIssuer.removeNft(burnedTokenId);
+
+
+          if(burnedTokenId) {
+            console.log("burned token: " + burnedTokenId);
+            this.nftIssuer.removeNft(burnedTokenId);
+          }
 
         } else { // CHECK FOR OWNER CHANGE!
           let newNftOwner = this.getNewNFTOwnerAddress(transaction.metadata);
@@ -201,12 +209,16 @@ export class LedgerSync {
           let newOwnerAccount = newNftOwner[1];
 
           if(nftokenId && newOwnerAccount) {
+            console.log("nftoken: " + nftokenId);
+            console.log("new owner: " + newOwnerAccount);
+
             let existingNft = this.nftIssuer.getNft(nftokenId);
 
             if(existingNft) {
               existingNft.Owner = newOwnerAccount;
               this.nftIssuer.addNFT(existingNft);
             } else {
+              console.log("THIS SHOULD NEVER HAVE HAPPENED?!?!? NEW NFT NOT POSSIBLE!")
               let parsedNft = parseNFTokenID(nftokenId);
 
               let newNftEntry:NFT = {
