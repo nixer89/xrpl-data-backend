@@ -69,7 +69,7 @@ export class LedgerScanner {
       }
     }
 
-    public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number): Promise<boolean> {
+     public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number): Promise<boolean> {
         if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
           console.log("increase retry counter");
           retryCounter++;
@@ -225,7 +225,7 @@ export class LedgerScanner {
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
-          await this.nftIssuerAccounts.saveNFTDataToFS();
+          await this.nftIssuerAccounts.saveNFTDataToFS(this.getLedgerIndex(), this.getLedgerHash(), this.getLedgerCloseTime(), this.getLedgerCloseTimeMs());
           await this.ledgerData.saveLedgerDataToFS();
           
           //trigger online deletion
@@ -243,7 +243,7 @@ export class LedgerScanner {
         }
       }
     
-      public getLedgerIndex(): number {
+    public getLedgerIndex(): number {
         return this.ledger_index;
     }
 
