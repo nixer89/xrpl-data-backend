@@ -221,11 +221,16 @@ export class LedgerScanner {
           this.setLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
           this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
+          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
+          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
+
           //always save resolved user names to file system to make restart of server much faster
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
-          await this.nftIssuerAccounts.saveNFTDataToFS(this.getLedgerIndex(), this.getLedgerHash(), this.getLedgerCloseTime(), this.getLedgerCloseTimeMs());
+          await this.nftIssuerAccounts.saveNFTDataToFS();
           await this.ledgerData.saveLedgerDataToFS();
           
           //trigger online deletion

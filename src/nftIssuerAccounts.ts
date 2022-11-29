@@ -12,6 +12,11 @@ export class NftIssuerAccounts {
 
     private nftokensMap: Map<string, NFT> = new Map();
 
+    private current_ledger_index: number;
+    private current_ledger_date: string;
+    private current_ledger_time_ms: number;
+    private current_ledger_hash: string;
+
     private constructor() { }
 
     public static get Instance(): NftIssuerAccounts
@@ -50,7 +55,7 @@ export class NftIssuerAccounts {
                 URI: uri
               }
 
-              await this.addNewToken(newNftEntry.NFTokenID, newNftEntry);
+              await this.addNFT(newNftEntry);
             } else {
               console.log("NO TOKEN ID?????????????????????");
               console.log(JSON.stringify(singleNFTFromPage));
@@ -60,9 +65,17 @@ export class NftIssuerAccounts {
       }
     }
     
-    private async addNewToken(nftokenId:string, newNft:NFT): Promise<void> {
-      this.nftokensMap.set(nftokenId, newNft);
-    }  
+    public async addNFT(newNft:NFT): Promise<void> {
+      this.nftokensMap.set(newNft.NFTokenID, newNft);
+    }
+
+    public removeNft(burnedNftokenId:string) {
+      this.nftokensMap.delete(burnedNftokenId);
+    }
+
+    public getNft(nftokenId:string) {
+      return this.nftokensMap.get(nftokenId);
+    }
 
     public getNFTMap():Map<string, NFT> {
       return this.nftokensMap;
@@ -72,14 +85,14 @@ export class NftIssuerAccounts {
         this.nftokensMap.clear();
     }
 
-    public async saveNFTDataToFS(index:number, hash: string, closeTime: string, closeTimeMs: number): Promise<void> {
+    public async saveNFTDataToFS(): Promise<void> {
       let mapToSave:Map<string, NFT> = this.nftokensMap;
       if(mapToSave && mapToSave.size > 0) {
         let nftData:any = {
-          ledger_index: index,
-          ledger_hash: hash,
-          ledger_close: closeTime,
-          ledger_close_ms: closeTimeMs,
+          ledger_index: this.getCurrentLedgerIndex(),
+          ledger_hash: this.getCurrentLedgerHash(),
+          ledger_close: this.getCurrentLedgerCloseTime(),
+          ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
           "nfts": []
         };
 
@@ -97,5 +110,37 @@ export class NftIssuerAccounts {
       } else {
         console.log("nft data is empty!");
       }
+    }
+
+    public getCurrentLedgerIndex(): number {
+      return this.current_ledger_index;
+    }
+
+    public setCurrentLedgerIndex(index:number): void {
+        this.current_ledger_index = index;
+    }
+
+    public getCurrentLedgerHash(): string {
+        return this.current_ledger_hash;
+    }
+
+    public setCurrentLedgerHash(hash:string): void {
+        this.current_ledger_hash = hash;
+    }
+
+    public getCurrentLedgerCloseTime(): string {
+        return this.current_ledger_date;
+    }
+
+    public setCurrentLedgerCloseTime(closeTime: string): void {
+        this.current_ledger_date = closeTime;
+    }
+
+    public getCurrentLedgerCloseTimeMs(): number {
+        return this.current_ledger_time_ms;
+    }
+
+    public setCurrentLedgerCloseTimeMs(closeTimeInMs: number): void {
+        this.current_ledger_time_ms = closeTimeInMs;
     }
   }
