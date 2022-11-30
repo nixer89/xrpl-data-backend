@@ -169,11 +169,11 @@ export class LedgerSync {
     }
 
     private analyzeTransaction(transaction:any) {
-      if(transaction && transaction.metaData?.TransactionResult == "tesSUCCESS" && (transaction.transaction.TransactionType == "NFTokenAcceptOffer" || transaction.transaction.TransactionType == "NFTokenCancelOffer" || transaction.transaction.TransactionType == "NFTokenCreateOffer" || transaction.transaction.TransactionType == "NFTokenBurn" || transaction.transaction.TransactionType == "NFTokenMint")) {
+      if(transaction && transaction.metaData?.TransactionResult == "tesSUCCESS" && (transaction.TransactionType == "NFTokenAcceptOffer" || transaction.TransactionType == "NFTokenCancelOffer" || transaction.TransactionType == "NFTokenCreateOffer" || transaction.TransactionType == "NFTokenBurn" || transaction.TransactionType == "NFTokenMint")) {
 
         console.log("analyzing NFT Transaction!")
 
-        if(transaction.transaction.TransactionType == "NFTokenMint") { // NEW NFT
+        if(transaction.TransactionType == "NFTokenMint") { // NEW NFT
           let mintedTokenId = this.getMintedTokenId(transaction.metaData);
 
           if(mintedTokenId) {
@@ -184,19 +184,19 @@ export class LedgerSync {
 
             let newNftEntry:NFT = {
               NFTokenID: parsedNft.NFTokenID,
-              Issuer: transaction.transaction.Account,
-              Owner: transaction.transaction.Account,
+              Issuer: transaction.Account,
+              Owner: transaction.Account,
               Taxon: parsedNft.Taxon,
               TransferFee: parsedNft.TransferFee,
               Flags: parsedNft.Flags,
               Sequence: parsedNft.Sequence,
-              URI: transaction.transaction.URI
+              URI: transaction.URI
             }
 
             this.nftIssuer.addNFT(newNftEntry);
           }
 
-        } else if(transaction.transaction.TransactionType == "NFTokenBurn") { // BURNED NFT
+        } else if(transaction.TransactionType == "NFTokenBurn") { // BURNED NFT
           let burnedTokenId = this.getBurnedTokenId(transaction.metaData);
 
 
@@ -225,13 +225,13 @@ export class LedgerSync {
 
               let newNftEntry:NFT = {
                 NFTokenID: parsedNft.NFTokenID,
-                Issuer: transaction.transaction.Account,
-                Owner: transaction.transaction.Account,
+                Issuer: transaction.Account,
+                Owner: transaction.Account,
                 Taxon: parsedNft.Taxon,
                 TransferFee: parsedNft.TransferFee,
                 Flags: parsedNft.Flags,
                 Sequence: parsedNft.Sequence,
-                URI: transaction.transaction.URI
+                URI: transaction.URI
               }
 
               this.nftIssuer.addNFT(newNftEntry);
