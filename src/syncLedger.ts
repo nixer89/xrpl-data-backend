@@ -1,5 +1,5 @@
 import { NFT } from './util/types';
-import { Client, LedgerRequest, LedgerResponse, parseNFTokenID, TransactionAndMetadata, TransactionMetadata } from 'xrpl';
+import { Client, LedgerRequest, LedgerResponse, parseNFTokenID, TransactionMetadata } from 'xrpl';
 import * as rippleAddressCodec from 'ripple-address-codec';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 
@@ -169,12 +169,12 @@ export class LedgerSync {
     }
 
     private analyzeTransaction(transaction:any) {
-      if(transaction && transaction?.metadata?.TransactionResult == "tesSUCCESS" && (transaction.transaction.TransactionType == "NFTokenAcceptOffer" || transaction.transaction.TransactionType == "NFTokenCancelOffer" || transaction.transaction.TransactionType == "NFTokenCreateOffer" || transaction.transaction.TransactionType == "NFTokenBurn" || transaction.transaction.TransactionType == "NFTokenMint")) {
+      if(transaction && transaction.metaData?.TransactionResult == "tesSUCCESS" && (transaction.transaction.TransactionType == "NFTokenAcceptOffer" || transaction.transaction.TransactionType == "NFTokenCancelOffer" || transaction.transaction.TransactionType == "NFTokenCreateOffer" || transaction.transaction.TransactionType == "NFTokenBurn" || transaction.transaction.TransactionType == "NFTokenMint")) {
 
         console.log("analyzing NFT Transaction!")
 
         if(transaction.transaction.TransactionType == "NFTokenMint") { // NEW NFT
-          let mintedTokenId = this.getMintedTokenId(transaction.metadata);
+          let mintedTokenId = this.getMintedTokenId(transaction.metaData);
 
           if(mintedTokenId) {
 
@@ -197,7 +197,7 @@ export class LedgerSync {
           }
 
         } else if(transaction.transaction.TransactionType == "NFTokenBurn") { // BURNED NFT
-          let burnedTokenId = this.getBurnedTokenId(transaction.metadata);
+          let burnedTokenId = this.getBurnedTokenId(transaction.metaData);
 
 
           if(burnedTokenId) {
@@ -206,7 +206,7 @@ export class LedgerSync {
           }
 
         } else { // CHECK FOR OWNER CHANGE!
-          let newNftOwner = this.getNewNFTOwnerAddress(transaction.metadata);
+          let newNftOwner = this.getNewNFTOwnerAddress(transaction.metaData);
           let nftokenId = newNftOwner[0];
           let newOwnerAccount = newNftOwner[1];
 
