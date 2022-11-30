@@ -4,7 +4,6 @@ import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
-import { LedgerSync } from './syncLedger';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -26,7 +25,6 @@ export class LedgerScanner {
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
     private nftIssuerAccounts: NftIssuerAccounts;
-    private ledgerSync: LedgerSync;
 
     private constructor() {}
 
@@ -40,16 +38,8 @@ export class LedgerScanner {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
         this.nftIssuerAccounts = NftIssuerAccounts.Instance;
-        this.ledgerSync = LedgerSync.Instance;
 
         await this.issuerAccount.init();
-
-        await this.nftIssuerAccounts.readNftDataFromFS();
-
-        //we already have NFTs, start sync right away!
-        if(this.nftIssuerAccounts.isMapInitialized()) {
-          this.ledgerSync.start();
-        }
 
         await this.readLedgerData(null, null, null, 0);
 
@@ -195,9 +185,7 @@ export class LedgerScanner {
               await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
               //console.timeEnd("resolveIssuerToken");
 
-              if(!this.nftIssuerAccounts.isMapInitialized()) {
-                await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
-              }
+              await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
             } else {
               throw "binary and json objects not the same!"
             }
@@ -241,20 +229,13 @@ export class LedgerScanner {
           await this.issuerAccount.saveIssuerDataToFS();
           await this.ledgerData.saveLedgerDataToFS();
 
-          if(this.nftIssuerAccounts.isMapInitialized()) {
-            this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-            this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
-            this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-            this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
-            await this.nftIssuerAccounts.saveNFTDataToFS();
+          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
+          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
-            //init sync!
-            this.ledgerSync.start();
-          }
+          await this.nftIssuerAccounts.saveNFTDataToFS();
           
-          //trigger online deletion
-          //await this.xrpljsClient.request({command: "can_delete", can_delete: "now"});
-    
           return true;
       
         } catch(err) {

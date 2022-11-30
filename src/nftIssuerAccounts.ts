@@ -88,76 +88,59 @@ export class NftIssuerAccounts {
     }
 
     public async saveNFTDataToFS(): Promise<void> {
-      let mapToSave:Map<string, NFT> = this.nftokensMap;
-      if(mapToSave && mapToSave.size > 0) {
-        let nftData:any = {
-          ledger_index: this.getCurrentLedgerIndex(),
-          ledger_hash: this.getCurrentLedgerHash(),
-          ledger_close: this.getCurrentLedgerCloseTime(),
-          ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
-          "nfts": []
-        };
+      let currentWrittenLedger = await this.readCurrentLedgerFromFS();
 
-        mapToSave.forEach((value, key, map) => {
-          nftData["nfts"].push(value);
-        });
+      if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
+        let mapToSave:Map<string, NFT> = this.nftokensMap;
+        if(mapToSave && mapToSave.size > 0) {
+          let nftData:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            "nfts": []
+          };
 
-        
+          mapToSave.forEach((value, key, map) => {
+            nftData["nfts"].push(value);
+          });
 
-        console.time("saveNFTDataToFS");
+          
 
-        fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
-        fs.renameSync("./../nftData_new.js", "./../nftData.js");
-        
-        console.timeEnd("saveNFTDataToFS");
+          console.time("saveNFTDataToFS");
 
-        this.initialized = true;
+          fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
+          fs.renameSync("./../nftData_new.js", "./../nftData.js");
+          
+          console.timeEnd("saveNFTDataToFS");
 
-      } else {
-        console.log("nft data is empty!");
+          this.initialized = true;
+
+        } else {
+          console.log("nft data is empty!");
+        }
       }
     }
 
-    public async readNftDataFromFS(): Promise<void> {
+    public async readCurrentLedgerFromFS(): Promise<number> {
       try {
         //console.log("loading nft issuer data from FS");
         if(fs.existsSync("./../nftData.js")) {
             let nftData:any = JSON.parse(fs.readFileSync("./../nftData.js").toString());
-            if(nftData && nftData.nfts) {
-                //console.log("ledger data loaded: " + JSON.stringify(ledgerData));
-                let nftArray:NFT[] = nftData.nfts;
-
-                //console.log("nftArray: " + this.nftArray.length);
-
-                this.nftokensMap = new Map();
-
-                this.setCurrentLedgerIndex(nftData.ledger_index);
-                this.setCurrentLedgerHash(nftData.ledger_hash);
-                this.setCurrentLedgerCloseTime(nftData.ledger_close);
-                this.setCurrentLedgerCloseTimeMs(nftData.ledger_close_ms);
-
-                for(let i = 0; i < nftArray.length; i++) {
-                  this.nftokensMap.set(nftArray[i].NFTokenID, nftArray[i]);
-                }
-
-                this.initialized = true;
-
-                //console.log("finished loading nft data!");
-                //console.log("nftokenIdMap: " + this.nftokenIdMap.size);
-                //console.log("nftokenIssuerMap: " + this.nftokenIssuerMap.size);
+            if(nftData && nftData.ledger_index) {
+                return nftData.ledger_index;
+            } else {
+              return -1;
             }
         } else {
           console.log("nft issuer data file does not exist yet.")
+          return -1;
         }
       } catch(err) {
         console.log("error reading nft issuer data from FS");
         console.log(err);
-        this.nftokensMap = new Map();
+        return -1;
       }  
-    }
-
-    public isMapInitialized() {
-      return this.initialized;
     }
 
     public getCurrentLedgerIndex(): number {
