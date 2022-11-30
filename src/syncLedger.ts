@@ -76,7 +76,7 @@ export class LedgerSync {
 
           if(ledgerResponse?.result) {
 
-            console.log("analyzing ledger: " + ledgerResponse.result.ledger_index)
+            //console.log("analyzing ledger: " + ledgerResponse.result.ledger_index)
 
             if(!ledgerResponse.result.ledger.closed) { //if we are not closed yet, break and listen for ledger close!
               break;
@@ -134,7 +134,7 @@ export class LedgerSync {
               if(ledgerResponse?.result?.ledger?.transactions) {
                 let transactions = ledgerResponse.result.ledger.transactions;
 
-                console.log("having transactions: " + transactions.length);
+                //console.log("having transactions: " + transactions.length);
 
                 for(let i = 0; i < transactions.length; i++) {
                   if(transactions[i]) {
@@ -154,9 +154,7 @@ export class LedgerSync {
 
             } else {
               console.log("something is wrong, reset!");
-              //this.client.disconnect();
-              //this.client.removeAllListeners();
-              //this.init();
+              this.client.disconnect();
             }
           } else {
             console.log("Ledger closed but waiting for catch up! current ledger: " + this.currentKnownLedger + " | last closed ledger: " + ledgerClose.ledger_index);
@@ -171,7 +169,7 @@ export class LedgerSync {
     private analyzeTransaction(transaction:any) {
       if(transaction && transaction.metaData?.TransactionResult == "tesSUCCESS" && (transaction.TransactionType == "NFTokenAcceptOffer" || transaction.TransactionType == "NFTokenCancelOffer" || transaction.TransactionType == "NFTokenCreateOffer" || transaction.TransactionType == "NFTokenBurn" || transaction.TransactionType == "NFTokenMint")) {
 
-        console.log("analyzing NFT Transaction!")
+        //console.log("analyzing NFT Transaction!")
 
         if(transaction.TransactionType == "NFTokenMint") { // NEW NFT
           let mintedTokenId = this.getMintedTokenId(transaction.metaData);
