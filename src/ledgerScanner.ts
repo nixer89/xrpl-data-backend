@@ -44,6 +44,13 @@ export class LedgerScanner {
 
         await this.issuerAccount.init();
 
+        await this.nftIssuerAccounts.readNftDataFromFS();
+
+        //we already have NFTs, start sync right away!
+        if(this.nftIssuerAccounts.isMapInitialized()) {
+          this.ledgerSync.start();
+        }
+
         await this.readLedgerData(null, null, null, 0);
 
         scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
@@ -188,7 +195,7 @@ export class LedgerScanner {
               await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
               //console.timeEnd("resolveIssuerToken");
 
-              if(!this.nftIssuerAccounts.getCurrentLedgerIndex() || newledgerIndex > this.nftIssuerAccounts.getCurrentLedgerIndex() ) {
+              if(!this.nftIssuerAccounts.isMapInitialized()) {
                 await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
               }
             } else {
@@ -234,7 +241,7 @@ export class LedgerScanner {
           await this.issuerAccount.saveIssuerDataToFS();
           await this.ledgerData.saveLedgerDataToFS();
 
-          if(!this.nftIssuerAccounts.getCurrentLedgerIndex() || ledgerIndex > this.nftIssuerAccounts.getCurrentLedgerIndex() ) {
+          if(this.nftIssuerAccounts.isMapInitialized()) {
             this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
             this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
             this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);

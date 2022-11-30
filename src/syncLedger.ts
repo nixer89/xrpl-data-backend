@@ -30,14 +30,18 @@ export class LedgerSync {
       //reinitialize client
       this.client.on('disconnected', ()=> {
         console.log("DISCONNECTED!!! RECONNECTING!")
-        this.client.disconnect();
+        if(this.client.isConnected())
+          this.client.disconnect();
+
         this.client.removeAllListeners();
         this.start();
       })
 
       this.client.on('error', () => {
           console.log("ERROR HAPPENED! Re-Init!");
-          this.client.disconnect();
+          if(this.client.isConnected())
+            this.client.disconnect();
+            
           this.client.removeAllListeners();
           this.start();
       })
@@ -154,7 +158,12 @@ export class LedgerSync {
 
             } else {
               console.log("something is wrong, reset!");
-              this.client.disconnect();
+              try {
+                this.client.disconnect();
+              } catch(err) {
+                //was not conencted. start straight away!
+                this.start();
+              }
             }
           } else {
             console.log("Ledger closed but waiting for catch up! current ledger: " + this.currentKnownLedger + " | last closed ledger: " + ledgerClose.ledger_index);

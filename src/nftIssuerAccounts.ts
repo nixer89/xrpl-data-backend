@@ -12,6 +12,8 @@ export class NftIssuerAccounts {
 
     private nftokensMap: Map<string, NFT> = new Map();
 
+    private initialized:boolean = false;
+
     private current_ledger_index: number;
     private current_ledger_date: string;
     private current_ledger_time_ms: number;
@@ -103,9 +105,53 @@ export class NftIssuerAccounts {
         fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
         fs.renameSync("./../nftData_new.js", "./../nftData.js");
 
+        this.initialized = true;
+
       } else {
         console.log("nft data is empty!");
       }
+    }
+
+    public async readNftDataFromFS(): Promise<void> {
+      try {
+        //console.log("loading nft issuer data from FS");
+        if(fs.existsSync("./../nftData.js")) {
+            let nftData:any = JSON.parse(fs.readFileSync("./../nftData.js").toString());
+            if(nftData && nftData.nfts) {
+                //console.log("ledger data loaded: " + JSON.stringify(ledgerData));
+                let nftArray:NFT[] = nftData.nfts;
+
+                //console.log("nftArray: " + this.nftArray.length);
+
+                this.nftokensMap = new Map();
+
+                this.setCurrentLedgerIndex(nftData.ledger_index);
+                this.setCurrentLedgerHash(nftData.ledger_hash);
+                this.setCurrentLedgerCloseTime(nftData.ledger_close);
+                this.setCurrentLedgerCloseTimeMs(nftData.ledger_close_ms);
+
+                for(let i = 0; i < nftArray.length; i++) {
+                  this.nftokensMap.set(nftArray[i].NFTokenID, nftArray[i]);
+                }
+
+                this.initialized = true;
+
+                //console.log("finished loading nft data!");
+                //console.log("nftokenIdMap: " + this.nftokenIdMap.size);
+                //console.log("nftokenIssuerMap: " + this.nftokenIssuerMap.size);
+            }
+        } else {
+          console.log("nft issuer data file does not exist yet.")
+        }
+      } catch(err) {
+        console.log("error reading nft issuer data from FS");
+        console.log(err);
+        this.nftokensMap = new Map();
+      }  
+    }
+
+    public isMapInitialized() {
+      return this.initialized;
     }
 
     public getCurrentLedgerIndex(): number {
