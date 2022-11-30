@@ -102,8 +102,14 @@ export class NftIssuerAccounts {
           nftData["nfts"].push(value);
         });
 
+        
+
+        console.time("saveNFTDataToFS");
+
         fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
         fs.renameSync("./../nftData_new.js", "./../nftData.js");
+        
+        console.timeEnd("saveNFTDataToFS");
 
         this.initialized = true;
 

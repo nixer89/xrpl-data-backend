@@ -11,6 +11,7 @@ export class LedgerSync {
     private client = new Client("ws://127.0.0.1:6006");
 
     private finishedIteration:boolean = false;
+    private mapHasChanged:boolean = false;
 
     private nftIssuer:NftIssuerAccounts;
     private currentKnownLedger: number = 0;
@@ -114,6 +115,7 @@ export class LedgerSync {
       this.client.on('ledgerClosed', async ledgerClose => {
 
         try {
+          this.mapHasChanged = false;
           //we have a closed ledger. Request the transactions and try to analyze them!
           if(this.finishedIteration) {
             console.log("ledger closed! " + ledgerClose.ledger_index);
@@ -155,17 +157,15 @@ export class LedgerSync {
               this.currentKnownLedger = ledgerResponse.result.ledger_index;
 
               setTimeout(async () => {
-                console.time("saveNFTDataToFS");
-                await this.nftIssuer.saveNFTDataToFS();
-                console.timeEnd("saveNFTDataToFS");
-              })
+                this.nftIssuer.saveNFTDataToFS();
+              },0);
 
             } else {
               console.log("something is wrong, reset!");
               try {
                 this.client.disconnect();
               } catch(err) {
-                //was not conencted. start straight away!
+                //was not connected. start straight away!
                 this.start();
               }
             }
