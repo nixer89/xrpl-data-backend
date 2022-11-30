@@ -41,7 +41,7 @@ export class LedgerSync {
           console.log("ERROR HAPPENED! Re-Init!");
           if(this.client.isConnected())
             this.client.disconnect();
-            
+
           this.client.removeAllListeners();
           this.start();
       })
@@ -152,9 +152,13 @@ export class LedgerSync {
               this.nftIssuer.setCurrentLedgerCloseTime(ledgerResponse.result.ledger.close_time_human);
               this.nftIssuer.setCurrentLedgerCloseTimeMs(ledgerResponse.result.ledger.close_time);
 
-              await this.nftIssuer.saveNFTDataToFS();
-
               this.currentKnownLedger = ledgerResponse.result.ledger_index;
+
+              setTimeout(async () => {
+                console.time("saveNFTDataToFS");
+                await this.nftIssuer.saveNFTDataToFS();
+                console.timeEnd("saveNFTDataToFS");
+              })
 
             } else {
               console.log("something is wrong, reset!");
