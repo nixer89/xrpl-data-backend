@@ -77,14 +77,14 @@ export class TokenCreation {
             let issuerCreation = {date: "Unknown"};
 
             //try to resolve it from xrplorer.com API
-            console.log("resolving: " + issuerKey);
+            //console.log("resolving: " + issuerKey);
             
             let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
             
             if(xrplorerResponse && xrplorerResponse.ok) {
                 issuerCreation = await xrplorerResponse.json();
         
-                console.log("resolved: " + JSON.stringify(issuerCreation));   
+                //console.log("resolved: " + JSON.stringify(issuerCreation));   
             }
 
             await this.appendIssuerCreationToFS(issuerKey, issuerCreation);

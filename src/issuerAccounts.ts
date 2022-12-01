@@ -122,7 +122,7 @@ export class IssuerAccounts {
       await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
 
       if(!this.tokenCreation.isTokenInCache(issuer)) {
-        console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
+        //console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
         this.tokenCreation.setDummyValueInCache(issuer);
         this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
       }

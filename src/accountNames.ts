@@ -219,36 +219,36 @@ export class AccountNames {
         try {
             if(!this.kycMap.has(xrplAccount)) {
 
-                console.log("RESOLVING KYC FOR: " + xrplAccount);
+                //console.log("RESOLVING KYC FOR: " + xrplAccount);
                 let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount + "?include_globalid=true")
                 
                 if(kycResponse && kycResponse.ok) {
                     let kycInfo:any = await kycResponse.json();
             
-                    console.log("resolved: " + JSON.stringify(kycInfo));
+                    //console.log("resolved: " + JSON.stringify(kycInfo));
                     if(kycInfo) {
                         this.kycMap.set(xrplAccount, kycInfo.kycApproved)
                     }
 
-                    console.log("kycMap size: " + this.kycMap.size);
+                    //console.log("kycMap size: " + this.kycMap.size);
                 }
             }
 
             //resolve distributor account status!
             if(this.kycDistributorMap && this.kycDistributorMap.has(xrplAccount) && this.kycDistributorMap.get(xrplAccount) != null && !this.kycMap.has(this.kycDistributorMap.get(xrplAccount))) {
                 let distributorAccount:string = this.kycDistributorMap.get(xrplAccount);
-                console.log("resolving kyc for distributor account: " + distributorAccount);
+                //console.log("resolving kyc for distributor account: " + distributorAccount);
                 let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + distributorAccount + "?include_globalid=true")
                 
                 if(kycResponse && kycResponse.ok) {
                     let kycInfo:any = await kycResponse.json();
             
-                    console.log("resolved: " + JSON.stringify(kycInfo));
+                    //console.log("resolved: " + JSON.stringify(kycInfo));
                     if(kycInfo) {
                         this.kycMap.set(distributorAccount, kycInfo.kycApproved)
                     }
 
-                    console.log("kycMap size: " + this.kycMap.size);
+                    //console.log("kycMap size: " + this.kycMap.size);
                 }
             }
         } catch(err) {
@@ -287,7 +287,7 @@ export class AccountNames {
     }
 
     private async loadBithompUserNamesFromFS(): Promise<void> {
-        console.log("loading bithomp user names from FS");
+        //console.log("loading bithomp user names from FS");
         try {
             if(fs.existsSync("./../bithompUserNames.js")) {
                 let bithompNames:any = JSON.parse(fs.readFileSync("./../bithompUserNames.js").toString());
@@ -325,7 +325,7 @@ export class AccountNames {
     }
 
     private async loadKycDataFromFS(): Promise<void> {
-        console.log("loading kyc data from FS");
+        //console.log("loading kyc data from FS");
         try {
             if(fs.existsSync("./../kycData.js")) {
                 let kycData:any = JSON.parse(fs.readFileSync("./../kycData.js").toString());
