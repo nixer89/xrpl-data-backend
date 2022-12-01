@@ -12,8 +12,6 @@ export class NftIssuerAccounts {
 
     private nftokensMap: Map<string, NFT> = new Map();
 
-    private initialized:boolean = false;
-
     private current_ledger_index: number;
     private current_ledger_date: string;
     private current_ledger_time_ms: number;
@@ -103,9 +101,7 @@ export class NftIssuerAccounts {
 
           mapToSave.forEach((value, key, map) => {
             nftData["nfts"].push(value);
-          });
-
-          
+          });         
 
           console.time("saveNFTDataToFS");
 
@@ -113,8 +109,6 @@ export class NftIssuerAccounts {
           fs.renameSync("./../nftData_new.js", "./../nftData.js");
           
           console.timeEnd("saveNFTDataToFS");
-
-          this.initialized = true;
 
         } else {
           console.log("nft data is empty!");

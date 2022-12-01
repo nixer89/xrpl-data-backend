@@ -83,7 +83,7 @@ export class LedgerScanner {
           retryCounter = 0;
         }
         //console.log("new call: ledgerIndex: " + ledgerIndex);
-        console.log("new call: marker: " + marker);
+        //console.log("new call: marker: " + marker);
 
         if(!marker) {
             this.issuerAccount.clearIssuer();
@@ -191,8 +191,8 @@ export class LedgerScanner {
             }
             //console.log("done");
       
-            console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+            //console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+            //console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
 
             if(newledgerIndex != null && newMarker != null) {
               return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
