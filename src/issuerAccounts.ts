@@ -195,7 +195,7 @@ export class IssuerAccounts {
             fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
             fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
 
-            console.log("saved " + mapToSave.size + " issuer data to file system");
+            //console.log("saved " + mapToSave.size + " issuer data to file system");
         } else {
           console.log("issuer data is empty!");
         }

@@ -34,7 +34,7 @@ export class SelfAssessments {
             fs.writeFileSync("./../selfAssessments_new.js", JSON.stringify(selfAssessmentsObject));
             fs.renameSync("./../selfAssessments_new.js", "./../selfAssessments.js");
 
-            console.log("saved " + this.selfAssessments.size + " self assessments to file system");
+            //console.log("saved " + this.selfAssessments.size + " self assessments to file system");
         }
     }
     private async loadSelfAssessmentsFromApi(): Promise<any> {

@@ -28,7 +28,7 @@ export class TokenCreation {
         this.tokenCreation.set(issuerKey, creation);
         fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
 
-        console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
+        //console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
     }
 
     private async loadIssuerCreationFromFS(): Promise<void> {
@@ -50,8 +50,8 @@ export class TokenCreation {
                 
                     await once(rl, 'close');
                 
-                    console.log('File processed.');
-                    console.log("loaded token creation from file system");
+                    //console.log('File processed.');
+                    //console.log("loaded token creation from file system");
 
                 } catch (err) {
                     console.error(err);

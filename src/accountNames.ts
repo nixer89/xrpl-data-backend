@@ -282,7 +282,7 @@ export class AccountNames {
             fs.writeFileSync("./../bithompUserNames_new.js", JSON.stringify(bithompNames));
             fs.renameSync("./../bithompUserNames_new.js", "./../bithompUserNames.js");
 
-            console.log("saved " + this.bithompUserNames.size + " user names to file system");
+            //console.log("saved " + this.bithompUserNames.size + " user names to file system");
         }
     }
 
@@ -299,7 +299,7 @@ export class AccountNames {
                         }
                     }
 
-                    console.log("loaded " + this.bithompUserNames.size + " user names from file system");
+                    //console.log("loaded " + this.bithompUserNames.size + " user names from file system");
                 }
             } else {
                 console.log("bithomp user name file does not exist yet.")
@@ -320,7 +320,7 @@ export class AccountNames {
             fs.writeFileSync("./../kycData_new.js", JSON.stringify(kycData));
             fs.renameSync("./../kycData_new.js", "./../kycData.js");
 
-            console.log("saved " + this.kycMap.size + " kyc data to file system");
+            //console.log("saved " + this.kycMap.size + " kyc data to file system");
         }
     }
 
@@ -337,7 +337,7 @@ export class AccountNames {
                         }
                     }
 
-                    console.log("loaded " + this.kycMap.size + " kyc data from file system");
+                    //console.log("loaded " + this.kycMap.size + " kyc data from file system");
                 }
             } else {
                 console.log("kyc data file does not exist yet.")
