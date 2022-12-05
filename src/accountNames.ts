@@ -87,7 +87,8 @@ export class AccountNames {
     public async init(): Promise<void> {
         scheduler.scheduleJob("reloadUserNames1", {dayOfWeek: 1, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
         scheduler.scheduleJob("reloadUserNames2", {dayOfWeek: 4, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
-        scheduler.scheduleJob("reloadKYC", {hour: 18, minute: 59, second: 0}, () => this.resetKyc());
+        scheduler.scheduleJob("reloadKYC", {dayOfWeek: 1,hour: 0, minute: 59, second: 0}, () => this.resetKyc());
+        scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
         await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
         await this.loadKycDataFromFS();
@@ -192,7 +193,7 @@ export class AccountNames {
     private async loadBithompSingleAccountName(xrplAccount: string): Promise<void> {
         try {
             if(!this.bithompServiceNames.has(xrplAccount) && !this.xrpscanUserNames.has(xrplAccount) && !this.bithompUserNames.has(xrplAccount)) {
-                console.log("resolving: " + xrplAccount);
+                //console.log("resolving: " + xrplAccount);
                 let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
                 
                 if(bithompResponse && bithompResponse.ok) {
@@ -204,6 +205,8 @@ export class AccountNames {
                         let verifiedDomain:string = accountInfo.verifiedDomain;
 
                         this.bithompUserNames.set(xrplAccount, {resolvedBy: "Bithomp", account: xrplAccount, domain: verifiedDomain, verified: (verifiedDomain && verifiedDomain.trim().length > 0 ? true : false), username: username, twitter: null});
+                    } else {
+                        this.bithompUserNames.set(xrplAccount, null);
                     }
 
                     console.log("bithompUserNames size: " + this.bithompUserNames.size);
@@ -228,6 +231,8 @@ export class AccountNames {
                     //console.log("resolved: " + JSON.stringify(kycInfo));
                     if(kycInfo) {
                         this.kycMap.set(xrplAccount, kycInfo.kycApproved)
+                    } else {
+                        this.kycMap.set(xrplAccount, null);
                     }
 
                     //console.log("kycMap size: " + this.kycMap.size);
@@ -246,6 +251,8 @@ export class AccountNames {
                     //console.log("resolved: " + JSON.stringify(kycInfo));
                     if(kycInfo) {
                         this.kycMap.set(distributorAccount, kycInfo.kycApproved)
+                    } else {
+                        this.kycMap.set(distributorAccount, null);
                     }
 
                     //console.log("kycMap size: " + this.kycMap.size);
@@ -277,7 +284,9 @@ export class AccountNames {
         if(this.bithompUserNames && this.bithompUserNames.size > 0) {
             let bithompNames:any = {};
             this.bithompUserNames.forEach((value, key, map) => {
-                bithompNames[key] = value;
+                if(value) {
+                    bithompNames[key] = value;
+                }
             });
             fs.writeFileSync("./../bithompUserNames_new.js", JSON.stringify(bithompNames));
             fs.renameSync("./../bithompUserNames_new.js", "./../bithompUserNames.js");
@@ -315,7 +324,9 @@ export class AccountNames {
         if(this.kycMap && this.kycMap.size > 0) {
             let kycData:any = {};
             this.kycMap.forEach((value, key, map) => {
-                kycData[key] = value;
+                if(value) {
+                    kycData[key] = value;
+                }
             });
             fs.writeFileSync("./../kycData_new.js", JSON.stringify(kycData));
             fs.renameSync("./../kycData_new.js", "./../kycData.js");
