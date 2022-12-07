@@ -17,6 +17,9 @@ export class AccountNames {
     private kycMap:Map<string, boolean> = new Map();
     private kycDistributorMap:Map<string, string> = new Map();
 
+    public resolveKycCounter:number = 0;
+    public resolveBithompCounter:number = 0;
+
     private constructor() {
         //init kyc distributor account
         
@@ -192,8 +195,17 @@ export class AccountNames {
 
     private async loadBithompSingleAccountName(xrplAccount: string): Promise<void> {
         try {
+
+            if(this.resolveBithompCounter > 10000) //only resolve 10k accounts at a time
+                return;
+
             if(!this.bithompServiceNames.has(xrplAccount) && !this.xrpscanUserNames.has(xrplAccount) && !this.bithompUserNames.has(xrplAccount)) {
                 //console.log("resolving: " + xrplAccount);
+                this.resolveBithompCounter++;
+
+                if(this.resolveBithompCounter%1000 ==0)
+                    console.log("this.resolveBithompCounter: " + this.resolveBithompCounter);
+
                 let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
                 
                 if(bithompResponse && bithompResponse.ok) {
@@ -221,6 +233,14 @@ export class AccountNames {
     async resolveKycStatus(xrplAccount: string): Promise<void> {
         try {
             if(!this.kycMap.has(xrplAccount)) {
+
+                if(this.resolveKycCounter > 10000) //only resolve 10k accounts at a time
+                    return;
+
+                this.resolveKycCounter++;
+
+                if(this.resolveKycCounter%1000 ==0)
+                    console.log("this.resolveKycCounter: " + this.resolveKycCounter);
 
                 //console.log("RESOLVING KYC FOR: " + xrplAccount);
                 let kycResponse:any = await fetch.default("https://xumm.app/api/v1/platform/kyc-status/" + xrplAccount + "?include_globalid=true")
