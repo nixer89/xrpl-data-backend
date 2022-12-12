@@ -25,6 +25,24 @@ export interface NFT {
     URI: string,
     Flags?: number
 }
+
+export interface NFTokenOffer {
+    Amount: any,
+    Flags: number,
+    LedgerEntryType: string,
+    NFTokenID: string,
+    NFTokenOfferNode: string,
+    Owner: string,
+    OwnerNode: string,
+    PreviousTxnID: string,
+    PreviousTxnLgrSeq: number,
+    index: string
+}
+
+export interface NFTokenOfferMapEntry {
+    buy: NFTokenOffer[],
+    sell: NFTokenOffer[]
+}
  
 export interface IssuerVerification {
     resolvedBy: string,
