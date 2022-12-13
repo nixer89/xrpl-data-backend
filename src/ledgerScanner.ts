@@ -57,6 +57,9 @@ export class LedgerScanner {
           let success:boolean = await this.readLedgerData(null, null, null, 0);
           if(success) {
             console.log("loading ledger data successfull.")
+            this.nftIssuerAccounts.clearData();
+            this.issuerAccount.clearIssuer();
+            this.ledgerData.clearLedgerData();
           } else {
             console.log("loading ledger data not successfull.")
           }
@@ -87,6 +90,7 @@ export class LedgerScanner {
 
         if(!marker) {
             this.issuerAccount.clearIssuer();
+            this.nftIssuerAccounts.clearData();
             this.ledgerData.clearLedgerData();
             this.setLedgerCloseTime(null)
             this.setLedgerCloseTimeMs(null);
