@@ -73,13 +73,13 @@ export class NftIssuerAccounts {
         if(singleOffer) {
           //add if not yet added
           this.nftOfferMap.set(singleOffer.index, {
-            Amount: singleOffer.Amount,
+            Amount: singleOffer.Amount ? singleOffer.Amount : 0,
             Flags: singleOffer.Flags ? singleOffer.Flags : 0,
             NFTokenID: singleOffer.NFTokenID,
             OfferID: singleOffer.index,
             Owner: singleOffer.Owner,
-            Destination: singleOffer.Destination,
-            Expiration: singleOffer.Expiration
+            Destination: singleOffer.Destination ? singleOffer.Destination : null,
+            Expiration: singleOffer.Expiration ? singleOffer.Expiration : null
           });
         }
       }
