@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import consoleStamp = require("console-stamp");
 import { encodeAccountID } from 'ripple-address-codec';
-import { NFTokenAcceptOffer, parseNFTokenID } from 'xrpl';
-import { NFT, NFTokenOffer, NFTokenOfferMapEntry } from './util/types';
+import { parseNFTokenID } from 'xrpl';
+import { NFT, NFTokenOffer } from './util/types';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -11,7 +11,7 @@ export class NftIssuerAccounts {
     private static _instance: NftIssuerAccounts;
 
     private nftokensMap: Map<string, NFT> = new Map();
-    private nftOfferMap: Map<string, NFTokenOfferMapEntry> = new Map();
+    private nftOfferMap: Map<string, NFTokenOffer> = new Map();
 
     private current_ledger_index: number;
     private current_ledger_date: string;
@@ -68,20 +68,16 @@ export class NftIssuerAccounts {
       }
 
       for(let j = 0; j < nftokenOffers.length; j++) {
-        let singleOffer:NFTokenOffer = nftokenOffers[j];
+        let singleOffer:any = nftokenOffers[j];
 
         if(singleOffer) {
           //add if not yet added
-          if(!this.nftOfferMap.has(singleOffer.NFTokenID)) {
-            this.nftOfferMap.set(singleOffer.NFTokenID, { buy: [], sell: [] });
-          }
-
-          //this is a sell offer!
-          if(singleOffer.Flags && singleOffer.Flags == 1) {
-            this.nftOfferMap.get(singleOffer.NFTokenID).sell.push(singleOffer);
-          } else { //this is a buy offer!
-            this.nftOfferMap.get(singleOffer.NFTokenID).buy.push(singleOffer);
-          }
+          this.nftOfferMap.set(singleOffer.index, {
+            amount: singleOffer.Amount,
+            flags: singleOffer.Flags ? singleOffer.Flags : 0,
+            nft_offer_index: singleOffer.index,
+            owner: singleOffer.Owner
+          });
         }
       }
     }
@@ -136,20 +132,18 @@ export class NftIssuerAccounts {
           console.log("nft data is empty!");
         }
 
-        let offerMapToSave:Map<string, NFTokenOfferMapEntry> = new Map(this.nftOfferMap);
+        let offerMapToSave:Map<string, NFTokenOffer> = new Map(this.nftOfferMap);
         if(offerMapToSave && offerMapToSave.size > 0) {
           let nftOfferData:any = {
             ledger_index: this.getCurrentLedgerIndex(),
             ledger_hash: this.getCurrentLedgerHash(),
             ledger_close: this.getCurrentLedgerCloseTime(),
             ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
-            "offers": {
-
-            }
+            "offers": []
           };
 
           offerMapToSave.forEach((value, key, map) => {
-            nftOfferData["offers"][key] = value
+            nftOfferData["offers"].push(value)
           });         
 
           console.time("saveNFTOffersToFS");
