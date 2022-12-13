@@ -27,10 +27,13 @@ export interface NFT {
 }
 
 export interface NFTokenOffer {
-    amount: any,
-    flags: number,
-    nft_offer_index: string,
-    owner: string
+    Amount: any,
+    Flags: number,
+    NFTokenID: string,
+    Owner: string,
+    OfferID: string,
+    Destination: string,
+    Expiration: number
 }
  
 export interface IssuerVerification {
