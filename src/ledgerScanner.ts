@@ -67,6 +67,7 @@ export class LedgerScanner {
           this.isRunning = false;
         } catch(err) {
           console.log(err);
+          console.log("not cought error when running the scan. stopping.")
           this.isRunning = false;
         }
       }
@@ -243,6 +244,7 @@ export class LedgerScanner {
           return true;
       
         } catch(err) {
+          console.log("err retrieving data. trying again with same marker.")
           console.log(err);
           
           if(marker != null || (marker == null && ledgerIndex == null))

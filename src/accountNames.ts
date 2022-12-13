@@ -89,8 +89,6 @@ export class AccountNames {
 
     public async init(): Promise<void> {
         scheduler.scheduleJob("reloadUserNames1", {dayOfWeek: 1, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
-        scheduler.scheduleJob("reloadUserNames2", {dayOfWeek: 4, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
-        scheduler.scheduleJob("reloadKYC", {dayOfWeek: 1,hour: 0, minute: 59, second: 0}, () => this.resetKyc());
         scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
         await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
@@ -196,7 +194,7 @@ export class AccountNames {
     private async loadBithompSingleAccountName(xrplAccount: string): Promise<void> {
         try {
 
-            if(this.resolveBithompCounter > 10000) //only resolve 10k accounts at a time
+            if(this.resolveBithompCounter > 5000) //only resolve 5k accounts at a time
                 return;
 
             if(!this.bithompServiceNames.has(xrplAccount) && !this.xrpscanUserNames.has(xrplAccount) && !this.bithompUserNames.has(xrplAccount)) {
@@ -232,10 +230,10 @@ export class AccountNames {
 
     async resolveKycStatus(xrplAccount: string): Promise<void> {
         try {
-            if(!this.kycMap.has(xrplAccount)) {
-
-                if(this.resolveKycCounter > 10000) //only resolve 10k accounts at a time
+            if(this.resolveKycCounter > 5000) //only resolve 10k accounts at a time
                     return;
+
+            if(!this.kycMap.has(xrplAccount)) {
 
                 this.resolveKycCounter++;
 
@@ -378,5 +376,10 @@ export class AccountNames {
             console.log(err);
             this.kycMap.clear();
         }
+    }
+
+    public resetResolveCounters() {
+        this.resolveBithompCounter = 0;
+        this.resolveKycCounter = 0;
     }
 }

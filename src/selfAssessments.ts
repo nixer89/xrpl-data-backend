@@ -53,6 +53,7 @@ export class SelfAssessments {
                 await this.saveSelfAssessmentsToFS();
             }
         } catch(err) {
+            console.log("err loading self assessment data from API")
             console.log(JSON.stringify(err));
             return null;
         }

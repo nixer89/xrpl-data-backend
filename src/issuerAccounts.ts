@@ -164,6 +164,7 @@ export class IssuerAccounts {
 
   public clearIssuer() {
       this.issuers.clear();
+      this.accountInfo.resetResolveCounters();
   }
 
     public saveBithompNamesToFS(): Promise<void> {
