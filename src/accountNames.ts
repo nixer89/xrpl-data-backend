@@ -300,6 +300,7 @@ export class AccountNames {
 
     public async saveBithompUserNamesToFS(): Promise<void> {
         if(this.bithompUserNames && this.bithompUserNames.size > 0) {
+            console.log("saving " + this.bithompUserNames.size + " bithomp user names!")
             let bithompNames:any = {};
             this.bithompUserNames.forEach((value, key, map) => {
                 if(value) {
@@ -340,6 +341,7 @@ export class AccountNames {
 
     public async saveKycDataToFS(): Promise<void> {
         if(this.kycMap && this.kycMap.size > 0) {
+            console.log("saving " + this.kycMap.size + " kycMap accounts!")
             let kycData:any = {};
             this.kycMap.forEach((value, key, map) => {
                 if(value) {
