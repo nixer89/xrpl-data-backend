@@ -201,7 +201,7 @@ export class AccountNames {
                 //console.log("resolving: " + xrplAccount);
                 this.resolveBithompCounter++;
 
-                if(this.resolveBithompCounter%1000 ==0)
+                if(this.resolveBithompCounter%5000 ==0)
                     console.log("this.resolveBithompCounter: " + this.resolveBithompCounter);
 
                 let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
@@ -237,7 +237,7 @@ export class AccountNames {
 
                 this.resolveKycCounter++;
 
-                if(this.resolveKycCounter%1000 ==0)
+                if(this.resolveKycCounter%5000 ==0)
                     console.log("this.resolveKycCounter: " + this.resolveKycCounter);
 
                 //console.log("RESOLVING KYC FOR: " + xrplAccount);
@@ -327,7 +327,7 @@ export class AccountNames {
                         }
                     }
 
-                    //console.log("loaded " + this.bithompUserNames.size + " user names from file system");
+                    console.log("loaded " + this.bithompUserNames.size + " user names from file system");
                 }
             } else {
                 console.log("bithomp user name file does not exist yet.")
@@ -368,7 +368,7 @@ export class AccountNames {
                         }
                     }
 
-                    //console.log("loaded " + this.kycMap.size + " kyc data from file system");
+                    console.log("loaded " + this.kycMap.size + " kyc data from file system");
                 }
             } else {
                 console.log("kyc data file does not exist yet.")
