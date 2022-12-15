@@ -202,18 +202,16 @@ export class LedgerScanner {
             if(newledgerIndex != null && newMarker != null) {
               return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
-              console.log("Done 1");
+              console.log("ALL DONE");
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
               console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
             }
           } else {
-            console.log("Done 2");
+            console.log("ALL DONE");
             console.log("issuer size: " + this.issuerAccount.getIssuer().size);
             console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
           }
       
-          console.log("ALL DONE");
-
           let ledgerCommand:LedgerRequest = {
             command: "ledger",
             ledger_index: ledgerIndex
@@ -227,7 +225,6 @@ export class LedgerScanner {
           this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
           
-
           //always save resolved user names to file system to make restart of server much faster
           await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
