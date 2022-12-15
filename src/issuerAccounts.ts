@@ -119,7 +119,7 @@ export class IssuerAccounts {
 
     private async resolveIssuerInfos(issuer): Promise<void> {
       await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
-      await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
+      //await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
 
       if(!this.tokenCreation.isTokenInCache(issuer)) {
         //console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);

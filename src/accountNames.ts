@@ -113,6 +113,7 @@ export class AccountNames {
         try {
             //load bithomp services
             //await this.loadBithompServiceNames();
+            
             //load xrpscan services
             await this.loadXRPScanNames();
 
@@ -214,7 +215,7 @@ export class AccountNames {
 
                 let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
                 
-                console.log("bithomp USER names status: " + bithompResponse.status);
+                //console.log("bithomp USER names status: " + bithompResponse.status);
                 
                 if(bithompResponse && bithompResponse.ok) {
                     let accountInfo:any = await bithompResponse.json();
