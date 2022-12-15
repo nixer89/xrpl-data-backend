@@ -303,9 +303,7 @@ export class AccountNames {
             console.log("saving " + this.bithompUserNames.size + " bithomp user names!")
             let bithompNames:any = {};
             this.bithompUserNames.forEach((value, key, map) => {
-                if(value) {
-                    bithompNames[key] = value;
-                }
+                bithompNames[key] = value;
             });
             fs.writeFileSync("./../bithompUserNames_new.js", JSON.stringify(bithompNames));
             fs.renameSync("./../bithompUserNames_new.js", "./../bithompUserNames.js");
@@ -344,9 +342,7 @@ export class AccountNames {
             console.log("saving " + this.kycMap.size + " kycMap accounts!")
             let kycData:any = {};
             this.kycMap.forEach((value, key, map) => {
-                if(value) {
-                    kycData[key] = value;
-                }
+                kycData[key] = value;
             });
             fs.writeFileSync("./../kycData_new.js", JSON.stringify(kycData));
             fs.renameSync("./../kycData_new.js", "./../kycData.js");
