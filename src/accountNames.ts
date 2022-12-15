@@ -133,9 +133,11 @@ export class AccountNames {
     public async loadBithompServiceNames() :Promise<void> {
         try {
             console.log("load service names from bithomp");
-            let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
+            let bithompResponse = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
             
-            if(bithompResponse && bithompResponse.ok) {
+            console.log(bithompResponse.status);
+            
+            if(bithompResponse && bithompResponse.status === 200) {
                 let knownServices:any = await bithompResponse.json();
 
                 if(knownServices) {
