@@ -135,8 +135,8 @@ export class AccountNames {
             console.log("load service names from bithomp");
             let bithompResponse = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
             
-            console.log(bithompResponse.status);
-            
+            console.log(JSON.stringify(bithompResponse.headers));
+
             if(bithompResponse && bithompResponse.status === 200) {
                 let knownServices:any = await bithompResponse.json();
 
