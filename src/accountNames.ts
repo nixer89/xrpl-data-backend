@@ -112,7 +112,7 @@ export class AccountNames {
     public async resolveAllUserNames(deleteEmptyNames?: boolean): Promise<void> {
         try {
             //load bithomp services
-            await this.loadBithompServiceNames();
+            //await this.loadBithompServiceNames();
             //load xrpscan services
             await this.loadXRPScanNames();
 
@@ -135,7 +135,7 @@ export class AccountNames {
             console.log("load service names from bithomp");
             let bithompResponse = await fetch.default("https://bithomp.com/api/v2/services/addresses", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
             
-            console.log(JSON.stringify(bithompResponse.headers));
+            console.log("bithomp SERVICE names status: " + bithompResponse.status);
 
             if(bithompResponse && bithompResponse.status === 200) {
                 let knownServices:any = await bithompResponse.json();
@@ -213,6 +213,8 @@ export class AccountNames {
                     console.log("this.resolveBithompCounter: " + this.resolveBithompCounter);
 
                 let bithompResponse:any = await fetch.default("https://bithomp.com/api/v2/address/"+xrplAccount+"?username=true&verifiedDomain=true", {headers: { "x-bithomp-token": config.BITHOMP_TOKEN }})
+                
+                console.log("bithomp USER names status: " + bithompResponse.status);
                 
                 if(bithompResponse && bithompResponse.ok) {
                     let accountInfo:any = await bithompResponse.json();
