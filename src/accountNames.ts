@@ -4,6 +4,7 @@ import * as scheduler from 'node-schedule';
 import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { IssuerVerification } from './util/types';
+import { DATA_PATH } from './util/config';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -316,8 +317,8 @@ export class AccountNames {
             this.bithompUserNames.forEach((value, key, map) => {
                 bithompNames[key] = value;
             });
-            fs.writeFileSync("./../bithompUserNames_new.js", JSON.stringify(bithompNames));
-            fs.renameSync("./../bithompUserNames_new.js", "./../bithompUserNames.js");
+            fs.writeFileSync(DATA_PATH+"bithompUserNames_new.js", JSON.stringify(bithompNames));
+            fs.renameSync(DATA_PATH+"bithompUserNames_new.js", DATA_PATH+"bithompUserNames.js");
 
             //console.log("saved " + this.bithompUserNames.size + " user names to file system");
         }
@@ -326,8 +327,8 @@ export class AccountNames {
     private async loadBithompUserNamesFromFS(): Promise<void> {
         //console.log("loading bithomp user names from FS");
         try {
-            if(fs.existsSync("./../bithompUserNames.js")) {
-                let bithompNames:any = JSON.parse(fs.readFileSync("./../bithompUserNames.js").toString());
+            if(fs.existsSync(DATA_PATH+"bithompUserNames.js")) {
+                let bithompNames:any = JSON.parse(fs.readFileSync(DATA_PATH+"bithompUserNames.js").toString());
                 //console.log(JSON.stringify(bithompNames));
                 if(bithompNames) {
                     for (var account in bithompNames) {
@@ -355,8 +356,8 @@ export class AccountNames {
             this.kycMap.forEach((value, key, map) => {
                 kycData[key] = value;
             });
-            fs.writeFileSync("./../kycData_new.js", JSON.stringify(kycData));
-            fs.renameSync("./../kycData_new.js", "./../kycData.js");
+            fs.writeFileSync(DATA_PATH+"kycData_new.js", JSON.stringify(kycData));
+            fs.renameSync(DATA_PATH+"kycData_new.js", DATA_PATH+"kycData.js");
 
             //console.log("saved " + this.kycMap.size + " kyc data to file system");
         }
@@ -365,8 +366,8 @@ export class AccountNames {
     private async loadKycDataFromFS(): Promise<void> {
         //console.log("loading kyc data from FS");
         try {
-            if(fs.existsSync("./../kycData.js")) {
-                let kycData:any = JSON.parse(fs.readFileSync("./../kycData.js").toString());
+            if(fs.existsSync(DATA_PATH+"kycData.js")) {
+                let kycData:any = JSON.parse(fs.readFileSync(DATA_PATH+"kycData.js").toString());
                 //console.log(JSON.stringify(bithompNames));
                 if(kycData) {
                     for (var account in kycData) {

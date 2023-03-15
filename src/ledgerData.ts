@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject } from './util/types';
 
 export class LedgerData {
@@ -302,7 +303,7 @@ export class LedgerData {
         let ledgerDataToSave:string = JSON.stringify(this.ledgerData);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
 
-            fs.writeFileSync("./../ledgerData.js", ledgerDataToSave);
+            fs.writeFileSync(DATA_PATH+"ledgerData.js", ledgerDataToSave);
 
             //console.log("saved ledger data to file system");
         } else {

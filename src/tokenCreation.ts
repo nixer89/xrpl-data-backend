@@ -3,6 +3,7 @@ import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { createInterface } from 'readline';
 import { once } from 'events';
+import { DATA_PATH } from './util/config';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -26,7 +27,7 @@ export class TokenCreation {
 
     private async appendIssuerCreationToFS(issuerKey:string, creation: any): Promise<void> {
         this.tokenCreation.set(issuerKey, creation);
-        fs.appendFileSync("./../issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
+        fs.appendFileSync(DATA_PATH+"issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
 
         //console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
     }
@@ -34,7 +35,7 @@ export class TokenCreation {
     private async loadIssuerCreationFromFS(): Promise<void> {
         console.log("loading issuer creation from FS");
         try {
-            if(fs.existsSync("./../issuerCreation.txt")) {
+            if(fs.existsSync(DATA_PATH+"issuerCreation.txt")) {
                 try {
                     const rl = createInterface({
                       input: fs.createReadStream('./../issuerCreation.txt'),

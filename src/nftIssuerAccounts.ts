@@ -3,6 +3,7 @@ import consoleStamp = require("console-stamp");
 import { encodeAccountID } from 'ripple-address-codec';
 import { parseNFTokenID } from 'xrpl';
 import { NFT, NFTokenOffer } from './util/types';
+import { DATA_PATH } from './util/config';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -126,8 +127,8 @@ export class NftIssuerAccounts {
 
           console.time("saveNFTDataToFS");
 
-          fs.writeFileSync("./../nftData_new.js", JSON.stringify(nftData));
-          fs.renameSync("./../nftData_new.js", "./../nftData.js");
+          fs.writeFileSync(DATA_PATH+"nftData_new.js", JSON.stringify(nftData));
+          fs.renameSync(DATA_PATH+"nftData_new.js", DATA_PATH+"nftData.js");
           
           console.timeEnd("saveNFTDataToFS");
 
@@ -151,8 +152,8 @@ export class NftIssuerAccounts {
 
           console.time("saveNFTOffersToFS");
 
-          fs.writeFileSync("./../nftOffers_new.js", JSON.stringify(nftOfferData));
-          fs.renameSync("./../nftOffers_new.js", "./../nftOffers.js");
+          fs.writeFileSync(DATA_PATH+"nftOffers_new.js", JSON.stringify(nftOfferData));
+          fs.renameSync(DATA_PATH+"nftOffers_new.js", DATA_PATH+"nftOffers.js");
           
           console.timeEnd("saveNFTOffersToFS");
 
@@ -165,8 +166,8 @@ export class NftIssuerAccounts {
     public async readCurrentLedgerFromFS(): Promise<number> {
       try {
         //console.log("loading nft issuer data from FS");
-        if(fs.existsSync("./../nftData.js")) {
-            let nftData:any = JSON.parse(fs.readFileSync("./../nftData.js").toString());
+        if(fs.existsSync(DATA_PATH+"nftData.js")) {
+            let nftData:any = JSON.parse(fs.readFileSync(DATA_PATH+"nftData.js").toString());
             if(nftData && nftData.ledger_index) {
                 return nftData.ledger_index;
             } else {

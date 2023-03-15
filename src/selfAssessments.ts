@@ -2,6 +2,7 @@ import * as fetch from 'node-fetch';
 import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import * as scheduler from 'node-schedule';
+import { DATA_PATH } from './util/config';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -31,8 +32,8 @@ export class SelfAssessments {
             this.selfAssessments.forEach((value, key, map) => {
                 selfAssessmentsObject[key] = value;
             });
-            fs.writeFileSync("./../selfAssessments_new.js", JSON.stringify(selfAssessmentsObject));
-            fs.renameSync("./../selfAssessments_new.js", "./../selfAssessments.js");
+            fs.writeFileSync(DATA_PATH+"selfAssessments_new.js", JSON.stringify(selfAssessmentsObject));
+            fs.renameSync(DATA_PATH+"selfAssessments_new.js", DATA_PATH+"selfAssessments.js");
 
             //console.log("saved " + this.selfAssessments.size + " self assessments to file system");
         }

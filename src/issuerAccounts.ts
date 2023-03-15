@@ -4,6 +4,7 @@ import { AccountNames } from './accountNames';
 import { IssuerData } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
 import { TokenCreation } from './tokenCreation';
+import { DATA_PATH } from './util/config';
 
 consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
 
@@ -193,8 +194,8 @@ export class IssuerAccounts {
                   issuerData["issuers"][key] = value;
             });
 
-            fs.writeFileSync("./../issuerData_new.js", JSON.stringify(issuerData));
-            fs.renameSync("./../issuerData_new.js", "./../issuerData.js");
+            fs.writeFileSync(DATA_PATH+"issuerData_new.js", JSON.stringify(issuerData));
+            fs.renameSync(DATA_PATH+"isuerData_new.js", DATA_PATH+"issuerData.js");
 
             //console.log("saved " + mapToSave.size + " issuer data to file system");
         } else {
