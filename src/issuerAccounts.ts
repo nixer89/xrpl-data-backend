@@ -195,7 +195,7 @@ export class IssuerAccounts {
             });
 
             fs.writeFileSync(DATA_PATH+"issuerData_new.js", JSON.stringify(issuerData));
-            fs.renameSync(DATA_PATH+"isuerData_new.js", DATA_PATH+"issuerData.js");
+            fs.renameSync(DATA_PATH+"issuerData_new.js", DATA_PATH+"issuerData.js");
 
             //console.log("saved " + mapToSave.size + " issuer data to file system");
         } else {
