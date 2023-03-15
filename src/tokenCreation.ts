@@ -38,7 +38,7 @@ export class TokenCreation {
             if(fs.existsSync(DATA_PATH+"issuerCreation.txt")) {
                 try {
                     const rl = createInterface({
-                      input: fs.createReadStream(DATA_PATH+'issuerCreation.txt'),
+                      input: fs.createReadStream(DATA_PATH+"issuerCreation.txt"),
                       crlfDelay: Infinity
                     });
                 
