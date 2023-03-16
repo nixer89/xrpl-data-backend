@@ -1,11 +1,10 @@
 import * as fs from 'fs';
-import consoleStamp = require("console-stamp");
 import { encodeAccountID } from 'ripple-address-codec';
 import { parseNFTokenID } from 'xrpl';
 import { NFT, NFTokenOffer } from './util/types';
 import { DATA_PATH } from './util/config';
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 export class NftIssuerAccounts {
 

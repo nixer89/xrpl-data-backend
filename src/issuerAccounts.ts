@@ -1,12 +1,11 @@
 import * as fs from 'fs';
-import consoleStamp = require("console-stamp");
 import { AccountNames } from './accountNames';
 import { IssuerData } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
 import { TokenCreation } from './tokenCreation';
 import { DATA_PATH } from './util/config';
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 export class IssuerAccounts {
 
@@ -168,9 +167,12 @@ export class IssuerAccounts {
       this.accountInfo.resetResolveCounters();
   }
 
+  /**
     public saveBithompNamesToFS(): Promise<void> {
       return this.accountInfo.saveBithompUserNamesToFS();
     }
+
+  */
 
     public saveKycDataToFS(): Promise<void> {
       return this.accountInfo.saveKycDataToFS();

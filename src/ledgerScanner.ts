@@ -1,11 +1,10 @@
 import * as scheduler from 'node-schedule';
-import consoleStamp = require("console-stamp");
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 export class LedgerScanner {
 
@@ -226,7 +225,7 @@ export class LedgerScanner {
 
           
           //always save resolved user names to file system to make restart of server much faster
-          await this.issuerAccount.saveBithompNamesToFS();
+          //await this.issuerAccount.saveBithompNamesToFS();
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
           await this.ledgerData.saveLedgerDataToFS();

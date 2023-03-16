@@ -1,4 +1,3 @@
-import consoleStamp = require("console-stamp");
 import { LedgerScanner } from './ledgerScanner';
 import { SelfAssessments } from "./selfAssessments";
 import * as fs from 'fs';
@@ -7,7 +6,7 @@ import { DATA_PATH } from "./util/config";
 let ledgerScanner:LedgerScanner = LedgerScanner.Instance;
 let selfAssessments:SelfAssessments = SelfAssessments.Instance;
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 // Run the server!
 const start = async () => {

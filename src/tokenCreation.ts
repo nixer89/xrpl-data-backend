@@ -1,11 +1,10 @@
 import * as fetch from 'node-fetch';
-import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { createInterface } from 'readline';
 import { once } from 'events';
 import { DATA_PATH } from './util/config';
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 export class TokenCreation {
 

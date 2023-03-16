@@ -1,12 +1,11 @@
 import * as config from './util/config'
 import * as fetch from 'node-fetch';
 import * as scheduler from 'node-schedule';
-import consoleStamp = require("console-stamp");
 import * as fs from 'fs';
 import { IssuerVerification } from './util/types';
 import { DATA_PATH } from './util/config';
 
-consoleStamp(console, { pattern: 'yyyy-mm-dd HH:MM:ss' });
+require("log-timestamp");
 
 export class AccountNames {
 
@@ -14,7 +13,7 @@ export class AccountNames {
 
     private bithompServiceNames:Map<string, IssuerVerification> = new Map();
     private xrpscanUserNames:Map<string, IssuerVerification> = new Map();
-    private bithompUserNames:Map<string, IssuerVerification> = new Map();
+    //private bithompUserNames:Map<string, IssuerVerification> = new Map();
     private kycMap:Map<string, boolean> = new Map();
     private kycDistributorMap:Map<string, string> = new Map();
 
@@ -91,7 +90,7 @@ export class AccountNames {
     public async init(): Promise<void> {
         scheduler.scheduleJob("reloadUserNames1", {dayOfWeek: 1, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
         scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
-        await this.loadBithompUserNamesFromFS();
+        //await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
         await this.loadKycDataFromFS();
     }
@@ -117,7 +116,9 @@ export class AccountNames {
             
             //load xrpscan services
             await this.loadXRPScanNames();
+            await this.loadBithompServiceNames();
 
+            /**
             if(deleteEmptyNames) {
                 //reset all unkown accounts
                 let iteratorMap: Map<string,IssuerVerification> = new Map(this.bithompUserNames);
@@ -126,6 +127,7 @@ export class AccountNames {
                         this.bithompUserNames.delete(key);
                 });
             }
+            */
         } catch(err) {
             console.log(err);
             console.log("some weird error happened!");
@@ -201,6 +203,7 @@ export class AccountNames {
         }
     }
 
+    /**
     private async loadBithompSingleAccountName(xrplAccount: string): Promise<void> {
         try {
 
@@ -239,6 +242,7 @@ export class AccountNames {
             console.log(err);
         }   
     }
+     */
 
     async resolveKycStatus(xrplAccount: string): Promise<void> {
         try {
@@ -294,6 +298,7 @@ export class AccountNames {
         }   
     }
 
+    /**
     async initAccountName(xrplAccount:string): Promise<void> {
         if(this.bithompServiceNames.has(xrplAccount)) {
             return;
@@ -309,6 +314,7 @@ export class AccountNames {
             return this.loadBithompSingleAccountName(xrplAccount);
         }
     }
+    
 
     public async saveBithompUserNamesToFS(): Promise<void> {
         if(this.bithompUserNames && this.bithompUserNames.size > 0) {
@@ -348,6 +354,8 @@ export class AccountNames {
             this.bithompUserNames.clear();
         }
     }
+
+     */
 
     public async saveKycDataToFS(): Promise<void> {
         if(this.kycMap && this.kycMap.size > 0) {

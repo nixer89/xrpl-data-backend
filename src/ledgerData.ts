@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject } from './util/types';
 
+require("log-timestamp");
+
 export class LedgerData {
 
     private static _instance: LedgerData;
