@@ -88,7 +88,7 @@ export class AccountNames {
     }
 
     public async init(): Promise<void> {
-        scheduler.scheduleJob("reloadUserNames1", {dayOfWeek: 1, hour: 19, minute: 59, second: 0}, () => this.resolveAllUserNames(true));
+        scheduler.scheduleJob("reloadUserNames1", {hour: 6 , minute: 59, second: 0}, () => this.resolveAllUserNames(true));
         scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
         //await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
