@@ -61,8 +61,6 @@ export class SupplyInfo {
 
     public async collectSupplyInfo(ledgerState:any): Promise<void> {
 
-      let logSignerList = true;
-
         for(let i = 0; i < ledgerState.length; i++) {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
 
@@ -84,12 +82,6 @@ export class SupplyInfo {
               let listOwner = rippleAddressCodec.encodeAccountID(Buffer.from(entry.index, 'hex').slice(4, 24));
 
               this.signer_lists[listOwner] = entry;
-
-              if(!this.isSignerListFlagOneOwnerCount(entry.Flags) && logSignerList) {
-                console.log("list owner: " + listOwner);
-                console.log(JSON.stringify(entry));
-                logSignerList = false;
-              }
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
