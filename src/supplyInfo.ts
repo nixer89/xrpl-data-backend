@@ -144,8 +144,8 @@ export class SupplyInfo {
           xrp: {
             xrpTotalSupply: circulatingXRP/1000000,
             xrpTotalBalance: totalXrpInAccounts/1000000,
-            xrpTotalReserved: totalReservedXrp,
-            xrpTotalReservedOffers: totalReservedForOffers
+            xrpTotalReserved: totalReservedXrp/1000000,
+            xrpTotalReservedOffers: totalReservedForOffers/1000000
           }
         }
 
