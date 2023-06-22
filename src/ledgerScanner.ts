@@ -233,8 +233,7 @@ export class LedgerScanner {
           
           //always save resolved user names to file system to make restart of server much faster
           //await this.issuerAccount.saveBithompNamesToFS();
-          await this.issuerAccount.saveKycDataToFS();
-          await this.issuerAccount.saveIssuerDataToFS();
+
           await this.ledgerData.saveLedgerDataToFS();
 
           this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
@@ -246,9 +245,13 @@ export class LedgerScanner {
 
           this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
           this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-          
+
           await this.supplyInfo.calculateSupplyAndSave();
+
           
+          await this.issuerAccount.saveKycDataToFS();
+          await this.issuerAccount.saveIssuerDataToFS();
+
           return true;
       
         } catch(err) {

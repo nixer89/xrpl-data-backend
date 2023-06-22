@@ -61,6 +61,8 @@ export class SupplyInfo {
 
     public async collectSupplyInfo(ledgerState:any): Promise<void> {
 
+      let logSignerList = true;
+
         for(let i = 0; i < ledgerState.length; i++) {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
 
@@ -83,6 +85,11 @@ export class SupplyInfo {
 
               this.signer_lists[listOwner] = entry;
 
+              if(!this.isSignerListFlagOneOwnerCount(entry.Flags) && logSignerList) {
+                console.log("list owner: " + listOwner);
+                console.log(JSON.stringify(entry));
+                logSignerList = false;
+              }
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
@@ -109,6 +116,8 @@ export class SupplyInfo {
         let totalXrpInAccounts = 0;
         let circulatingXRP = 0;
         let numberOfAccounts = 0;
+        let totalReservedXrp = 0;
+        let totalReservedForOffers = 0;
       
 
         for(let account in this.accounts) {
@@ -127,6 +136,9 @@ export class SupplyInfo {
               circulatingXRP = circulatingXRP + circulatingXRP;
             }
 
+            totalReservedXrp = totalReservedXrp + reservedXrp;
+            totalReservedForOffers = totalReservedForOffers + reservedForOffers;
+
             numberOfAccounts++;
           }
         }
@@ -136,8 +148,13 @@ export class SupplyInfo {
           ledger: this.getCurrentLedgerIndex(),
           closeTimeHuman: this.getCurrentLedgerCloseTime(),
           accounts: numberOfAccounts,
-          xrp: circulatingXRP.toString(),
-          xrpExisting: (totalXrpInAccounts + this.xrpInEscrow).toString()
+          xrpExisting: (totalXrpInAccounts + this.xrpInEscrow)/1000000,
+          xrp: {
+            xrpTotalSupply: circulatingXRP/1000000,
+            xrpTotalBalance: totalXrpInAccounts/1000000,
+            xrpTotalReserved: totalReservedXrp,
+            xrpTotalReservedOffers: totalReservedForOffers
+          }
         }
 
         await this.saveSupplyInfoToFS();
@@ -160,7 +177,7 @@ export class SupplyInfo {
 
             fs.writeFileSync(DATA_PATH+"supplyInfo.js", supplyInfoToSave);
 
-            //console.log("saved ledger data to file system");
+            console.log("saved supply info to file system");
         } else {
           console.log("supply info is empty! Nothing saved");
         }

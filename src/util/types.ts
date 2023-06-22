@@ -58,7 +58,12 @@ export interface AdaptedLedgerObject {
 export interface SupplyInfoType {
     ledger: number,
     closeTimeHuman: string,
-    xrp: string,
     accounts: number,
-    xrpExisting: string
+    xrpExisting: number,
+    xrp: {
+        xrpTotalSupply: number,
+        xrpTotalBalance: number,
+        xrpTotalReserved: number,
+        xrpTotalReservedOffers: number
+    }
 }
