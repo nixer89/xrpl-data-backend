@@ -1,3 +1,5 @@
+import LedgerEntry from "xrpl/dist/npm/models/ledger/LedgerEntry"
+
 export interface Currency {
     token: string,
     balance: number
@@ -50,5 +52,13 @@ export interface IssuerVerification {
 export interface AdaptedLedgerObject {
     data: string,
     index: string,
-    parsed: any
+    parsed: LedgerEntry
+}
+
+export interface SupplyInfoType {
+    ledger: number,
+    closeTimeHuman: string,
+    xrp: string,
+    accounts: number,
+    xrpExisting: string
 }

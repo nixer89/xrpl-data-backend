@@ -3,6 +3,7 @@ import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
+import { SupplyInfo } from './supplyInfo';
 
 require("log-timestamp");
 
@@ -24,6 +25,7 @@ export class LedgerScanner {
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
     private nftIssuerAccounts: NftIssuerAccounts;
+    private supplyInfo: SupplyInfo;
 
     private constructor() {}
 
@@ -37,6 +39,7 @@ export class LedgerScanner {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
         this.nftIssuerAccounts = NftIssuerAccounts.Instance;
+        this.supplyInfo = SupplyInfo.Instance;
 
         await this.issuerAccount.init();
 
@@ -59,6 +62,7 @@ export class LedgerScanner {
             this.nftIssuerAccounts.clearData();
             this.issuerAccount.clearIssuer();
             this.ledgerData.clearLedgerData();
+            this.supplyInfo.clearSupplyInfo();
           } else {
             console.log("loading ledger data not successfull.")
           }
@@ -92,6 +96,7 @@ export class LedgerScanner {
             this.issuerAccount.clearIssuer();
             this.nftIssuerAccounts.clearData();
             this.ledgerData.clearLedgerData();
+            this.supplyInfo.clearSupplyInfo();
             this.setLedgerCloseTime(null)
             this.setLedgerCloseTimeMs(null);
             this.setLedgerIndex(null);
@@ -190,6 +195,8 @@ export class LedgerScanner {
               //console.timeEnd("resolveIssuerToken");
 
               await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
+
+              await this.supplyInfo.collectSupplyInfo(messageBinary.result.state);
             } else {
               throw "binary and json objects not the same!"
             }
@@ -236,6 +243,11 @@ export class LedgerScanner {
           this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
 
           await this.nftIssuerAccounts.saveNFTDataToFS();
+
+          this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
+          this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
+          
+          await this.supplyInfo.calculateSupplyAndSave();
           
           return true;
       
