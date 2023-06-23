@@ -42,12 +42,15 @@ export class SupplyInfo {
       [key: string]: Offer[]
     } = {};
 
+    nft_offers: {
+      [key: string]: any[]
+    } = {};
+
     signer_lists: {
       [key: string]: SignerList
     } = {};
 
-    xrpInEscrow: number = 0;
-    number_of_offers: number = 0;
+    xrpLockedInObjects:number = 0;
 
     feeSetting:FeeSettings = null;
 
@@ -78,16 +81,25 @@ export class SupplyInfo {
               }
             }
 
+            if((entry as any).LedgerEntryType === 'NFTokenOffer') {
+              let nftOffer:any = entry;
+              if(!this.nft_offers[nftOffer.Account]) {
+                this.nft_offers[nftOffer.Account] = [entry];
+              } else {
+                this.nft_offers[nftOffer.Account].push(entry);
+              }
+            }
+
             if(entry.LedgerEntryType === 'SignerList') {
               this.signer_lists[entry.index] = entry;
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
-              this.xrpInEscrow = this.xrpInEscrow + Number(entry.Amount);
+              this.xrpLockedInObjects = this.xrpLockedInObjects + Number(entry.Amount);
             }
 
-            if(entry.LedgerEntryType === 'Offer') {
-              this.number_of_offers++;
+            if(entry.LedgerEntryType === 'PayChannel') {
+              this.xrpLockedInObjects = this.xrpLockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
             }
 
             if(entry.LedgerEntryType === 'FeeSettings') {
@@ -107,27 +119,27 @@ export class SupplyInfo {
         let circulatingXRP = 0;
         let numberOfAccounts = 0;
         let totalReservedXrp = 0;
-        let totalReservedForOffers = 0;
+        let totalTransientReserves = 0;
       
 
         for(let account in this.accounts) {
           if(this.accounts.hasOwnProperty(account)) {
             let accRoot = this.accounts[account];
 
-            let spendableXrp = this.isAccountBlackHoled(accRoot) ? 0 : Number(accRoot.Balance);
+            let spendableAccountBalance = this.isAccountBlackHoled(accRoot) ? 0 : Number(accRoot.Balance);
             let reservedXrp = accountReserve + (accRoot.OwnerCount * ownerReserve);
-            let reservedForOffers = (this.offers[accRoot.Account] || []).length * ownerReserve;
+            let transientReserve = ((this.offers[accRoot.Account] || []).length + (this.nft_offers[accRoot.Account] || []).length) * ownerReserve;
 
-            let circulating = Math.max(spendableXrp - reservedXrp + reservedForOffers, 0)
+            let xrpThatCanCirculate = Math.max(spendableAccountBalance - reservedXrp + transientReserve, 0)
 
-            totalXrpInAccounts = totalXrpInAccounts + spendableXrp;
+            totalXrpInAccounts = totalXrpInAccounts + Number(accRoot.Balance);
             //add spendable xrp to total xrp count
-            if(circulating > 0) {
-              circulatingXRP = circulatingXRP + circulating;
+            if(xrpThatCanCirculate > 0) {
+              circulatingXRP = circulatingXRP + xrpThatCanCirculate;
             }
 
             totalReservedXrp = totalReservedXrp + reservedXrp;
-            totalReservedForOffers = totalReservedForOffers + reservedForOffers;
+            totalTransientReserves = totalTransientReserves + transientReserve;
 
             numberOfAccounts++;
           }
@@ -138,12 +150,12 @@ export class SupplyInfo {
           ledger: this.getCurrentLedgerIndex(),
           closeTimeHuman: this.getCurrentLedgerCloseTime(),
           accounts: numberOfAccounts,
-          xrpExisting: (totalXrpInAccounts + this.xrpInEscrow)/1000000,
+          xrpExisting: (totalXrpInAccounts + this.xrpLockedInObjects)/1000000,
           xrp: {
             xrpTotalSupply: circulatingXRP/1000000,
             xrpTotalBalance: totalXrpInAccounts/1000000,
             xrpTotalReserved: totalReservedXrp/1000000,
-            xrpTotalReservedOffers: totalReservedForOffers/1000000
+            xrpTotalTransientReserves: totalTransientReserves/1000000
           }
         }
 
@@ -159,11 +171,11 @@ export class SupplyInfo {
 
     public clearSupplyInfo() {
       this.supplyInfo = null;
-      this.xrpInEscrow = 0;
-      this.number_of_offers = 0;
+      this.xrpLockedInObjects = 0;
       this.feeSetting = null;
       this.accounts = {};
       this.offers = {};
+      this.nft_offers = {};
       this.signer_lists = {};
       
     }
