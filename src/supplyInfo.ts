@@ -3,6 +3,7 @@ import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject, SupplyInfoType } from './util/types';
 import { AccountRoot, FeeSettings, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
 import * as rippleAddressCodec from 'ripple-address-codec';
+import { createHash } from 'crypto';
 
 require("log-timestamp");
 
@@ -79,9 +80,7 @@ export class SupplyInfo {
             }
 
             if(entry.LedgerEntryType === 'SignerList') {
-              let listOwner = rippleAddressCodec.encodeAccountID(Buffer.from(entry.index, 'hex').slice(4, 24));
-
-              this.signer_lists[listOwner] = entry;
+              this.signer_lists[entry.index] = entry;
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
@@ -125,7 +124,7 @@ export class SupplyInfo {
             totalXrpInAccounts = totalXrpInAccounts + spendableXrp;
             //add spendable xrp to total xrp count
             if(circulating > 0) {
-              circulatingXRP = circulatingXRP + circulatingXRP;
+              circulatingXRP = circulatingXRP + circulating;
             }
 
             totalReservedXrp = totalReservedXrp + reservedXrp;
@@ -276,6 +275,29 @@ export class SupplyInfo {
   }
 
   isAccountBlackHoled(accountRoot: AccountRoot): boolean {
-    return (!accountRoot.RegularKey && this.isMasterKeyDisabled(accountRoot.Flags) && !this.signer_lists[accountRoot.Account]) || this.blackholeAccounts.includes(accountRoot.Account);
+    let signerListHash = this.createSignerListHash(accountRoot.Account);
+
+    //known blackhole accounts
+    if(this.blackholeAccounts.includes(accountRoot.Account)) {
+      return true;
+    }
+    
+    //if master key disabled, no regular key set and no signer list -> black holed
+    if(this.isMasterKeyDisabled(accountRoot.Flags) && !accountRoot.RegularKey && !this.signer_lists[signerListHash]) {
+      return true;
+    }
+
+    //it has one signing option then it is not blackholed!
+    return false;
+  }
+
+  createSignerListHash(address:string): string {
+    let spaceKeyHex = "0053";
+    let accountHex = Buffer.from(rippleAddressCodec.decodeAccountID(address)).toString('hex')
+    let sequenceHex = "00000000";
+
+    let hash = createHash('sha512').update(Buffer.from(spaceKeyHex+accountHex+sequenceHex, 'hex')).digest('hex').toUpperCase().slice(0, 64);
+
+    return hash;
   }
 }
