@@ -20,7 +20,6 @@ export class SupplyInfo {
       'rrrrrrrrrrrrrrrrrrrrrhoLvTp',        // Account Zero
       'rrrrrrrrrrrrrrrrrrrrBZbvji',         // Account One
       'rrrrrrrrrrrrrrrrrrrn5RM1rHd',        // NaN
-      'rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh'  // Genesis (blackholed)
     ]
 
     FLAG_65536:number = 65536;
@@ -160,6 +159,13 @@ export class SupplyInfo {
 
     public clearSupplyInfo() {
       this.supplyInfo = null;
+      this.xrpInEscrow = 0;
+      this.number_of_offers = 0;
+      this.feeSetting = null;
+      this.accounts = {};
+      this.offers = {};
+      this.signer_lists = {};
+      
     }
 
     public async saveSupplyInfoToFS(): Promise<void> {
