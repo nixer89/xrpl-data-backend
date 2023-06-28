@@ -1,9 +1,11 @@
 import * as scheduler from 'node-schedule';
+import * as fetch from 'node-fetch';
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
 import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
+import { SCHEDULE_MINUTE } from './util/config';
 
 require("log-timestamp");
 
@@ -43,10 +45,14 @@ export class LedgerScanner {
 
         await this.issuerAccount.init();
 
-        await this.readLedgerData(null, null, null, 0);
+        //check if we can start right now
+        let currentDate = new Date();
+        let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
 
-        scheduler.scheduleJob("readIssuedToken", {minute: 0}, () => this.scheduleLoadingIssuerData());
-        scheduler.scheduleJob("readIssuedToken", {minute: 30}, () => this.scheduleLoadingIssuerData());
+        if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
+          await this.readLedgerData(null, null, null, 0);
+
+        scheduler.scheduleJob("readIssuedToken", {minute: (SCHEDULE_MINUTE+1)}, () => this.scheduleLoadingIssuerData());
         console.log("started ledger scan schedule. Waiting now.");
     }
 
@@ -91,6 +97,28 @@ export class LedgerScanner {
         }
         //console.log("new call: ledgerIndex: " + ledgerIndex);
         //console.log("new call: marker: " + marker);
+
+        if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
+          let time = new Date();
+          time.setMinutes(SCHEDULE_MINUTE);
+
+          console.log("getting ledger index with:")
+          console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+
+          let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+
+          if(ledgerResponse && ledgerResponse.ok) {
+            let responseJson = await ledgerResponse.json();
+
+            console.log("got response:")
+            console.log(JSON.stringify(responseJson));
+
+            if(responseJson && responseJson.ledger_index) {
+              ledgerIndex = responseJson.ledger_index;
+              console.log("set ledger index to: " + ledgerIndex);
+            }
+          }
+        }
 
         if(!marker) {
             this.issuerAccount.clearIssuer();
