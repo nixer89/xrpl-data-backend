@@ -162,6 +162,15 @@ export class SupplyInfo {
           ledger_data = null;
         }
 
+        if(ledger_data?.accountroot?.special_data?.BalanceValueTotal != totalXrpInAccounts ) {
+          //something is wrong. null ledger data coz it does not match!
+          console.log("MISMATCH OF XRP IN XRPL ACCOUNTS:")
+          console.log("ledger_data?.accountroot?.special_data?.BalanceValueTotal: " + ledger_data?.accountroot?.special_data?.BalanceValueTotal);
+          console.log("totalXrpInAccounts: " + totalXrpInAccounts);
+
+          ledger_data = null;
+        }
+
 
         this.supplyInfo = {
           ledger: this.getCurrentLedgerIndex(),
