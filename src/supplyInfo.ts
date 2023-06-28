@@ -153,11 +153,11 @@ export class SupplyInfo {
 
         let ledger_data:any = this.ledgerData.getLedgerData();
 
-        if(ledger_data.ledger_index != this.getCurrentLedgerIndex) {
+        if(ledger_data?.accountroot?.count != numberOfAccounts) {
           //something is wrong. null ledger data coz it does not match!
-          console.log("MISMATCH OF LEDGER INDEXES:")
-          console.log("ledger_data.ledger_index: " + ledger_data.ledger_index);
-          console.log("this.getCurrentLedgerIndex: " + this.getCurrentLedgerIndex);
+          console.log("MISMATCH OF NUMBER OF ACCOUNTS:")
+          console.log("ledger_data?.accountroot?.count: " + ledger_data?.accountroot?.count);
+          console.log("numberOfAccounts: " + numberOfAccounts);
 
           ledger_data = null;
         }
