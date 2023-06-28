@@ -65,5 +65,6 @@ export interface SupplyInfoType {
         xrpTotalBalance: number,
         xrpTotalReserved: number,
         xrpTotalTransientReserves: number
-    }
+    },
+    ledger_data: string
 }

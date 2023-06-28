@@ -4,6 +4,7 @@ import { AdaptedLedgerObject, SupplyInfoType } from './util/types';
 import { AccountRoot, FeeSettings, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
 import * as rippleAddressCodec from 'ripple-address-codec';
 import { createHash } from 'crypto';
+import { LedgerData } from './ledgerData';
 
 require("log-timestamp");
 
@@ -11,6 +12,7 @@ export class SupplyInfo {
 
     private static _instance: SupplyInfo;
 
+    private ledgerData:LedgerData;
     private supplyInfo: SupplyInfoType;
 
     private current_ledger_index: number;
@@ -60,6 +62,10 @@ export class SupplyInfo {
     {
         // Do you need arguments? Make it a regular static method instead.
         return this._instance || (this._instance = new this());
+    }
+
+    public init() {
+      this.ledgerData = LedgerData.Instance;
     }
 
     public async collectSupplyInfo(ledgerState:any): Promise<void> {
@@ -145,6 +151,17 @@ export class SupplyInfo {
           }
         }
 
+        let ledger_data:any = this.ledgerData.getLedgerData();
+
+        if(ledger_data.ledger_index != this.getCurrentLedgerIndex) {
+          //something is wrong. null ledger data coz it does not match!
+          console.log("MISMATCH OF LEDGER INDEXES:")
+          console.log("ledger_data.ledger_index: " + ledger_data.ledger_index);
+          console.log("this.getCurrentLedgerIndex: " + this.getCurrentLedgerIndex);
+
+          ledger_data = null;
+        }
+
 
         this.supplyInfo = {
           ledger: this.getCurrentLedgerIndex(),
@@ -156,7 +173,8 @@ export class SupplyInfo {
             xrpTotalBalance: totalXrpInAccounts/1000000,
             xrpTotalReserved: totalReservedXrp/1000000,
             xrpTotalTransientReserves: totalTransientReserves/1000000
-          }
+          },
+          ledger_data: JSON.stringify(ledger_data)
         }
 
         await this.saveSupplyInfoToFS();
