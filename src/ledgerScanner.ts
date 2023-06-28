@@ -44,6 +44,7 @@ export class LedgerScanner {
         this.supplyInfo = SupplyInfo.Instance;
 
         await this.issuerAccount.init();
+        await this.supplyInfo.init();
 
         //check if we can start right now
         let currentDate = new Date();
