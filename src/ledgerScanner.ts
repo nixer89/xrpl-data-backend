@@ -47,6 +47,9 @@ export class LedgerScanner {
 
         //check if we can start right now
         let currentDate = new Date();
+        currentDate.setSeconds(0);
+        currentDate.setMilliseconds(0);
+
         let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
 
         if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
@@ -101,6 +104,8 @@ export class LedgerScanner {
         if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
           let time = new Date();
           time.setMinutes(SCHEDULE_MINUTE);
+          time.setSeconds(0);
+          time.setMilliseconds(0);
 
           console.log("getting ledger index with:")
           console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
