@@ -102,28 +102,49 @@ export class LedgerScanner {
         //console.log("new call: ledgerIndex: " + ledgerIndex);
         //console.log("new call: marker: " + marker);
 
-        if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
-          let time = new Date();
-          time.setMinutes(SCHEDULE_MINUTE);
-          time.setSeconds(0);
-          time.setMilliseconds(0);
+        try {
+          if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
+            let time = new Date();
+            time.setMinutes(SCHEDULE_MINUTE);
+            time.setSeconds(0);
+            time.setMilliseconds(0);
 
-          console.log("getting ledger index with:")
-          console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            console.log("getting ledger index with:")
+            console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
 
-          let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
 
-          if(ledgerResponse && ledgerResponse.ok) {
-            let responseJson = await ledgerResponse.json();
+            if(ledgerResponse && ledgerResponse.ok) {
+              let responseJson = await ledgerResponse.json();
 
-            console.log("got response:")
-            console.log(JSON.stringify(responseJson));
+              console.log("got response:")
+              console.log(JSON.stringify(responseJson));
 
-            if(responseJson && responseJson.ledger_index) {
-              ledgerIndex = responseJson.ledger_index;
-              console.log("set ledger index to: " + ledgerIndex);
+              if(responseJson && responseJson.ledger_index) {
+                ledgerIndex = responseJson.ledger_index;
+                console.log("set ledger index to: " + ledgerIndex);
+
+                let tmpClient = new Client("ws://127.0.0.1:6006");
+                await tmpClient.connect();
+                //check if the node has the ledger
+                let ledger_info_request:LedgerRequest = {
+                  command: 'ledger',
+                  ledger_index: ledgerIndex,
+                  full: false,
+                  expand: false
+                }
+
+                let ledger_info_response = await tmpClient.request(ledger_info_request);
+
+                if(!ledger_info_response || !ledger_info_response.result || ledger_info_response.result.ledger_index != ledgerIndex) {
+                  ledgerIndex = null;
+                }
+              }
             }
           }
+        } catch(err) {
+          console.log("cannot read ledger index or ledger index too old. use 'validated'!");
+          ledgerIndex = null;
         }
 
         if(!marker) {
