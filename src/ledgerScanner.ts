@@ -307,6 +307,14 @@ export class LedgerScanner {
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
 
+          //trigger online delete
+          let canDeleteResponse = await this.xrpljsClient.request({
+            command: 'can_delete',
+            can_delete: 'now'
+          });
+
+          console.log(JSON.stringify(canDeleteResponse));
+
           return true;
       
         } catch(err) {
