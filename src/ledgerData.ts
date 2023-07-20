@@ -9,7 +9,7 @@ export class LedgerData {
 
     private static _instance: LedgerData;
 
-    private ledgerData: any;
+    private ledgerData: AccountRoot[];
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -35,7 +35,7 @@ export class LedgerData {
 
         for(let i = 0; i < ledgerState.length; i++) {
             let ledgerObject:AccountRoot = ledgerState[i];
-            this.getLedgerData()[ledgerObject.Account] = ledgerObject;
+            this.getLedgerData().push(ledgerObject);
         }
     }
 
@@ -278,7 +278,7 @@ export class LedgerData {
     }
 
     public clearLedgerData() {
-      this.ledgerData = {};
+      this.ledgerData = [];
     }
 
     public async saveLedgerDataToFS(): Promise<void> {

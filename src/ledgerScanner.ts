@@ -197,6 +197,8 @@ export class LedgerScanner {
           //always save resolved user names to file system to make restart of server much faster
           //await this.issuerAccount.saveBithompNamesToFS();
 
+          console.log("Number of Accounts retrieved: " + this.ledgerData.getLedgerData().length);
+
           await this.ledgerData.saveLedgerDataToFS();
 
           return true;
