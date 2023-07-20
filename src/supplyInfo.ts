@@ -118,8 +118,8 @@ export class SupplyInfo {
 
       try {
 
-        let accountReserve = this.feeSetting.ReserveBase;
-        let ownerReserve = this.feeSetting.ReserveIncrement;
+        let accountReserve = 0;
+        let ownerReserve = 0;
 
         let totalXrpInAccounts = 0;
         let circulatingXRP = 0;

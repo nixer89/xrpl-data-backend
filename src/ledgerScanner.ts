@@ -51,10 +51,7 @@ export class LedgerScanner {
         currentDate.setSeconds(0);
         currentDate.setMilliseconds(0);
 
-        let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
-
-        if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
-          await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         scheduler.scheduleJob("readIssuedToken", {minute: (SCHEDULE_MINUTE+1)}, () => this.scheduleLoadingIssuerData());
         console.log("started ledger scan schedule. Waiting now.");
@@ -102,51 +99,6 @@ export class LedgerScanner {
         //console.log("new call: ledgerIndex: " + ledgerIndex);
         //console.log("new call: marker: " + marker);
 
-        try {
-          if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
-            let time = new Date();
-            time.setMinutes(SCHEDULE_MINUTE);
-            time.setSeconds(0);
-            time.setMilliseconds(0);
-
-            console.log("getting ledger index with:")
-            console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
-
-            let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
-
-            if(ledgerResponse && ledgerResponse.ok) {
-              let responseJson = await ledgerResponse.json();
-
-              console.log("got response:")
-              console.log(JSON.stringify(responseJson));
-
-              if(responseJson && responseJson.ledger_index) {
-                ledgerIndex = responseJson.ledger_index;
-                console.log("set ledger index to: " + ledgerIndex);
-
-                let tmpClient = new Client("ws://127.0.0.1:6006");
-                await tmpClient.connect();
-                //check if the node has the ledger
-                let ledger_info_request:LedgerRequest = {
-                  command: 'ledger',
-                  ledger_index: ledgerIndex,
-                  full: false,
-                  expand: false
-                }
-
-                let ledger_info_response = await tmpClient.request(ledger_info_request);
-
-                if(!ledger_info_response || !ledger_info_response.result || ledger_info_response.result.ledger_index != ledgerIndex) {
-                  ledgerIndex = null;
-                }
-              }
-            }
-          }
-        } catch(err) {
-          console.log("cannot read ledger index or ledger index too old. use 'validated'!");
-          ledgerIndex = null;
-        }
-
         if(!marker) {
             this.issuerAccount.clearIssuer();
             this.nftIssuerAccounts.clearData();
@@ -158,26 +110,20 @@ export class LedgerScanner {
             this.setLedgerHash(null);
         }
       
-        let ledger_data_command_binary:LedgerDataRequest = {
-          command: "ledger_data",
-          limit: 100000,
-          binary: true
-        }
-    
-
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
           limit: 100000,
-          binary: false
+          binary: false,
+          type: 'account'
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
-          ledger_data_command_binary.ledger_index = ledgerIndex;
+          ledger_data_command_json.ledger_index = ledgerIndex;
         else
-          ledger_data_command_binary.ledger_index = "validated";
+          ledger_data_command_json.ledger_index = "validated";
       
         if(marker)
-          ledger_data_command_binary.marker = ledger_data_command_json.marker = marker;
+          ledger_data_command_json.marker = marker;
       
         try { 
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
@@ -198,7 +144,7 @@ export class LedgerScanner {
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
           //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
-          let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
+          let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
           //console.log("length binary: " + messageBinary.result.state.length);
           //console.timeEnd("requesting binary");
                 
@@ -206,55 +152,21 @@ export class LedgerScanner {
 
           //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
       
-          if(messageBinary && messageBinary.result && messageBinary.result.state && messageBinary.result.ledger_index) {
-            let newledgerIndex:number = messageBinary.result.ledger_index;
+          if(messageJson && messageJson.result && messageJson.result.state && messageJson.result.ledger_index) {
+            let newledgerIndex:number = messageJson.result.ledger_index;
             //console.log("marker: " + messageBinary.result.marker);
-            let newMarker:unknown = messageBinary.result.marker;
+            let newMarker:unknown = messageJson.result.marker;
 
             //console.log("newMarker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
 
-            ledger_data_command_json.ledger_index = newledgerIndex;          
-
             //console.time("requesting json");
-            //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
-            let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
-            //console.log("length json: " + messageJson.result.state.length);
-            //console.timeEnd("requesting json");
 
-            if(messageJson && messageJson.result && messageJson.result.state && messageJson.result.ledger_index == messageBinary.result.ledger_index && messageBinary.result.state.length == messageJson.result.state.length && messageBinary.result.marker == messageJson.result.marker) {
-
-              for(let i = 0; i < messageBinary.result.state.length; i++) {
-                try {
-                  if(messageBinary.result.state[i].index == messageJson.result.state[i].index)
-                    messageBinary.result.state[i]['parsed'] = messageJson.result.state[i];
-                  else {
-                    console.log("####### NOT SAME INDEX!!! ###########")
-                    console.log("BINARY: " + messageBinary.result.state[i].index);
-                    console.log("JSON  : "  + messageJson.result.state[i].index)
-                  }
-                } catch(err) {
-                  console.log(err);
-                  console.log("binary: " + JSON.stringify(messageBinary.result.state[i]));
-                  console.log("json: " + JSON.stringify(messageJson.result.state[i]));
-                  return;
-                }
-              }
 
               //console.time("resolveLedgerData binary");
-              await this.ledgerData.resolveLedgerData(messageBinary.result.state);
+              await this.ledgerData.resolveLedgerData(messageJson.result.state);
               //console.timeEnd("resolveLedgerData binary");
               
-              //console.time("resolveIssuerToken");
-              await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
-              //console.timeEnd("resolveIssuerToken");
-
-              await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
-
-              await this.supplyInfo.collectSupplyInfo(messageBinary.result.state);
-            } else {
-              throw "binary and json objects not the same!"
-            }
             //console.log("done");
       
             //console.log("issuer size: " + this.issuerAccount.getIssuer().size);
@@ -264,13 +176,9 @@ export class LedgerScanner {
               return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
               console.log("ALL DONE");
-              console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-              console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
             }
           } else {
             console.log("ALL DONE");
-            console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
           }
       
           let ledgerCommand:LedgerRequest = {
@@ -290,30 +198,6 @@ export class LedgerScanner {
           //await this.issuerAccount.saveBithompNamesToFS();
 
           await this.ledgerData.saveLedgerDataToFS();
-
-          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
-
-          await this.nftIssuerAccounts.saveNFTDataToFS();
-
-          this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
-          this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-
-          await this.supplyInfo.calculateSupplyAndSave();
-
-          
-          await this.issuerAccount.saveKycDataToFS();
-          await this.issuerAccount.saveIssuerDataToFS();
-
-          //trigger online delete
-          let canDeleteResponse = await this.xrpljsClient.request({
-            command: 'can_delete',
-            can_delete: 'now'
-          });
-
-          console.log(JSON.stringify(canDeleteResponse));
 
           return true;
       

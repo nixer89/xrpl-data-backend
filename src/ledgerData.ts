@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject } from './util/types';
+import { AccountRoot } from 'xrpl/dist/npm/models/ledger';
 
 require("log-timestamp");
 
@@ -33,30 +34,9 @@ export class LedgerData {
     public async resolveLedgerData(ledgerState:any): Promise<void> {
 
         for(let i = 0; i < ledgerState.length; i++) {
-            let ledgerObject:AdaptedLedgerObject = ledgerState[i];
-            if(this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()]) {
-              //add entry to existing one
-              let size = Buffer.from(ledgerObject.data, 'utf8').length;
-
-              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()].size += size;
-              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()].count += 1;
-            } else {
-              //create new entry
-              let size = Buffer.from(ledgerObject.data, 'utf8').length;;
-              
-              let newLedgerObject:any = {
-                count: 1,
-                size: size,
-                percentage: 0
-              }
-
-              this.getLedgerData()[ledgerObject.parsed.LedgerEntryType.toLowerCase()] = newLedgerObject;
-            }
-
-            this.addAdditionalData(ledgerObject.parsed);
+            let ledgerObject:AccountRoot = ledgerState[i];
+            this.getLedgerData()[ledgerObject.Account] = ledgerObject;
         }
-
-          //console.log(JSON.stringify(this.getLedgerData(load1)));
     }
 
     addAdditionalData(ledgerObject: any) {
@@ -305,9 +285,9 @@ export class LedgerData {
         let ledgerDataToSave:string = JSON.stringify(this.ledgerData);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
 
-            fs.writeFileSync(DATA_PATH+"ledgerData.js", ledgerDataToSave);
+            fs.writeFileSync(DATA_PATH+"ledgerData_accounts.js", ledgerDataToSave);
 
-            //console.log("saved ledger data to file system");
+            console.log("saved ledger data to file system");
         } else {
           console.log("ledger data is empty! Nothing saved");
         }
