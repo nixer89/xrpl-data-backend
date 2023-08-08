@@ -107,58 +107,79 @@ export class NftIssuerAccounts {
     }
 
     public async saveNFTDataToFS(): Promise<void> {
-      let currentWrittenLedger = await this.readCurrentLedgerFromFS();
+      try {
+        let currentWrittenLedger = await this.readCurrentLedgerFromFS();
 
-      if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
-        let mapToSave:Map<string, NFT> = new Map(this.nftokensMap);
-        if(mapToSave && mapToSave.size > 0) {
-          let nftData:any = {
-            ledger_index: this.getCurrentLedgerIndex(),
-            ledger_hash: this.getCurrentLedgerHash(),
-            ledger_close: this.getCurrentLedgerCloseTime(),
-            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
-            "nfts": []
-          };
+        if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
+          let mapToSave:Map<string, NFT> = new Map(this.nftokensMap);
+          if(mapToSave && mapToSave.size > 0) {
+            console.time("saveNFTDataToFS");
+            let nftData:any = {
+              ledger_index: this.getCurrentLedgerIndex(),
+              ledger_hash: this.getCurrentLedgerHash(),
+              ledger_close: this.getCurrentLedgerCloseTime(),
+              ledger_close_ms: this.getCurrentLedgerCloseTimeMs()
+            };
 
-          mapToSave.forEach((value, key, map) => {
-            nftData["nfts"].push(value);
-          });         
+            let outputString = JSON.stringify(nftData);
+            
 
-          console.time("saveNFTDataToFS");
+            let nftsString = ",\"nfts\":[";
+            mapToSave.forEach((value, key, map) => {
+              nftsString += JSON.stringify(value) + ",";
+            });         
 
-          fs.writeFileSync(DATA_PATH+"nftData_new.js", JSON.stringify(nftData));
-          fs.renameSync(DATA_PATH+"nftData_new.js", DATA_PATH+"nftData.js");
-          
-          console.timeEnd("saveNFTDataToFS");
+            nftsString = nftsString.substring(0, nftsString.length-1)
 
-        } else {
-          console.log("nft data is empty!");
+            nftsString += "]}";
+
+            outputString = outputString.replace("}", nftsString);
+
+            fs.writeFileSync(DATA_PATH+"nftData_new.js", outputString);
+            fs.renameSync(DATA_PATH+"nftData_new.js", DATA_PATH+"nftData.js");
+            
+            console.timeEnd("saveNFTDataToFS");
+
+          } else {
+            console.log("nft data is empty!");
+          }
+
+          let offerMapToSave:Map<string, NFTokenOffer> = new Map(this.nftOfferMap);
+          if(offerMapToSave && offerMapToSave.size > 0) {
+
+            console.time("saveNFTOffersToFS");
+
+            let nftOfferData:any = {
+              ledger_index: this.getCurrentLedgerIndex(),
+              ledger_hash: this.getCurrentLedgerHash(),
+              ledger_close: this.getCurrentLedgerCloseTime(),
+              ledger_close_ms: this.getCurrentLedgerCloseTimeMs()
+            };
+
+            let outputString = JSON.stringify(nftOfferData);
+
+            let offerString = ",\"offers\":[";
+
+            offerMapToSave.forEach((value, key, map) => {
+              offerString += JSON.stringify(value) + ",";
+            });      
+            
+            offerString = offerString.substring(0, offerString.length);
+            offerString += "]}";
+
+            outputString = outputString.replace("}", offerString);
+
+            fs.writeFileSync(DATA_PATH+"nftOffers_new.js", outputString);
+            fs.renameSync(DATA_PATH+"nftOffers_new.js", DATA_PATH+"nftOffers.js");
+            
+            console.timeEnd("saveNFTOffersToFS");
+
+          } else {
+            console.log("nft data is empty!");
+          }
         }
-
-        let offerMapToSave:Map<string, NFTokenOffer> = new Map(this.nftOfferMap);
-        if(offerMapToSave && offerMapToSave.size > 0) {
-          let nftOfferData:any = {
-            ledger_index: this.getCurrentLedgerIndex(),
-            ledger_hash: this.getCurrentLedgerHash(),
-            ledger_close: this.getCurrentLedgerCloseTime(),
-            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
-            "offers": []
-          };
-
-          offerMapToSave.forEach((value, key, map) => {
-            nftOfferData["offers"].push(value)
-          });         
-
-          console.time("saveNFTOffersToFS");
-
-          fs.writeFileSync(DATA_PATH+"nftOffers_new.js", JSON.stringify(nftOfferData));
-          fs.renameSync(DATA_PATH+"nftOffers_new.js", DATA_PATH+"nftOffers.js");
-          
-          console.timeEnd("saveNFTOffersToFS");
-
-        } else {
-          console.log("nft data is empty!");
-        }
+      } catch(err) {
+        console.log(err);
       }
     }
 

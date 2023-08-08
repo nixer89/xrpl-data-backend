@@ -302,6 +302,7 @@ export class LedgerData {
     }
 
     public async saveLedgerDataToFS(): Promise<void> {
+      try {
         let ledgerDataToSave:string = JSON.stringify(this.ledgerData);
         if(ledgerDataToSave && ledgerDataToSave.length > 0) {
 
@@ -311,6 +312,9 @@ export class LedgerData {
         } else {
           console.log("ledger data is empty! Nothing saved");
         }
+      } catch(err) {
+        console.log(err);
+      }
     }
 
   isDefaultRippleEnabled(flags:number) {

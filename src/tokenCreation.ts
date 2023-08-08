@@ -25,9 +25,12 @@ export class TokenCreation {
     }
 
     private async appendIssuerCreationToFS(issuerKey:string, creation: any): Promise<void> {
-        this.tokenCreation.set(issuerKey, creation);
-        fs.appendFileSync(DATA_PATH+"issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
-
+        try {
+            this.tokenCreation.set(issuerKey, creation);
+            fs.appendFileSync(DATA_PATH+"issuerCreation.txt", issuerKey+"="+JSON.stringify(creation)+"\n");
+        } catch(err) {
+            console.log(err);
+        }
         //console.log("saved " + issuerKey+"="+JSON.stringify(creation) + " to issuer creation file on file system");
     }
 

@@ -179,6 +179,7 @@ export class IssuerAccounts {
     }
 
     public async saveIssuerDataToFS(): Promise<void> {
+      try {
         let mapToSave:Map<string, IssuerData> = new Map(this.issuers);
         if(mapToSave && mapToSave.size > 0) {
             let issuerData:any = {
@@ -203,5 +204,8 @@ export class IssuerAccounts {
         } else {
           console.log("issuer data is empty!");
         }
+      } catch(err) {
+        console.log(err);
+      }
     }
 }

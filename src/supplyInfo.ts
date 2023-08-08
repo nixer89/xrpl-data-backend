@@ -208,6 +208,7 @@ export class SupplyInfo {
     }
 
     public async saveSupplyInfoToFS(): Promise<void> {
+      try {
         let supplyInfoToSave:string = JSON.stringify(this.supplyInfo);
         if(supplyInfoToSave && supplyInfoToSave.length > 0) {
 
@@ -217,6 +218,9 @@ export class SupplyInfo {
         } else {
           console.log("supply info is empty! Nothing saved");
         }
+      } catch(err) {
+        console.log(err);
+      }
     }
 
     public getCurrentLedgerIndex(): number {

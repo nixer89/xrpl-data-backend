@@ -26,15 +26,19 @@ export class SelfAssessments {
     }
 
     private async saveSelfAssessmentsToFS(): Promise<void> {
-        if(this.selfAssessments && this.selfAssessments.size > 0) {
-            let selfAssessmentsObject:any = {};
-            this.selfAssessments.forEach((value, key, map) => {
-                selfAssessmentsObject[key] = value;
-            });
-            fs.writeFileSync(DATA_PATH+"selfAssessments_new.js", JSON.stringify(selfAssessmentsObject));
-            fs.renameSync(DATA_PATH+"selfAssessments_new.js", DATA_PATH+"selfAssessments.js");
+        try {
+            if(this.selfAssessments && this.selfAssessments.size > 0) {
+                let selfAssessmentsObject:any = {};
+                this.selfAssessments.forEach((value, key, map) => {
+                    selfAssessmentsObject[key] = value;
+                });
+                fs.writeFileSync(DATA_PATH+"selfAssessments_new.js", JSON.stringify(selfAssessmentsObject));
+                fs.renameSync(DATA_PATH+"selfAssessments_new.js", DATA_PATH+"selfAssessments.js");
 
-            //console.log("saved " + this.selfAssessments.size + " self assessments to file system");
+                //console.log("saved " + this.selfAssessments.size + " self assessments to file system");
+            }
+        } catch(err) {
+            console.log(err);
         }
     }
     private async loadSelfAssessmentsFromApi(): Promise<any> {

@@ -358,16 +358,20 @@ export class AccountNames {
      */
 
     public async saveKycDataToFS(): Promise<void> {
-        if(this.kycMap && this.kycMap.size > 0) {
-            console.log("saving " + this.kycMap.size + " kycMap accounts!")
-            let kycData:any = {};
-            this.kycMap.forEach((value, key, map) => {
-                kycData[key] = value;
-            });
-            fs.writeFileSync(DATA_PATH+"kycData_new.js", JSON.stringify(kycData));
-            fs.renameSync(DATA_PATH+"kycData_new.js", DATA_PATH+"kycData.js");
+        try {
+            if(this.kycMap && this.kycMap.size > 0) {
+                console.log("saving " + this.kycMap.size + " kycMap accounts!")
+                let kycData:any = {};
+                this.kycMap.forEach((value, key, map) => {
+                    kycData[key] = value;
+                });
+                fs.writeFileSync(DATA_PATH+"kycData_new.js", JSON.stringify(kycData));
+                fs.renameSync(DATA_PATH+"kycData_new.js", DATA_PATH+"kycData.js");
 
-            //console.log("saved " + this.kycMap.size + " kyc data to file system");
+                //console.log("saved " + this.kycMap.size + " kyc data to file system");
+            }
+        } catch(err) {
+            console.log(err);
         }
     }
 
