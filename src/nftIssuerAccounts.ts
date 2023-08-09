@@ -114,6 +114,7 @@ export class NftIssuerAccounts {
           let mapToSave:Map<string, NFT> = new Map(this.nftokensMap);
           if(mapToSave && mapToSave.size > 0) {
             console.time("saveNFTDataToFS");
+
             let nftData:any = {
               ledger_index: this.getCurrentLedgerIndex(),
               ledger_hash: this.getCurrentLedgerHash(),
@@ -123,19 +124,21 @@ export class NftIssuerAccounts {
 
             let outputString = JSON.stringify(nftData);
             
+            fs.writeFileSync(DATA_PATH+"nftData_new.js", outputString.substring(0, outputString.length-1));
+            fs.appendFileSync(DATA_PATH+"nftData_new.js",",\"nfts\":[");
 
-            let nftsString = ",\"nfts\":[";
+            let first = true;
             mapToSave.forEach((value, key, map) => {
-              nftsString += JSON.stringify(value) + ",";
+              if(!first) {
+                fs.appendFileSync(DATA_PATH+"nftData_new.js",",");
+              }
+
+              fs.appendFileSync(DATA_PATH+"nftData_new.js",JSON.stringify(value));
+              first = false;
             });         
 
-            nftsString = nftsString.substring(0, nftsString.length-1)
+            fs.appendFileSync(DATA_PATH+"nftData_new.js","]}");
 
-            nftsString += "]}";
-
-            outputString = outputString.replace("}", nftsString);
-
-            fs.writeFileSync(DATA_PATH+"nftData_new.js", outputString);
             fs.renameSync(DATA_PATH+"nftData_new.js", DATA_PATH+"nftData.js");
             
             console.timeEnd("saveNFTDataToFS");
