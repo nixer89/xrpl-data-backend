@@ -8,7 +8,8 @@ export class LedgerData {
 
     private static _instance: LedgerData;
 
-    private ledgerData: any;
+    private ledgerData: any = {};
+    private escrows:any[] = [];
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -87,6 +88,10 @@ export class LedgerData {
 
       if("signerlist" === ledgerObject.LedgerEntryType.toLowerCase() && !ledgerObject["SignerEntries"]) {
         this.increaseCountForProperty(ledgerObject, "signer_list_sizes", "0", 1);
+      }
+
+      if("escrow" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        this.escrows.push(ledgerObject)
       }
 
     }
@@ -279,6 +284,10 @@ export class LedgerData {
       return this.ledgerData;
     }
 
+    public getEscrows() {
+      return this.escrows;
+    }
+
     public getLedgerDataV1(): any[] {
       let dataToUse = JSON.parse(JSON.stringify(this.ledgerData))
       let totalBytes:number = 0;
@@ -299,6 +308,7 @@ export class LedgerData {
 
     public clearLedgerData() {
       this.ledgerData = {};
+      this.escrows = [];
     }
 
     public async saveLedgerDataToFS(): Promise<void> {
@@ -311,6 +321,20 @@ export class LedgerData {
             //console.log("saved ledger data to file system");
         } else {
           console.log("ledger data is empty! Nothing saved");
+        }
+      } catch(err) {
+        console.log(err);
+      }
+
+      try {
+        let escrowsToSave:string = JSON.stringify({escrows: this.escrows});
+        if(escrowsToSave && escrowsToSave.length > 0) {
+
+            fs.writeFileSync(DATA_PATH+"escrows.js", escrowsToSave);
+
+            //console.log("saved ledger data to file system");
+        } else {
+          console.log("escrows empty! Nothing saved");
         }
       } catch(err) {
         console.log(err);
