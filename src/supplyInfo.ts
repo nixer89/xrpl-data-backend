@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject, SupplyInfoType } from './util/types';
-import { AccountRoot, FeeSettings, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
+import { AccountRoot, FeeSettings, FeeSettingsPreAmendmentFields, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
 import * as rippleAddressCodec from 'ripple-address-codec';
 import { createHash } from 'crypto';
 import { LedgerData } from './ledgerData';
@@ -118,8 +118,16 @@ export class SupplyInfo {
 
       try {
 
-        let accountReserve = this.feeSetting.ReserveBase;
-        let ownerReserve = this.feeSetting.ReserveIncrement;
+        let accountReserve = 10000000;
+        let ownerReserve = 2000000;
+
+        if('ReserveBase' in this.feeSetting) {
+          accountReserve = this.feeSetting.ReserveBase;
+          ownerReserve = this.feeSetting.ReserveIncrement;
+        } else {
+          accountReserve = Number(this.feeSetting.ReserveBaseDrops);
+          ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
+        }
 
         let totalXrpInAccounts = 0;
         let circulatingXRP = 0;
