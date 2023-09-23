@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject, SupplyInfoType } from './util/types';
-import { AccountRoot, FeeSettings, FeeSettingsPreAmendmentFields, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
+import { AccountRoot, FeeSettings, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
 import * as rippleAddressCodec from 'ripple-address-codec';
 import { createHash } from 'crypto';
 import { LedgerData } from './ledgerData';

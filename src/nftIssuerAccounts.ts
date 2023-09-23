@@ -123,22 +123,29 @@ export class NftIssuerAccounts {
 
             console.time("saveNFTDataToFS");
 
-            let mapSize = mapToSave.size;
+            let counter = 0;
+            let fileNumber = 0;
   
             mapToSave.forEach((value, key, map) => {
               nftData["nfts"].push(value);
+              counter++;
 
-              if(nftData["nfts"].length > mapSize/2) {
-                fs.writeFileSync(DATA_PATH+"nftData_new_1.js", JSON.stringify(nftData));
+              if(counter%1000000 == 0) { //save max 1 million NFTs per file
+                fs.writeFileSync(DATA_PATH+"\\nfts\\nftData_new_"+fileNumber+".js", JSON.stringify(nftData));
                 nftData["nfts"] = [];
+                fileNumber++;
               }
-            });         
+            });
+
+            //write left over to file system
+            if(nftData["nfts"].length > 0) {
+              fs.writeFileSync(DATA_PATH+"\\nfts\\nftData_new_"+fileNumber+".js", JSON.stringify(nftData));
+              fileNumber++;
+            }
   
-            
-  
-            fs.writeFileSync(DATA_PATH+"nftData_new_2.js", JSON.stringify(nftData));
-            fs.renameSync(DATA_PATH+"nftData_new_1.js", DATA_PATH+"nftData_1.js");
-            fs.renameSync(DATA_PATH+"nftData_new_2.js", DATA_PATH+"nftData_2.js");
+            for(let i = 1; i <= fileNumber; i++) {
+              fs.renameSync(DATA_PATH+DATA_PATH+"\\nfts\\nftData_new_"+i+".js", DATA_PATH+"\\nfts\\nftData_"+i+".js");
+            }
             
             console.timeEnd("saveNFTDataToFS");
   
@@ -162,8 +169,8 @@ export class NftIssuerAccounts {
   
             console.time("saveNFTOffersToFS");
   
-            fs.writeFileSync(DATA_PATH+"nftOffers_new.js", JSON.stringify(nftOfferData));
-            fs.renameSync(DATA_PATH+"nftOffers_new.js", DATA_PATH+"nftOffers.js");
+            fs.writeFileSync(DATA_PATH+"\\nfts\\nftOffers_new.js", JSON.stringify(nftOfferData));
+            fs.renameSync(DATA_PATH+"\\nfts\\nftOffers_new.js", DATA_PATH+"\\nfts\\nftOffers.js");
             
             console.timeEnd("saveNFTOffersToFS");
   

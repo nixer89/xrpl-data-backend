@@ -10,6 +10,8 @@ export class LedgerData {
 
     private ledgerData: any = {};
     private escrows:any[] = [];
+    private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
+    private uniqueAccounts:Map<string,string[]> = new Map();
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -93,7 +95,6 @@ export class LedgerData {
       if("escrow" === ledgerObject.LedgerEntryType.toLowerCase()) {
         this.escrows.push(ledgerObject)
       }
-
     }
 
     addAdditionalProperty(ledgerObject: any, property: string) {
@@ -101,6 +102,32 @@ export class LedgerData {
         this.increaseCountForProperty(ledgerObject, "property_count", property, 1);
 
         //special handling for some properties:
+        if(this.uniqueAccountProperties.includes(property) && ledgerObject[property].length > 0) { //make sure property is set
+          let account = ledgerObject[property];
+
+          if(!this.uniqueAccounts.has(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase())) {
+            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase(), []);
+          }
+
+          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).includes(account)) {
+            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).push(account);
+            this.increaseCountForProperty(ledgerObject, "special_data", "Unique"+property, 1);
+          }
+        }
+
+        if("HighLimit" === property || "LowLimit" === property) {
+          let account = ledgerObject[property].issuer;
+
+          if(!this.uniqueAccounts.has(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts")) {
+            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts", []);
+          }
+
+          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").includes(account)) {
+            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").push(account);
+            this.increaseCountForProperty(ledgerObject, "special_data", "UniqueAccount", 1);
+          }
+        }
+
         if("Balance" === property) {
           if((ledgerObject[property].value && ledgerObject[property].value != "0") || (!ledgerObject[property].value && ledgerObject[property] != "0")) {
             this.increaseCountForProperty(ledgerObject, "special_data", "BalanceNotZero", 1);
@@ -309,6 +336,7 @@ export class LedgerData {
     public clearLedgerData() {
       this.ledgerData = {};
       this.escrows = [];
+      this.uniqueAccounts = new Map();
     }
 
     public async saveLedgerDataToFS(): Promise<void> {
