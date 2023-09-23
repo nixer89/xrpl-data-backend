@@ -11,7 +11,8 @@ export class LedgerData {
     private ledgerData: any = {};
     private escrows:any[] = [];
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
-    private uniqueAccounts:Map<string,string[]> = new Map();
+    private uniqueAccounts:Map<string,Map<string,number>> = new Map();
+    private scannedObjects:number = 0;
 
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
@@ -57,9 +58,15 @@ export class LedgerData {
             }
 
             this.addAdditionalData(ledgerObject.parsed);
+
+            this.scannedObjects++;
+
+            if(this.scannedObjects%1000000 == 0) {
+              console.log("Scanned objects: " + this.scannedObjects);
+            }
         }
 
-          //console.log(JSON.stringify(this.getLedgerData(load1)));
+        //console.log(JSON.stringify(this.getLedgerData(load1)));
     }
 
     addAdditionalData(ledgerObject: any) {
@@ -106,11 +113,11 @@ export class LedgerData {
           let account = ledgerObject[property];
 
           if(!this.uniqueAccounts.has(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase())) {
-            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase(), []);
+            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase(), new Map());
           }
 
-          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).includes(account)) {
-            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).push(account);
+          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).has(account)) {
+            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_"+property.toLowerCase()).set(account,1);
             this.increaseCountForProperty(ledgerObject, "special_data", "Unique"+property, 1);
           }
         }
@@ -119,11 +126,11 @@ export class LedgerData {
           let account = ledgerObject[property].issuer;
 
           if(!this.uniqueAccounts.has(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts")) {
-            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts", []);
+            this.uniqueAccounts.set(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts", new Map());
           }
 
-          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").includes(account)) {
-            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").push(account);
+          if(!this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").has(account)) {
+            this.uniqueAccounts.get(ledgerObject.LedgerEntryType.toLowerCase()+"_unique_accounts").set(account,1);
             this.increaseCountForProperty(ledgerObject, "special_data", "UniqueAccount", 1);
           }
         }
@@ -337,6 +344,7 @@ export class LedgerData {
       this.ledgerData = {};
       this.escrows = [];
       this.uniqueAccounts = new Map();
+      this.scannedObjects = 0;
     }
 
     public async saveLedgerDataToFS(): Promise<void> {
