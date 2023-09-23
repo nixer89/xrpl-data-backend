@@ -124,7 +124,7 @@ export class NftIssuerAccounts {
             console.time("saveNFTDataToFS");
 
             let counter = 0;
-            let fileNumber = 0;
+            let fileNumber = 1;
   
             mapToSave.forEach((value, key, map) => {
               nftData["nfts"].push(value);
@@ -143,7 +143,7 @@ export class NftIssuerAccounts {
               fileNumber++;
             }
   
-            for(let i = 1; i <= fileNumber; i++) {
+            for(let i = 1; i < fileNumber; i++) {
               fs.renameSync(DATA_PATH+DATA_PATH+"\\nfts\\nftData_new_"+i+".js", DATA_PATH+"\\nfts\\nftData_"+i+".js");
             }
             
