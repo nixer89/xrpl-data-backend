@@ -171,6 +171,7 @@ export class NftIssuerAccounts {
   
             offerMapToSave.forEach((value, key, map) => {
               nftOfferData["offers"].push(value)
+              offerCounter++;
 
               if(offerCounter%1000000 == 0) { //save max 1 million Offers per file
                 fs.writeFileSync(DATA_PATH+"nfts/nftOffers_new_"+fileNumber+".js", JSON.stringify(nftOfferData));
