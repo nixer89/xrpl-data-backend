@@ -29,6 +29,8 @@ export class LedgerScanner {
     private nftIssuerAccounts: NftIssuerAccounts;
     private supplyInfo: SupplyInfo;
 
+    private runs = -1;
+
     private constructor() {}
 
     public static get Instance(): LedgerScanner
@@ -89,6 +91,7 @@ export class LedgerScanner {
     }
 
      public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number): Promise<boolean> {
+        this.runs++;
         if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
           console.log("increase retry counter");
           retryCounter++;
@@ -101,8 +104,8 @@ export class LedgerScanner {
           //reset retry counter
           retryCounter = 0;
         }
-        console.log("new call: ledgerIndex: " + ledgerIndex);
-        console.log("new call: marker: " + marker);
+        //console.log("new call: ledgerIndex: " + ledgerIndex);
+        //console.log("new call: marker: " + marker);
 
         try {
           if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
@@ -162,14 +165,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: this.runs < 32 ? 100000 : 10,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: this.runs < 32 ? 100000 : 10,
           binary: false
         }
       
