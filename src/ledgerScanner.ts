@@ -185,11 +185,15 @@ export class LedgerScanner {
           if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
               this.xrpljsClient = new Client("ws://127.0.0.1:6006");
 
-              this.xrpljsClient.on('error', async () => {
-                this.xrpljsClient.disconnect();
-                this.xrpljsClient = new Client("ws://127.0.0.1:6006");
-              })
               //this.xrpljsClient = new Client("wss://xrplcluster.com");
+
+              try {
+                this.xrpljsClient.on('error', error => {
+                  console.log(error);
+                });
+              } catch(err) {
+                console.log(err);
+              }
       
             try {
               await this.xrpljsClient.connect();
@@ -201,13 +205,7 @@ export class LedgerScanner {
             }
           }
 
-          try {
-            this.xrpljsClient.on('error', error => {
-              console.log(error);
-            });
-          } catch(err) {
-            console.log(err);
-          }
+          
       
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
