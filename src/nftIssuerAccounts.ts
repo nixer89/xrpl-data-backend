@@ -131,7 +131,7 @@ export class NftIssuerAccounts {
               nftCounter++;
 
               if(nftCounter%1000000 == 0) { //save max 1 million NFTs per file
-                fs.writeFileSync(DATA_PATH+"nfts/nftData_new_"+fileNumber+".js", JSON.stringify(nftData));
+                fs.writeFileSync(DATA_PATH+"nfts/new_nftData_"+fileNumber+".js", JSON.stringify(nftData));
                 nftData["nfts"] = [];
                 fileNumber++;
               }
@@ -139,12 +139,12 @@ export class NftIssuerAccounts {
 
             //write left over to file system
             if(nftData["nfts"].length > 0) {
-              fs.writeFileSync(DATA_PATH+"nfts/nftData_new_"+fileNumber+".js", JSON.stringify(nftData));
+              fs.writeFileSync(DATA_PATH+"nfts/new_nftData_"+fileNumber+".js", JSON.stringify(nftData));
               fileNumber++;
             }
   
             for(let i = 1; i < fileNumber; i++) {
-              fs.renameSync(DATA_PATH+"nfts/nftData_new_"+i+".js", DATA_PATH+"nfts/nftData_"+i+".js");
+              fs.renameSync(DATA_PATH+"nfts/new_nftData_"+i+".js", DATA_PATH+"nfts/nftData_"+i+".js");
             }
             
             console.timeEnd("saveNFTDataToFS");
@@ -174,7 +174,7 @@ export class NftIssuerAccounts {
               offerCounter++;
 
               if(offerCounter%1000000 == 0) { //save max 1 million Offers per file
-                fs.writeFileSync(DATA_PATH+"nfts/nftOffers_new_"+fileNumber+".js", JSON.stringify(nftOfferData));
+                fs.writeFileSync(DATA_PATH+"nfts/new_nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
                 nftOfferData["offers"] = [];
                 fileNumber++;
               }
@@ -182,12 +182,12 @@ export class NftIssuerAccounts {
 
             //write left over to file system
             if(nftOfferData["offers"].length > 0) {
-              fs.writeFileSync(DATA_PATH+"nfts/nftOffers_new_"+fileNumber+".js", JSON.stringify(nftOfferData));
+              fs.writeFileSync(DATA_PATH+"nfts/new_nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
               fileNumber++;
             }
 
             for(let i = 1; i < fileNumber; i++) {
-              fs.renameSync(DATA_PATH+"nfts/nftOffers_new_"+i+".js", DATA_PATH+"nfts/nftOffers_"+i+".js");
+              fs.renameSync(DATA_PATH+"nfts/new_nftOffers_"+i+".js", DATA_PATH+"nfts/nftOffers_"+i+".js");
             }
   
             
