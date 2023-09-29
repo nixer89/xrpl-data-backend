@@ -219,10 +219,10 @@ export class LedgerScanner {
 
           //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
       
-          if(messageBinary && messageBinary.result && messageBinary.result.state && messageBinary.result.ledger_index) {
-            let newledgerIndex:number = messageBinary.result.ledger_index;
+          if(messageBinary && messageBinary && messageBinary.state && messageBinary.ledger_index) {
+            let newledgerIndex:number = messageBinary.ledger_index;
             //console.log("marker: " + messageBinary.result.marker);
-            let newMarker:unknown = messageBinary.result.marker;
+            let newMarker:unknown = messageBinary.marker;
 
             //console.log("newMarker: " + newMarker);
             //console.log("ledger_index: " + newledgerIndex);
@@ -235,36 +235,36 @@ export class LedgerScanner {
             //console.log("length json: " + messageJson.result.state.length);
             //console.timeEnd("requesting json");
 
-            if(messageJson && messageJson.result && messageJson.result.state && messageJson.result.ledger_index == messageBinary.result.ledger_index && messageBinary.result.state.length == messageJson.result.state.length && messageBinary.result.marker == messageJson.result.marker) {
+            if(messageJson && messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index && messageBinary.state.length == messageJson.state.length && messageBinary.marker == messageJson.marker) {
 
-              for(let i = 0; i < messageBinary.result.state.length; i++) {
+              for(let i = 0; i < messageBinary.state.length; i++) {
                 try {
-                  if(messageBinary.result.state[i].index == messageJson.result.state[i].index)
-                    messageBinary.result.state[i]['parsed'] = messageJson.result.state[i];
+                  if(messageBinary.state[i].index == messageJson.state[i].index)
+                    messageBinary.state[i]['parsed'] = messageJson.state[i];
                   else {
                     console.log("####### NOT SAME INDEX!!! ###########")
-                    console.log("BINARY: " + messageBinary.result.state[i].index);
-                    console.log("JSON  : "  + messageJson.result.state[i].index)
+                    console.log("BINARY: " + messageBinary.state[i].index);
+                    console.log("JSON  : "  + messageJson.state[i].index)
                   }
                 } catch(err) {
                   console.log(err);
-                  console.log("binary: " + JSON.stringify(messageBinary.result.state[i]));
-                  console.log("json: " + JSON.stringify(messageJson.result.state[i]));
+                  console.log("binary: " + JSON.stringify(messageBinary.state[i]));
+                  console.log("json: " + JSON.stringify(messageJson.state[i]));
                   return;
                 }
               }
 
               //console.time("resolveLedgerData binary");
-              await this.ledgerData.resolveLedgerData(messageBinary.result.state);
+              await this.ledgerData.resolveLedgerData(messageBinary.state);
               //console.timeEnd("resolveLedgerData binary");
               
               //console.time("resolveIssuerToken");
-              await this.issuerAccount.resolveIssuerToken(messageJson.result.state);
+              await this.issuerAccount.resolveIssuerToken(messageJson.state);
               //console.timeEnd("resolveIssuerToken");
 
-              await this.nftIssuerAccounts.resolveNFToken(messageJson.result.state);
+              await this.nftIssuerAccounts.resolveNFToken(messageJson.state);
 
-              await this.supplyInfo.collectSupplyInfo(messageBinary.result.state);
+              await this.supplyInfo.collectSupplyInfo(messageBinary.state);
             } else {
               throw "binary and json objects not the same!"
             }
@@ -296,9 +296,9 @@ export class LedgerScanner {
           console.log(ledgerInfo);
       
           this.setLedgerIndex(ledgerIndex);
-          this.setLedgerHash(ledgerInfo.result.ledger_hash);
-          this.setLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-          this.setLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
+          this.setLedgerHash(ledgerInfo.ledger.ledger_hash);
+          this.setLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.setLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
 
           
           //always save resolved user names to file system to make restart of server much faster
@@ -307,14 +307,14 @@ export class LedgerScanner {
           await this.ledgerData.saveLedgerDataToFS();
 
           this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.result.ledger_hash);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.result.ledger.close_time);
+          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.ledger.ledger_hash);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
 
           await this.nftIssuerAccounts.saveNFTDataToFS();
 
           this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
-          this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.result.ledger.close_time_human);
+          this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
 
           await this.supplyInfo.calculateSupplyAndSave();
 
