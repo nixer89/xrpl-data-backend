@@ -61,7 +61,7 @@ export class LedgerData {
 
             this.scannedObjects++;
 
-            if(this.scannedObjects > 2000000) {
+            if(this.scannedObjects > 3000000) {
               if(this.scannedObjects%1000 == 0) {
                 console.log("Scanned objects: " + this.scannedObjects);
               }
