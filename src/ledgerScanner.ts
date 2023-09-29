@@ -292,6 +292,8 @@ export class LedgerScanner {
           }
                 
           let ledgerInfo = await this.xrpljsClient.send(ledgerCommand);
+
+          console.log(ledgerInfo);
       
           this.setLedgerIndex(ledgerIndex);
           this.setLedgerHash(ledgerInfo.result.ledger_hash);
