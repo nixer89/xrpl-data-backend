@@ -102,8 +102,8 @@ export class LedgerScanner {
           //reset retry counter
           retryCounter = 0;
         }
-        console.log("new call: ledgerIndex: " + ledgerIndex);
-        console.log("new call: marker: " + marker);
+        //console.log("new call: ledgerIndex: " + ledgerIndex);
+        //console.log("new call: marker: " + marker);
 
         try {
           if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
