@@ -61,12 +61,18 @@ export class LedgerData {
 
             this.scannedObjects++;
 
-            if(this.scannedObjects > 3200000 && this.scannedObjects < 3300000) {
-              console.log(JSON.stringify(ledgerObject.parsed.index));
+            //if(this.scannedObjects > 3200000 && this.scannedObjects < 3300000) {
+            //  console.log(JSON.stringify(ledgerObject.parsed.index));
+            //}
+
+            if(this.scannedObjects < 3000000) {
+              if(this.scannedObjects%1000000 == 0) {
+                console.log("Scanned objects: " + this.scannedObjects);
+              }
             }
 
-            if(this.scannedObjects > 3000000) {
-              if(this.scannedObjects%1000 == 0) {
+            if(this.scannedObjects >= 3000000) {
+              if(this.scannedObjects%100000 == 0) {
                 console.log("Scanned objects: " + this.scannedObjects);
               }
             }
