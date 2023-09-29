@@ -61,7 +61,7 @@ export class LedgerData {
 
             this.scannedObjects++;
 
-            if(this.scannedObjects > 3200000) {
+            if(this.scannedObjects > 3200000 && this.scannedObjects < 3300000) {
               console.log(JSON.stringify(ledgerObject.parsed.index));
             }
 
