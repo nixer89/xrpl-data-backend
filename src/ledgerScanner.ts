@@ -46,7 +46,7 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        await this.readLedgerData(null, null, null, 0);
+        //await this.readLedgerData(null, null, null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
@@ -101,8 +101,8 @@ export class LedgerScanner {
           //reset retry counter
           retryCounter = 0;
         }
-        console.log("new call: ledgerIndex: " + ledgerIndex);
-        console.log("new call: marker: " + marker);
+        //console.log("new call: ledgerIndex: " + ledgerIndex);
+        //console.log("new call: marker: " + marker);
 
         try {
           if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
@@ -162,14 +162,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 50000,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 50000,
           binary: false
         }
       
