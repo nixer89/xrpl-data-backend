@@ -6,6 +6,7 @@ import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerRes
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
+import { XrplClient } from 'xrpl-client';
 
 require("log-timestamp");
 
@@ -17,7 +18,7 @@ export class LedgerScanner {
 
     //private xrplClient:XrplClient;
 
-    private xrpljsClient:Client;
+    private xrpljsClient:XrplClient;
 
     private ledger_index: number;
     private ledger_date: string;
@@ -182,8 +183,8 @@ export class LedgerScanner {
           ledger_data_command_binary.marker = ledger_data_command_json.marker = marker;
       
         try { 
-          if(!this.xrpljsClient || !this.xrpljsClient.isConnected()) {
-              this.xrpljsClient = new Client("ws://127.0.0.1:6006");
+          if(!this.xrpljsClient) {
+              this.xrpljsClient = new XrplClient("ws://127.0.0.1:6006");
 
               //this.xrpljsClient = new Client("wss://xrplcluster.com");
 
@@ -196,8 +197,7 @@ export class LedgerScanner {
               }
       
             try {
-              await this.xrpljsClient.connect();
-              console.log("connected: " + JSON.stringify(this.xrpljsClient.isConnected()));
+              console.log("connected: " + JSON.stringify(this.xrpljsClient.getState()));
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
@@ -211,7 +211,7 @@ export class LedgerScanner {
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
           //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
-          let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
+          let messageBinary = await this.xrpljsClient.send(ledger_data_command_binary);
           //console.log("length binary: " + messageBinary.result.state.length);
           //console.timeEnd("requesting binary");
                 
@@ -231,7 +231,7 @@ export class LedgerScanner {
 
             //console.time("requesting json");
             //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
-            let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
+            let messageJson = await this.xrpljsClient.send(ledger_data_command_json);
             //console.log("length json: " + messageJson.result.state.length);
             //console.timeEnd("requesting json");
 
@@ -291,7 +291,7 @@ export class LedgerScanner {
             ledger_index: ledgerIndex
           }
                 
-          let ledgerInfo:LedgerResponse = await this.xrpljsClient.request(ledgerCommand);
+          let ledgerInfo = await this.xrpljsClient.send(ledgerCommand);
       
           this.setLedgerIndex(ledgerIndex);
           this.setLedgerHash(ledgerInfo.result.ledger_hash);
