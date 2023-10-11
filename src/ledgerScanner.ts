@@ -165,14 +165,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 25000,
+          limit: this.runs < 31 ? 100000 : 25000,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 25000,
+          limit: this.runs < 31 ? 100000 : 25000,
           binary: false
         }
       
@@ -218,7 +218,7 @@ export class LedgerScanner {
 
           console.log("binary size: " + Buffer.from(JSON.stringify(messageBinary), 'utf8').length);
 
-          if(this.runs >= 32) {
+          if(this.runs >= 31) {
             let typeMap:Map<string, number> = new Map();
             let binaryData = messageBinary.result.state;
 
@@ -238,8 +238,10 @@ export class LedgerScanner {
             }
 
             console.log("type map size: " + typeMap.size);
-            for(const key in typeMap.keys()) {
-              console.log(key + ": " + typeMap.get(key));
+
+            let keys:string[] = Array.from(typeMap.keys());
+            for(let j = 0; j < keys.length; j++) {
+              console.log(keys[j] + ": " + typeMap.get(keys[j]));
             }
           }
           //console.log("length binary: " + messageBinary.result.state.length);
