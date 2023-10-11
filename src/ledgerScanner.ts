@@ -165,14 +165,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 31 ? 100000 : 20000,
+          limit: this.runs < 32 ? 100000 : 15000,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 31 ? 100000 : 20000,
+          limit: this.runs < 32 ? 100000 : 15000,
           binary: false
         }
       
@@ -218,8 +218,12 @@ export class LedgerScanner {
 
           console.log("binary size: " + Buffer.from(JSON.stringify(messageBinary), 'utf8').length);
 
-          if(this.runs >= 31) {
+          if(this.runs >= 32) {
+            console.log("marker used: ")
+            console.log(ledger_data_command_binary.marker);
+
             let typeMap:Map<string, number> = new Map();
+            let accountMap:Map<string, number> = new Map();
             let binaryData = messageBinary.result.state;
 
             console.log("Number of Objects: " + binaryData.length);
