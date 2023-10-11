@@ -6,6 +6,7 @@ import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerRes
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
+import { decode } from 'ripple-binary-codec';
 
 require("log-timestamp");
 
@@ -217,6 +218,31 @@ export class LedgerScanner {
           let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
 
           console.log("binary size: " + Buffer.from(JSON.stringify(messageBinary), 'utf8').length);
+
+          if(this.runs >= 32) {
+            let typeMap:Map<string, number> = new Map();
+            let binaryData = messageBinary.result.state;
+
+            console.log("Number of Objects: " + binaryData.length);
+
+            for(let i = 0; i < binaryData.length; i++) {
+              let singleBinary = binaryData[i];
+              if('data' in singleBinary) {
+                let decodedBinaryData:any = decode(singleBinary.data);
+
+                if(!typeMap.has(decodedBinaryData.LedgerEntryType)) {
+                  typeMap.set(decodedBinaryData.LedgerEntryType, 1);
+                } else {
+                  typeMap.set(decodedBinaryData.LedgerEntryType, typeMap.get(decodedBinaryData.LedgerEntryType)+1);
+                }
+              }
+            }
+
+            console.log("type map size: " + typeMap.size);
+            for(const key in typeMap.keys()) {
+              console.log(key + ": " + typeMap.get(key));
+            }
+          }
           //console.log("length binary: " + messageBinary.result.state.length);
           //console.timeEnd("requesting binary");
                 
