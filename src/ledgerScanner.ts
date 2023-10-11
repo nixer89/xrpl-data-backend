@@ -165,14 +165,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 50000,
+          limit: 100000,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 50000,
+          limit: 100000,
           binary: false
         }
       
@@ -215,6 +215,8 @@ export class LedgerScanner {
           //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
           let messageBinary:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_binary);
+
+          console.log("binary size: " + Buffer.from(JSON.stringify(messageBinary), 'utf8').length);
           //console.log("length binary: " + messageBinary.result.state.length);
           //console.timeEnd("requesting binary");
                 
@@ -235,6 +237,8 @@ export class LedgerScanner {
             //console.time("requesting json");
             //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson:LedgerDataResponse = await this.xrpljsClient.request(ledger_data_command_json);
+
+            console.log("json size: " + Buffer.from(JSON.stringify(messageJson), 'utf8').length);
             //console.log("length json: " + messageJson.result.state.length);
             //console.timeEnd("requesting json");
 
