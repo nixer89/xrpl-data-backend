@@ -256,7 +256,7 @@ export class LedgerScanner {
             console.log("Unique NFTokenPage Owners: " + accountMap.size);
 
             if(accountMap.size < 50) {
-              console.log(Array.from(accountMap.values()));
+              console.log(Array.from(accountMap.keys()));
             }
 
             let keys:string[] = Array.from(typeMap.keys());
