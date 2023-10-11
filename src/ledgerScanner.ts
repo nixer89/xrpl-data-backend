@@ -2,11 +2,10 @@ import * as scheduler from 'node-schedule';
 import * as fetch from 'node-fetch';
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
-import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
+import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse, decode } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
-import { decode } from 'ripple-binary-codec';
 
 require("log-timestamp");
 
