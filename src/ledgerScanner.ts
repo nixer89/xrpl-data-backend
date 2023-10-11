@@ -165,14 +165,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 15000,
+          limit: this.runs < 32 ? 100000 : 12500,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: this.runs < 32 ? 100000 : 15000,
+          limit: this.runs < 32 ? 100000 : 12500,
           binary: false
         }
       
