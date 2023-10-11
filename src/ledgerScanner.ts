@@ -29,7 +29,7 @@ export class LedgerScanner {
     private nftIssuerAccounts: NftIssuerAccounts;
     private supplyInfo: SupplyInfo;
 
-    private runs = -1;
+    private runs = 32;
 
     private constructor() {}
 
@@ -48,7 +48,7 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(83138692, "3ADE1E8CDE5B8C26CE7424779158E49B3D91D1FDBC3E398181E150FF173A414A", null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
