@@ -241,7 +241,7 @@ export class LedgerScanner {
                 }
 
                 if('NFTokenPage' === decodedBinaryData.LedgerEntryType) {
-                  let pageOwner = encodeAccountID(Buffer.from(decodedBinaryData.LedgerIndex, 'hex').slice(0, 20));
+                  let pageOwner = encodeAccountID(Buffer.from(singleBinary.index, 'hex').slice(0, 20));
 
                   if(!accountMap.has(pageOwner)) {
                     accountMap.set(pageOwner, 1);
