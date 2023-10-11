@@ -6,6 +6,7 @@ import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerRes
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
+import { encodeAccountID } from 'ripple-address-codec';
 
 require("log-timestamp");
 
@@ -238,10 +239,21 @@ export class LedgerScanner {
                 } else {
                   typeMap.set(decodedBinaryData.LedgerEntryType, typeMap.get(decodedBinaryData.LedgerEntryType)+1);
                 }
+
+                if('NFTokenPage' === decodedBinaryData.LedgerEntryType) {
+                  let pageOwner = encodeAccountID(Buffer.from(decodedBinaryData.LedgerIndex, 'hex').slice(0, 20));
+
+                  if(!accountMap.has(pageOwner)) {
+                    accountMap.set(pageOwner, 1);
+                  } else {
+                    accountMap.set(pageOwner, accountMap.get(pageOwner)+1);
+                  }
+                }
               }
             }
 
             console.log("type map size: " + typeMap.size);
+            console.log("Unique NFTokenPage Owners: " + accountMap.size);
 
             let keys:string[] = Array.from(typeMap.keys());
             for(let j = 0; j < keys.length; j++) {
