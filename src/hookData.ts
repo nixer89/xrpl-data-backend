@@ -11,7 +11,7 @@ export class HookData {
     private HookDefinition: any[] = [];
     private HookState: any[] = [];
 
-    private current_ledger_index: number;
+    private current_ledger_index: number = -1;
     private current_ledger_date: string;
     private current_ledger_time_ms: number;
     private current_ledger_hash: string;
@@ -32,8 +32,7 @@ export class HookData {
 
       this.Hook = this.Hook.concat(hooks);
       this.HookDefinition = this.HookDefinition.concat(hooksDefinition);
-      this.HookState= this.HookState.concat(hooksState);
-      
+      this.HookState = this.HookState.concat(hooksState);
     }
 
     public clearData() {
@@ -49,6 +48,8 @@ export class HookData {
         if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
           console.time("saveHookDataToFS");
 
+          console.log("writing this.Hook.length: " + this.Hook.length);
+
           let hookData:any = {
             ledger_index: this.getCurrentLedgerIndex(),
             ledger_hash: this.getCurrentLedgerHash(),
@@ -57,6 +58,8 @@ export class HookData {
             hooks: this.Hook
           };
 
+          console.log("writing this.HookDefinition.length: " + this.HookDefinition.length);
+
           let hookDefinitionData:any = {
             ledger_index: this.getCurrentLedgerIndex(),
             ledger_hash: this.getCurrentLedgerHash(),
@@ -64,6 +67,8 @@ export class HookData {
             ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
             hookDefinitions: this.HookDefinition
           };
+
+          console.log("writing this.HookState.length: " + this.HookState.length);
 
           let hookStateData:any = {
             ledger_index: this.getCurrentLedgerIndex(),
@@ -79,6 +84,9 @@ export class HookData {
           fs.writeFileSync(DATA_PATH+"hooks/hookStates.js", JSON.stringify(hookStateData));
 
           console.timeEnd("saveHookDataToFS");
+        } else {
+          console.log("this.getCurrentLedgerIndex(): " + this.getCurrentLedgerIndex());
+          console.log("currentWrittenLedger: " + currentWrittenLedger);
         }
       } catch(err) {
         console.log(err);

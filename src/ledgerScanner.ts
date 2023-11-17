@@ -50,7 +50,8 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        //await this.readLedgerData(null, null, null, 0);
+        //run on startup
+        await this.readLedgerData(null, null, null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
