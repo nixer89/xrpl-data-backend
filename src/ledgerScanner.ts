@@ -130,7 +130,7 @@ export class LedgerScanner {
                 ledgerIndex = responseJson.ledger_index;
                 console.log("set ledger index to: " + ledgerIndex);
 
-                let tmpClient = new Client("ws://127.0.0.1:6006");
+                let tmpClient = new Client("ws://127.0.0.1:6009");
                 await tmpClient.connect();
                 //check if the node has the ledger
                 let ledger_info_request:LedgerRequest = {
@@ -189,7 +189,7 @@ export class LedgerScanner {
       
         try { 
           if(!this.xrpljsClient) {
-              this.xrpljsClient = new XrplClient("ws://127.0.0.1:6006");
+              this.xrpljsClient = new XrplClient("ws://127.0.0.1:6009");
 
               //this.xrpljsClient = new Client("wss://xrplcluster.com");
 
@@ -212,7 +212,7 @@ export class LedgerScanner {
 
           
       
-          //console.log("ws://127.0.0.1:6006");
+          //console.log("ws://127.0.0.1:6009");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
           //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
