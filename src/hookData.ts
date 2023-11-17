@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import { URIToken } from './util/types';
 import { DATA_PATH } from './util/config';
 
 require("log-timestamp");
@@ -48,7 +47,7 @@ export class HookData {
         let currentWrittenLedger = await this.readCurrentLedgerFromFS();
 
         if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
-          console.time("saveUriTokenDataToFS");
+          console.time("saveHookDataToFS");
 
           let hookData:any = {
             ledger_index: this.getCurrentLedgerIndex(),
@@ -79,7 +78,7 @@ export class HookData {
           fs.writeFileSync(DATA_PATH+"hooks/hookDefinitions.js", JSON.stringify(hookDefinitionData));
           fs.writeFileSync(DATA_PATH+"hooks/hookStates.js", JSON.stringify(hookStateData));
 
-          console.timeEnd("saveUriTokenDataToFS");
+          console.timeEnd("saveHookDataToFS");
         }
       } catch(err) {
         console.log(err);
