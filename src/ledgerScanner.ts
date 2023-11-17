@@ -51,7 +51,7 @@ export class LedgerScanner {
         await this.supplyInfo.init();
 
         //run on startup
-        await this.readLedgerData(null, null, null, 0);
+        //await this.readLedgerData(null, null, null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
@@ -63,7 +63,13 @@ export class LedgerScanner {
         if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
           await this.readLedgerData(null, null, null, 0);
 
-        scheduler.scheduleJob("readIssuedToken", {minute: (SCHEDULE_MINUTE+1)}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData1", {minute: 1}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData2", {minute: 11}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData3", {minute: 21}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData4", {minute: 31}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData5", {minute: 41}, () => this.scheduleLoadingIssuerData());
+        scheduler.scheduleJob("resolveLedgerData6", {minute: 51}, () => this.scheduleLoadingIssuerData());
+
         console.log("started ledger scan schedule. Waiting now.");
     }
 
@@ -112,7 +118,7 @@ export class LedgerScanner {
         try {
           if(!ledgerIndex) { //no ledger index given. resolve latest ledger at exact matching time!
             let time = new Date();
-            time.setMinutes(SCHEDULE_MINUTE);
+            time.setMinutes(time.getMinutes()-1);
             time.setSeconds(0);
             time.setMilliseconds(0);
 
