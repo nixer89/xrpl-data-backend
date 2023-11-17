@@ -206,8 +206,8 @@ export class NftIssuerAccounts {
     public async readCurrentLedgerFromFS(): Promise<number> {
       try {
         //console.log("loading nft issuer data from FS");
-        if(fs.existsSync(DATA_PATH+"nftData.js")) {
-            let nftData:any = JSON.parse(fs.readFileSync(DATA_PATH+"nftData.js").toString());
+        if(fs.existsSync(DATA_PATH+"nfts/nftData_1.js")) {
+            let nftData:any = JSON.parse(fs.readFileSync(DATA_PATH+"nfts/nftData_1.js").toString());
             if(nftData && nftData.ledger_index) {
                 return nftData.ledger_index;
             } else {
