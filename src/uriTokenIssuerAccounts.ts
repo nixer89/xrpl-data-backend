@@ -37,7 +37,8 @@ export class UriTokenIssuerAccounts {
           URI: uriToken.URI,
           Digest: uriToken.Digest,
           Amount: uriToken.Amount,
-          Destination: uriToken.Destination
+          Destination: uriToken.Destination,
+          Flags: uriToken.Flags
         }
 
         await this.addUriToken(newUriToken);

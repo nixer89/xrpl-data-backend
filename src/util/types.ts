@@ -76,5 +76,6 @@ export interface URIToken {
     URI: string,
     Digest?: string,
     Amount?: any,
-    Destination?: string   
+    Destination?: string,
+    Flags?: number
 }
