@@ -292,12 +292,6 @@ export class LedgerData {
             if(this.isRippleStateFlagHighFreeze(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfHighFreeze", 1);
           }
-
-          if("nftokenoffer" === ledgerObject.LedgerEntryType.toLowerCase()) {
-
-            if(this.isNFTokenOfferFlagSell(ledgerObject[property]))
-              this.increaseCountForProperty(ledgerObject, "flags", "lsfSellNFToken", 1);
-          }
         }
       }
     }
@@ -455,9 +449,5 @@ export class LedgerData {
 
   isRippleStateFlagHighFreeze(flags:number) {
     return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
-  }
-
-  isNFTokenOfferFlagSell(flags:number) {
-    return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
   }
 }

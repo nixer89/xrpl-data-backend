@@ -44,15 +44,11 @@ export class SupplyInfo {
       [key: string]: Offer[]
     } = {};
 
-    nft_offers: {
-      [key: string]: any[]
-    } = {};
-
     signer_lists: {
       [key: string]: SignerList
     } = {};
 
-    xrpLockedInObjects:number = 0;
+    lockedInObjects:number = 0;
 
     feeSetting:FeeSettings = null;
 
@@ -87,25 +83,16 @@ export class SupplyInfo {
               }
             }
 
-            if((entry as any).LedgerEntryType === 'NFTokenOffer') {
-              let nftOffer:any = entry;
-              if(!this.nft_offers[nftOffer.Account]) {
-                this.nft_offers[nftOffer.Account] = [entry];
-              } else {
-                this.nft_offers[nftOffer.Account].push(entry);
-              }
-            }
-
             if(entry.LedgerEntryType === 'SignerList') {
               this.signer_lists[entry.index] = entry;
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
-              this.xrpLockedInObjects = this.xrpLockedInObjects + Number(entry.Amount);
+              this.lockedInObjects = this.lockedInObjects + Number(entry.Amount);
             }
 
             if(entry.LedgerEntryType === 'PayChannel') {
-              this.xrpLockedInObjects = this.xrpLockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
+              this.lockedInObjects = this.lockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
             }
 
             if(entry.LedgerEntryType === 'FeeSettings') {
@@ -129,10 +116,10 @@ export class SupplyInfo {
           ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
         }
 
-        let totalXrpInAccounts = 0;
+        let totalInAccounts = 0;
         let circulatingXRP = 0;
         let numberOfAccounts = 0;
-        let totalReservedXrp = 0;
+        let totalReserved = 0;
         let totalTransientReserves = 0;
       
 
@@ -141,18 +128,18 @@ export class SupplyInfo {
             let accRoot = this.accounts[account];
 
             let spendableAccountBalance = this.isAccountBlackHoled(accRoot) ? 0 : Number(accRoot.Balance);
-            let reservedXrp = accountReserve + (accRoot.OwnerCount * ownerReserve);
-            let transientReserve = ((this.offers[accRoot.Account] || []).length + (this.nft_offers[accRoot.Account] || []).length) * ownerReserve;
+            let reserved = accountReserve + (accRoot.OwnerCount * ownerReserve);
+            let transientReserve = (this.offers[accRoot.Account] || []).length * ownerReserve;
 
-            let xrpThatCanCirculate = Math.max(spendableAccountBalance - reservedXrp + transientReserve, 0)
+            let canCirculateAmount = Math.max(spendableAccountBalance - reserved + transientReserve, 0)
 
-            totalXrpInAccounts = totalXrpInAccounts + Number(accRoot.Balance);
+            totalInAccounts = totalInAccounts + Number(accRoot.Balance);
             //add spendable xrp to total xrp count
-            if(xrpThatCanCirculate > 0) {
-              circulatingXRP = circulatingXRP + xrpThatCanCirculate;
+            if(canCirculateAmount > 0) {
+              circulatingXRP = circulatingXRP + canCirculateAmount;
             }
 
-            totalReservedXrp = totalReservedXrp + reservedXrp;
+            totalReserved = totalReserved + reserved;
             totalTransientReserves = totalTransientReserves + transientReserve;
 
             numberOfAccounts++;
@@ -170,11 +157,11 @@ export class SupplyInfo {
           ledger_data = null;
         }
 
-        if(ledger_data?.accountroot?.special_data?.BalanceValueTotal != totalXrpInAccounts ) {
+        if(ledger_data?.accountroot?.special_data?.BalanceValueTotal != totalInAccounts ) {
           //something is wrong. null ledger data coz it does not match!
           console.log("MISMATCH OF XRP IN XRPL ACCOUNTS:")
           console.log("ledger_data?.accountroot?.special_data?.BalanceValueTotal: " + ledger_data?.accountroot?.special_data?.BalanceValueTotal);
-          console.log("totalXrpInAccounts: " + totalXrpInAccounts);
+          console.log("totalXrpInAccounts: " + totalInAccounts);
 
           ledger_data = null;
         }
@@ -184,12 +171,12 @@ export class SupplyInfo {
           ledger: this.getCurrentLedgerIndex(),
           closeTimeHuman: this.getCurrentLedgerCloseTime(),
           accounts: numberOfAccounts,
-          xrpExisting: (totalXrpInAccounts + this.xrpLockedInObjects)/1000000,
-          xrp: {
-            xrpTotalSupply: circulatingXRP/1000000,
-            xrpTotalBalance: totalXrpInAccounts/1000000,
-            xrpTotalReserved: totalReservedXrp/1000000,
-            xrpTotalTransientReserves: totalTransientReserves/1000000
+          xahExisting: (totalInAccounts + this.lockedInObjects)/1000000,
+          xah: {
+            xahTotalSupply: circulatingXRP/1000000,
+            xahTotalBalance: totalInAccounts/1000000,
+            xahTotalReserved: totalReserved/1000000,
+            xahTotalTransientReserves: totalTransientReserves/1000000
           },
           ledger_data: JSON.stringify(ledger_data)
         }
@@ -206,11 +193,10 @@ export class SupplyInfo {
 
     public clearSupplyInfo() {
       this.supplyInfo = null;
-      this.xrpLockedInObjects = 0;
+      this.lockedInObjects = 0;
       this.feeSetting = null;
       this.accounts = {};
       this.offers = {};
-      this.nft_offers = {};
       this.signer_lists = {};
       
     }
@@ -325,10 +311,6 @@ export class SupplyInfo {
 
   isRippleStateFlagHighFreeze(flags:number) {
     return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
-  }
-
-  isNFTokenOfferFlagSell(flags:number) {
-    return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
   }
 
   isAccountBlackHoled(accountRoot: AccountRoot): boolean {

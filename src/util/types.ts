@@ -59,12 +59,26 @@ export interface SupplyInfoType {
     ledger: number,
     closeTimeHuman: string,
     accounts: number,
-    xrpExisting: number,
-    xrp: {
-        xrpTotalSupply: number,
-        xrpTotalBalance: number,
-        xrpTotalReserved: number,
-        xrpTotalTransientReserves: number
+    xahExisting: number,
+    xah: {
+        xahTotalSupply: number,
+        xahTotalBalance: number,
+        xahTotalReserved: number,
+        xahTotalTransientReserves: number
     },
     ledger_data: string
+}
+
+export interface URIToken {
+    Owner: string,
+    OwnerNode: string,
+    Issuer: string,
+    URI: string,
+    Digest?: string,
+    Amount?: any,
+    Destination?: string,
+    PreviousTxnID: string,
+    PreviousTxnLgrSeq: string,
+    LedgerEntryType: string,
+    index: string
 }

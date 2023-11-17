@@ -1,7 +1,7 @@
 {
-  "name": "xrpl-token-tracker-backend",
-  "version": "4.2.0",
-  "description": "tracks periodically the latest issued token on the xrp ledger (every 10 minutes)",
+  "name": "xahau-data-backend",
+  "version": "5.0.0",
+  "description": "tracks periodically the ledger data of the Xahau Network",
   "main": "src/server.ts",
   "scripts": {
     "start": "node dist/server.js",

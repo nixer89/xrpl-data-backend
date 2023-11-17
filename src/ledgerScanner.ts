@@ -2,8 +2,9 @@ import * as scheduler from 'node-schedule';
 import * as fetch from 'node-fetch';
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
-import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
-import { NftIssuerAccounts } from './nftIssuerAccounts';
+import { Client, LedgerDataRequest, LedgerRequest} from 'xrpl';
+import { UriTokenIssuerAccounts } from './uriTokenIssuerAccounts';
+import { HookData } from './hookData'
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
 import { XrplClient } from 'xrpl-client';
@@ -27,7 +28,8 @@ export class LedgerScanner {
 
     private issuerAccount:IssuerAccounts;
     private ledgerData:LedgerData;
-    private nftIssuerAccounts: NftIssuerAccounts;
+    private uriTOkenIssuerAccounts: UriTokenIssuerAccounts;
+    private hookData: HookData;
     private supplyInfo: SupplyInfo;
 
     private constructor() {}
@@ -41,7 +43,8 @@ export class LedgerScanner {
     public async init(): Promise<void> {
         this.issuerAccount = IssuerAccounts.Instance;
         this.ledgerData = LedgerData.Instance;
-        this.nftIssuerAccounts = NftIssuerAccounts.Instance;
+        this.uriTOkenIssuerAccounts = UriTokenIssuerAccounts.Instance;
+        this.hookData = HookData.Instance;
         this.supplyInfo = SupplyInfo.Instance;
 
         await this.issuerAccount.init();
@@ -72,7 +75,7 @@ export class LedgerScanner {
           let success:boolean = await this.readLedgerData(null, null, null, 0);
           if(success) {
             console.log("loading ledger data successfull.")
-            this.nftIssuerAccounts.clearData();
+            this.uriTOkenIssuerAccounts.clearData();
             this.issuerAccount.clearIssuer();
             this.ledgerData.clearLedgerData();
             this.supplyInfo.clearSupplyInfo();
@@ -113,9 +116,9 @@ export class LedgerScanner {
             time.setMilliseconds(0);
 
             console.log("getting ledger index with:")
-            console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            console.log("https://data.xahau.network/v1/ledgers/ledger_index?date="+time.toISOString());
 
-            let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            let ledgerResponse = await fetch.default("https://data.xahau.network/v1/ledgers/ledger_index?date="+time.toISOString());
 
             if(ledgerResponse && ledgerResponse.ok) {
               let responseJson = await ledgerResponse.json();
@@ -152,8 +155,9 @@ export class LedgerScanner {
 
         if(!marker) {
             this.issuerAccount.clearIssuer();
-            this.nftIssuerAccounts.clearData();
+            this.uriTOkenIssuerAccounts.clearData();
             this.ledgerData.clearLedgerData();
+            this.hookData.clearData();
             this.supplyInfo.clearSupplyInfo();
             this.setLedgerCloseTime(null)
             this.setLedgerCloseTimeMs(null);
@@ -262,7 +266,9 @@ export class LedgerScanner {
               await this.issuerAccount.resolveIssuerToken(messageJson.state);
               //console.timeEnd("resolveIssuerToken");
 
-              await this.nftIssuerAccounts.resolveNFToken(messageJson.state);
+              await this.uriTOkenIssuerAccounts.resolveUriToken(messageJson.state);
+
+              await this.hookData.resolveHookData(messageJson.state);
 
               await this.supplyInfo.collectSupplyInfo(messageBinary.state);
             } else {
@@ -278,12 +284,12 @@ export class LedgerScanner {
             } else {
               console.log("ALL DONE");
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-              console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+              console.log("nft size: " + this.uriTOkenIssuerAccounts.getUriTokenMap().size);
             }
           } else {
             console.log("ALL DONE");
             console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+            console.log("nft size: " + this.uriTOkenIssuerAccounts.getUriTokenMap().size);
           }
       
           let ledgerCommand:LedgerRequest = {
@@ -304,12 +310,19 @@ export class LedgerScanner {
 
           await this.ledgerData.saveLedgerDataToFS();
 
-          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.ledger_hash);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
+          this.uriTOkenIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
+          this.uriTOkenIssuerAccounts.setCurrentLedgerHash(ledgerInfo.ledger_hash);
+          this.uriTOkenIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.uriTOkenIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
 
-          await this.nftIssuerAccounts.saveNFTDataToFS();
+          await this.uriTOkenIssuerAccounts.saveUriTokenDataToFS();
+
+          this.hookData.setCurrentLedgerIndex(ledgerIndex);
+          this.hookData.setCurrentLedgerHash(ledgerInfo.ledger_hash);
+          this.hookData.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.hookData.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
+
+          await this.hookData.saveHookDataToFS();
 
           this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
           this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
