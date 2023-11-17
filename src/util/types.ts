@@ -77,8 +77,9 @@ export interface URIToken {
     Digest?: string,
     Amount?: any,
     Destination?: string,
-    PreviousTxnID: string,
-    PreviousTxnLgrSeq: string,
-    LedgerEntryType: string,
-    index: string
+    PreviousTxnID?: string,
+    PreviousTxnLgrSeq?: string,
+    LedgerEntryType?: string,
+    index?:string,
+    URITokenID?: string
 }

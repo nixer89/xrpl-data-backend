@@ -28,12 +28,19 @@ export class UriTokenIssuerAccounts {
       let uriTokens:URIToken[] = ledgerState.filter(element => element.LedgerEntryType === 'URIToken');
 
       for(let i = 0; i < uriTokens.length; i++) {
+        let uriToken = uriTokens[i];
+        uriToken.URITokenID = uriToken.index;
+        delete uriToken.OwnerNode;
+        delete uriToken.PreviousTxnID;
+        delete uriToken.PreviousTxnLgrSeq;
+        delete uriToken.LedgerEntryType;
+
         await this.addUriToken(uriTokens[i]);
       }
     }
     
     public async addUriToken(newUriToken:URIToken): Promise<void> {
-      this.uriTokenMap.set(newUriToken.index, newUriToken);
+      this.uriTokenMap.set(newUriToken.URITokenID, newUriToken);
     }
 
     public getUriToken(uriTokenId:string): URIToken {
