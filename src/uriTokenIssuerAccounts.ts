@@ -25,17 +25,22 @@ export class UriTokenIssuerAccounts {
 
     public async resolveUriToken(ledgerState:any): Promise<void> {   
 
-      let uriTokens:URIToken[] = ledgerState.filter(element => element.LedgerEntryType === 'URIToken');
+      let uriTokens:any[] = ledgerState.filter(element => element.LedgerEntryType === 'URIToken');
 
       for(let i = 0; i < uriTokens.length; i++) {
         let uriToken = uriTokens[i];
-        uriToken.URITokenID = uriToken.index;
-        delete uriToken.OwnerNode;
-        delete uriToken.PreviousTxnID;
-        delete uriToken.PreviousTxnLgrSeq;
-        delete uriToken.LedgerEntryType;
 
-        await this.addUriToken(uriTokens[i]);
+        let newUriToken:URIToken = {
+          URITokenID: uriToken.index,
+          Issuer: uriToken.Issuer,
+          Owner: uriToken.Owner,
+          URI: uriToken.URI,
+          Digest: uriToken.Digest,
+          Amount: uriToken.Amount,
+          Destination: uriToken.Destination
+        }
+
+        await this.addUriToken(newUriToken);
       }
     }
     

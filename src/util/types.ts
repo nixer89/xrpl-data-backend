@@ -70,16 +70,11 @@ export interface SupplyInfoType {
 }
 
 export interface URIToken {
+    URITokenID: string,
     Owner: string,
-    OwnerNode: string,
     Issuer: string,
     URI: string,
     Digest?: string,
     Amount?: any,
-    Destination?: string,
-    PreviousTxnID?: string,
-    PreviousTxnLgrSeq?: string,
-    LedgerEntryType?: string,
-    index?:string,
-    URITokenID?: string
+    Destination?: string   
 }

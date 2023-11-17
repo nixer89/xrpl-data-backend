@@ -1,6 +1,6 @@
 {
   "name": "xahau-data-backend",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "description": "tracks periodically the ledger data of the Xahau Network",
   "main": "src/server.ts",
   "scripts": {
