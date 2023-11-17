@@ -149,6 +149,7 @@ export class LedgerScanner {
             }
           }
         } catch(err) {
+          console.log(err);
           console.log("cannot read ledger index or ledger index too old. use 'validated'!");
           ledgerIndex = null;
         }
