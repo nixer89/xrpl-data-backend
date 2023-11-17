@@ -79,7 +79,7 @@ export class HookData {
           };
 
 
-          fs.writeFileSync(DATA_PATH+"hooks/hooks.js", JSON.stringify(hookData));
+          fs.writeFileSync(DATA_PATH+"hooks/hook.js", JSON.stringify(hookData));
           fs.writeFileSync(DATA_PATH+"hooks/hookDefinitions.js", JSON.stringify(hookDefinitionData));
           fs.writeFileSync(DATA_PATH+"hooks/hookStates.js", JSON.stringify(hookStateData));
 
@@ -96,19 +96,19 @@ export class HookData {
     public async readCurrentLedgerFromFS(): Promise<number> {
       try {
         //console.log("loading nft issuer data from FS");
-        if(fs.existsSync(DATA_PATH+"uri_tokens/uriTokenData_1.js")) {
-            let uriTokenData:any = JSON.parse(fs.readFileSync(DATA_PATH+"uri_tokens/uriTokenData_1.js").toString());
-            if(uriTokenData && uriTokenData.ledger_index) {
-                return uriTokenData.ledger_index;
+        if(fs.existsSync(DATA_PATH+"hooks/hook.js")) {
+            let hookData:any = JSON.parse(fs.readFileSync(DATA_PATH+"hooks/hook.js").toString());
+            if(hookData && hookData.ledger_index) {
+                return hookData.ledger_index;
             } else {
               return -1;
             }
         } else {
-          console.log("uri token data file does not exist yet.")
+          console.log("hookData file does not exist yet.")
           return -1;
         }
       } catch(err) {
-        console.log("error reading uri token data from FS");
+        console.log("error reading hookData from FS");
         console.log(err);
         return -1;
       }  
