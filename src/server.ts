@@ -10,7 +10,7 @@ require("log-timestamp");
 
 // Run the server!
 const start = async () => {
-  setTimeout(() => {
+  setTimeout(async () => {
 
     if(!fs.existsSync(DATA_PATH))
       fs.mkdirSync(DATA_PATH);

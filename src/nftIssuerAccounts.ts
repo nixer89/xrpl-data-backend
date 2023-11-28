@@ -108,9 +108,21 @@ export class NftIssuerAccounts {
 
     public async saveNFTDataToFS(): Promise<void> {
       try {
+
+        if(!fs.existsSync(DATA_PATH+"nfts"))
+          fs.mkdirSync(DATA_PATH+"nfts");
+
+        //delete old entries
+        if(fs.existsSync(DATA_PATH+"nfts/new"))
+          fs.rmSync(DATA_PATH+"nfts/new",{recursive: true, force: true});
+
+        if(!fs.existsSync(DATA_PATH+"nfts/new"))
+          fs.mkdirSync(DATA_PATH+"nfts/new");
+
         let currentWrittenLedger = await this.readCurrentLedgerFromFS();
 
         if(this.getCurrentLedgerIndex() > currentWrittenLedger) {
+
           let mapToSave:Map<string, NFT> = new Map(this.nftokensMap);
           if(mapToSave && mapToSave.size > 0) {
             let nftData:any = {
@@ -125,13 +137,13 @@ export class NftIssuerAccounts {
 
             let nftCounter = 0;
             let fileNumber = 1;
-  
+
             mapToSave.forEach((value, key, map) => {
               nftData["nfts"].push(value);
               nftCounter++;
 
               if(nftCounter%1000000 == 0) { //save max 1 million NFTs per file
-                fs.writeFileSync(DATA_PATH+"nfts/new_nftData_"+fileNumber+".js", JSON.stringify(nftData));
+                fs.writeFileSync(DATA_PATH+"nfts/new/nftData_"+fileNumber+".js", JSON.stringify(nftData));
                 nftData["nfts"] = [];
                 fileNumber++;
               }
@@ -139,12 +151,12 @@ export class NftIssuerAccounts {
 
             //write left over to file system
             if(nftData["nfts"].length > 0) {
-              fs.writeFileSync(DATA_PATH+"nfts/new_nftData_"+fileNumber+".js", JSON.stringify(nftData));
+              fs.writeFileSync(DATA_PATH+"nfts/new/nftData_"+fileNumber+".js", JSON.stringify(nftData));
               fileNumber++;
             }
   
             for(let i = 1; i < fileNumber; i++) {
-              fs.renameSync(DATA_PATH+"nfts/new_nftData_"+i+".js", DATA_PATH+"nfts/nftData_"+i+".js");
+              fs.copyFileSync(DATA_PATH+"nfts/new/nftData_"+i+".js", DATA_PATH+"nfts/nftData_"+i+".js");
             }
             
             console.timeEnd("saveNFTDataToFS");
@@ -174,7 +186,7 @@ export class NftIssuerAccounts {
               offerCounter++;
 
               if(offerCounter%1000000 == 0) { //save max 1 million Offers per file
-                fs.writeFileSync(DATA_PATH+"nfts/new_nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
+                fs.writeFileSync(DATA_PATH+"nfts/new/nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
                 nftOfferData["offers"] = [];
                 fileNumber++;
               }
@@ -182,15 +194,17 @@ export class NftIssuerAccounts {
 
             //write left over to file system
             if(nftOfferData["offers"].length > 0) {
-              fs.writeFileSync(DATA_PATH+"nfts/new_nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
+              fs.writeFileSync(DATA_PATH+"nfts/new/nftOffers_"+fileNumber+".js", JSON.stringify(nftOfferData));
               fileNumber++;
             }
 
             for(let i = 1; i < fileNumber; i++) {
-              fs.renameSync(DATA_PATH+"nfts/new_nftOffers_"+i+".js", DATA_PATH+"nfts/nftOffers_"+i+".js");
+              fs.copyFileSync(DATA_PATH+"nfts/new/nftOffers_"+i+".js", DATA_PATH+"nfts/nftOffers_"+i+".js")
             }
-  
-            
+
+            //delete new entries
+            if(fs.existsSync(DATA_PATH+"nfts/new"))
+              fs.rmSync(DATA_PATH+"nfts/new",{recursive: true, force: true});
   
             console.timeEnd("saveNFTOffersToFS");
   

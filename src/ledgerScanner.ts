@@ -2,11 +2,13 @@ import * as scheduler from 'node-schedule';
 import * as fetch from 'node-fetch';
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
-import { Client, LedgerDataRequest, LedgerDataResponse, LedgerRequest, LedgerResponse,  } from 'xrpl';
+import { Client, LedgerDataRequest, LedgerRequest } from 'xrpl';
 import { NftIssuerAccounts } from './nftIssuerAccounts';
 import { SupplyInfo } from './supplyInfo';
 import { SCHEDULE_MINUTE } from './util/config';
 import { XrplClient } from 'xrpl-client';
+import { unlinkSync, writeFileSync } from 'fs';
+import { DATA_PATH } from './util/config';
 
 require("log-timestamp");
 
@@ -298,7 +300,8 @@ export class LedgerScanner {
           this.setLedgerCloseTime(ledgerInfo.ledger.close_time_human);
           this.setLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
 
-          
+          writeFileSync(DATA_PATH+"processing", "true");
+
           //always save resolved user names to file system to make restart of server much faster
           //await this.issuerAccount.saveBithompNamesToFS();
 
@@ -329,6 +332,9 @@ export class LedgerScanner {
 
           console.log(JSON.stringify(canDeleteResponse));
           **/
+
+          //remove processing file to signal that files can be read again.
+          await unlinkSync(DATA_PATH+"processing");
          
           return true;
       
