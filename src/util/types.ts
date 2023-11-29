@@ -1,4 +1,4 @@
-import LedgerEntry from "xrpl/dist/npm/models/ledger/LedgerEntry"
+import { LedgerEntry } from "xrpl/dist/npm/models/ledger"
 
 export interface Currency {
     token: string,
