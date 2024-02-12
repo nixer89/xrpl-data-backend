@@ -14,6 +14,11 @@ export class LedgerData {
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
     private scannedObjects:number = 0;
 
+    private current_ledger_index: number;
+    private current_ledger_date: string;
+    private current_ledger_time_ms: number;
+    private current_ledger_hash: string;
+
     FLAG_65536:number = 65536;
     FLAG_131072:number = 131072;
     FLAG_262144:number = 262144;
@@ -349,10 +354,17 @@ export class LedgerData {
 
     public async saveLedgerDataToFS(): Promise<void> {
       try {
-        let ledgerDataToSave:string = JSON.stringify(this.ledgerData);
-        if(ledgerDataToSave && ledgerDataToSave.length > 0) {
+        if(this.ledgerData) {
 
-            fs.writeFileSync(DATA_PATH+"ledgerData.js", ledgerDataToSave);
+          let ledger_data:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            ledger_data: this.ledgerData
+          };
+
+            fs.writeFileSync(DATA_PATH+"ledgerData.js", JSON.stringify(ledger_data));
 
             //console.log("saved ledger data to file system");
         } else {
@@ -459,5 +471,37 @@ export class LedgerData {
 
   isNFTokenOfferFlagSell(flags:number) {
     return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
+  }
+
+  public getCurrentLedgerIndex(): number {
+    return this.current_ledger_index;
+  }
+
+  public setCurrentLedgerIndex(index:number): void {
+      this.current_ledger_index = index;
+  }
+
+  public getCurrentLedgerHash(): string {
+      return this.current_ledger_hash;
+  }
+
+  public setCurrentLedgerHash(hash:string): void {
+      this.current_ledger_hash = hash;
+  }
+
+  public getCurrentLedgerCloseTime(): string {
+      return this.current_ledger_date;
+  }
+
+  public setCurrentLedgerCloseTime(closeTime: string): void {
+      this.current_ledger_date = closeTime;
+  }
+
+  public getCurrentLedgerCloseTimeMs(): number {
+      return this.current_ledger_time_ms;
+  }
+
+  public setCurrentLedgerCloseTimeMs(closeTimeInMs: number): void {
+      this.current_ledger_time_ms = closeTimeInMs;
   }
 }

@@ -82,12 +82,21 @@ export class LedgerScanner {
             console.log("loading ledger data not successfull.")
           }
 
+          //start garbage collection!
+          if (global.gc) {
+            global.gc();
+          } else {
+              console.log('Garbage collection unavailable.  Pass --expose-gc when launching node to enable forced garbage collection.');
+          }
+
           this.isRunning = false;
         } catch(err) {
           console.log(err);
           console.log("not cought error when running the scan. stopping.")
           this.isRunning = false;
         }
+      } else {
+        console.log("LEDGER SCAN ALREADY RUNNING!");
       }
     }
 
@@ -305,6 +314,11 @@ export class LedgerScanner {
           //always save resolved user names to file system to make restart of server much faster
           //await this.issuerAccount.saveBithompNamesToFS();
 
+          this.ledgerData.setCurrentLedgerIndex(ledgerIndex);
+          this.ledgerData.setCurrentLedgerHash(ledgerInfo.ledger_hash);
+          this.ledgerData.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.ledgerData.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
+
           await this.ledgerData.saveLedgerDataToFS();
 
           this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
@@ -319,6 +333,10 @@ export class LedgerScanner {
 
           await this.supplyInfo.calculateSupplyAndSave();
 
+          this.issuerAccount.setCurrentLedgerIndex(ledgerIndex);
+          this.issuerAccount.setCurrentLedgerHash(ledgerInfo.ledger_hash);
+          this.issuerAccount.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.issuerAccount.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
           
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();

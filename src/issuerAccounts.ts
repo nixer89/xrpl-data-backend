@@ -14,9 +14,12 @@ export class IssuerAccounts {
     private accountInfo:AccountNames;
     private tokenCreation:TokenCreation;
 
-    private ledgerScanner:LedgerScanner;
-
     private issuers: Map<string, IssuerData> = new Map();
+
+    private current_ledger_index: number;
+    private current_ledger_date: string;
+    private current_ledger_time_ms: number;
+    private current_ledger_hash: string;
 
     private constructor() { }
 
@@ -29,7 +32,6 @@ export class IssuerAccounts {
     public async init(): Promise<void> {
         this.accountInfo = AccountNames.Instance;
         this.tokenCreation = TokenCreation.Instance;
-        this.ledgerScanner = LedgerScanner.Instance;
 
         await this.accountInfo.init();
         await this.tokenCreation.init();
@@ -167,12 +169,37 @@ export class IssuerAccounts {
       this.accountInfo.resetResolveCounters();
   }
 
-  /**
-    public saveBithompNamesToFS(): Promise<void> {
-      return this.accountInfo.saveBithompUserNamesToFS();
+  public getCurrentLedgerIndex(): number {
+      return this.current_ledger_index;
     }
 
-  */
+    public setCurrentLedgerIndex(index:number): void {
+        this.current_ledger_index = index;
+    }
+
+    public getCurrentLedgerHash(): string {
+        return this.current_ledger_hash;
+    }
+
+    public setCurrentLedgerHash(hash:string): void {
+        this.current_ledger_hash = hash;
+    }
+
+    public getCurrentLedgerCloseTime(): string {
+        return this.current_ledger_date;
+    }
+
+    public setCurrentLedgerCloseTime(closeTime: string): void {
+        this.current_ledger_date = closeTime;
+    }
+
+    public getCurrentLedgerCloseTimeMs(): number {
+        return this.current_ledger_time_ms;
+    }
+
+    public setCurrentLedgerCloseTimeMs(closeTimeInMs: number): void {
+        this.current_ledger_time_ms = closeTimeInMs;
+    }
 
     public saveKycDataToFS(): Promise<void> {
       return this.accountInfo.saveKycDataToFS();
@@ -183,13 +210,11 @@ export class IssuerAccounts {
         let mapToSave:Map<string, IssuerData> = new Map(this.issuers);
         if(mapToSave && mapToSave.size > 0) {
             let issuerData:any = {
-              "ledger_index": this.ledgerScanner.getLedgerIndex(),
-              "ledger_date": this.ledgerScanner.getLedgerCloseTime(),
-              "ledger_time_ms": this.ledgerScanner.getLedgerCloseTimeMs(),
-              "ledger_hash": this.ledgerScanner.getLedgerHash(),
-              "issuers": {
-
-              }
+              ledger_index: this.getCurrentLedgerIndex(),
+              ledger_hash: this.getCurrentLedgerHash(),
+              ledger_close: this.getCurrentLedgerCloseTime(),
+              ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+              issuers: {}
             };
 
             mapToSave.forEach((value, key, map) => {
