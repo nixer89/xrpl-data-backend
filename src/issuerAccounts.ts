@@ -60,7 +60,7 @@ export class IssuerAccounts {
             issuer = null; //can not determine issuer!
         }
 
-        if(issuer != null && issuer != 'rhrFfvzZAytd8UHPH87UHMgHQ18nnLbpgN' && issuer != "rG9Fo4mgx5DEZp7zKUEchs3R3jSMbx3NhR") {  //remove gatehub issuer for SGB on their request and LCC fake issuer
+        if(issuer != null && issuer != 'rhrFfvzZAytd8UHPH87UHMgHQ18nnLbpgN' && issuer != "rG9Fo4mgx5DEZp7zKUEchs3R3jSMbx3NhR" && issuer != "rfpzfcK67GNnptw9Z8P7cjx5B7zhu1zv1e") {  //remove gatehub issuer for SGB on their request and LCC fake issuer and old, unsued XPmarket token
 
           amount = amount < 0 ? amount * -1 : amount;
           let issuerKey = issuer + "_" + currency;
