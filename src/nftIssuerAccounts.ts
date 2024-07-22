@@ -47,18 +47,22 @@ export class NftIssuerAccounts {
 
               let nftIssuer = parsedNft.Issuer;
 
-              let newNftEntry:NFT = {
-                NFTokenID: parsedNft.NFTokenID,
-                Issuer: nftIssuer,
-                Owner: nftOwner,
-                Taxon: parsedNft.Taxon,
-                TransferFee: parsedNft.TransferFee,
-                Flags: parsedNft.Flags,
-                Sequence: parsedNft.Sequence,
-                URI: uri
-              }
+              //exclude minter due to exzessive minting
+              if(nftIssuer != "rP7aApVAyf3bjtRVVTixVSHBbU4kpd742k") {
 
-              await this.addNFT(newNftEntry);
+                let newNftEntry:NFT = {
+                  NFTokenID: parsedNft.NFTokenID,
+                  Issuer: nftIssuer,
+                  Owner: nftOwner,
+                  Taxon: parsedNft.Taxon,
+                  TransferFee: parsedNft.TransferFee,
+                  Flags: parsedNft.Flags,
+                  Sequence: parsedNft.Sequence,
+                  URI: uri
+                }
+
+                await this.addNFT(newNftEntry);
+              }
             } else {
               console.log("NO TOKEN ID?????????????????????");
               console.log(JSON.stringify(singleNFTFromPage));
