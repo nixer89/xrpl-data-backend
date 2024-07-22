@@ -71,6 +71,7 @@ export class TokenCreation {
     }
 
     async resolveTokenCreationDateFromXrplorer(issuerKey:string): Promise<void> {
+        return null;
         let splitValues:string[] = issuerKey.split("_");
         let issuer = splitValues[0];
         let currency = splitValues[1];
@@ -82,13 +83,13 @@ export class TokenCreation {
             //try to resolve it from xrplorer.com API
             //console.log("resolving: " + issuerKey);
             
-            let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
+            //let xrplorerResponse:fetch.Response = await fetch.default("https://api.xrplorer.com/custom/getTokenBirth?issuer="+issuer+"&currency="+currency)
             
-            if(xrplorerResponse && xrplorerResponse.ok) {
-                issuerCreation = await xrplorerResponse.json();
+            //if(xrplorerResponse && xrplorerResponse.ok) {
+            //    issuerCreation = await xrplorerResponse.json();
         
                 //console.log("resolved: " + JSON.stringify(issuerCreation));   
-            }
+            //}
 
             await this.appendIssuerCreationToFS(issuerKey, issuerCreation);
 

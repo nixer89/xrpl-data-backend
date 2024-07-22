@@ -104,7 +104,7 @@ export class IssuerAccounts {
 
         if(this.getIssuerData(issuer).amount == 0 && amount > 0) {
           //initialize user name to have faster access later on
-          await this.resolveIssuerInfos(issuer);
+          //await this.resolveIssuerInfos(issuer);
         }
 
         this.addExistingIssuer(issuer, amount);
@@ -114,7 +114,7 @@ export class IssuerAccounts {
 
         if(amount > 0) {
           //initialize user name to have faster access later on
-          await this.resolveIssuerInfos(issuer);
+          //await this.resolveIssuerInfos(issuer);
         }
       }
     }

@@ -88,14 +88,15 @@ export class AccountNames {
     }
 
     public async init(): Promise<void> {
-        scheduler.scheduleJob("reloadUserNames1", {hour: 6 , minute: 59, second: 0}, () => this.resolveAllUserNames(true));
-        scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
+        //scheduler.scheduleJob("reloadUserNames1", {hour: 6 , minute: 59, second: 0}, () => this.resolveAllUserNames(true));
+        //scheduler.scheduleJob("reloadKYC", {dayOfWeek: 4, hour: 0, minute: 59, second: 0}, () => this.resetKyc());
         //await this.loadBithompUserNamesFromFS();
         await this.resolveAllUserNames();
         await this.loadKycDataFromFS();
     }
 
     public async resetKyc() {
+        return null;
         try {
             //reset all no KYC accounts
             let iteratorMap2: Map<string, boolean> = new Map(this.kycMap);
@@ -245,6 +246,7 @@ export class AccountNames {
      */
 
     async resolveKycStatus(xrplAccount: string): Promise<void> {
+        return null;
         try {
             if(this.resolveKycCounter > 5000) //only resolve 10k accounts at a time
                     return;
