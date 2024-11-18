@@ -116,6 +116,9 @@ export class SupplyInfo {
           ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
         }
 
+        console.log("accountReserve", accountReserve);
+        console.log("ownerReserve", ownerReserve);
+
         let totalInAccounts = 0;
         let circulatingXRP = 0;
         let numberOfAccounts = 0;
@@ -165,6 +168,13 @@ export class SupplyInfo {
 
           ledger_data = null;
         }
+
+        console.log("numberOfAccounts", numberOfAccounts);
+        console.log("totalInAccounts", totalInAccounts);
+        console.log("lockedInObjects", this.lockedInObjects);
+        console.log("circulatingXAH", circulatingXRP);
+        console.log("totalReserved", totalReserved);
+        console.log("totalTransientReserves", totalTransientReserves);
 
 
         this.supplyInfo = {
