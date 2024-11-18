@@ -88,11 +88,21 @@ export class SupplyInfo {
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
-              this.lockedInObjects = this.lockedInObjects + Number(entry.Amount);
+              if(isNaN(Number(entry.Amount))) {
+                console.log("NAN ESCROW:");
+                console.log(entry);
+              } else {
+                this.lockedInObjects = this.lockedInObjects + Number(entry.Amount);
+              }
             }
 
             if(entry.LedgerEntryType === 'PayChannel') {
-              this.lockedInObjects = this.lockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
+              if(isNaN(Number(entry.Amount))) {
+                console.log("NAN PAYMENTCHANNEL:");
+                console.log(entry);
+              } else {
+                this.lockedInObjects = this.lockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
+              }
             }
 
             if(entry.LedgerEntryType === 'FeeSettings') {
