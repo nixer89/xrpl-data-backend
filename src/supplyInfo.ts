@@ -130,11 +130,15 @@ export class SupplyInfo {
 
       try {
 
-        let accountReserve = 10000000;
-        let ownerReserve = 2000000;
+        let accountReserve = 1_000_000;
+        let ownerReserve = 200_000;
 
-        accountReserve = this.feeSetting.ReserveBase;
-        ownerReserve = this.feeSetting.ReserveIncrement;
+        if(this.feeSetting) {
+          console.log("found FeeSetting:")
+          console.log(this.feeSetting);
+          accountReserve = this.feeSetting.ReserveBase;
+          ownerReserve = this.feeSetting.ReserveIncrement;
+        }
 
         console.log("accountReserve", accountReserve);
         console.log("ownerReserve", ownerReserve);
@@ -367,7 +371,7 @@ export class SupplyInfo {
       return true;
     }
     
-    //if master key disabled, no regular key set and no signer list -> black holed
+    //if master key disabled, no regular key set (or set to blackholed account) and no signer list -> black holed
     if(this.isMasterKeyDisabled(accountRoot.Flags) && (!accountRoot.RegularKey || this.blackholeAccounts.includes(accountRoot.RegularKey)) && !this.signer_lists[signerListHash]) {
       return true;
     }
