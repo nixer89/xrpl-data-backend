@@ -134,10 +134,13 @@ export class SupplyInfo {
         let ownerReserve = 200_000;
 
         if(this.feeSetting) {
-          console.log("found FeeSetting:")
-          console.log(this.feeSetting);
-          accountReserve = this.feeSetting.ReserveBase;
-          ownerReserve = this.feeSetting.ReserveIncrement;
+          if('ReserveBaseDrops' in this.feeSetting && 'ReserveIncrementDrops' in this.feeSetting) {
+            accountReserve = Number(this.feeSetting.ReserveBaseDrops);
+            ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
+          } else {
+            accountReserve = this.feeSetting.ReserveBase;
+            ownerReserve = this.feeSetting.ReserveIncrement;
+          }
         }
 
         console.log("accountReserve", accountReserve);
