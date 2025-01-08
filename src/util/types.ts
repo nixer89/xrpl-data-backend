@@ -1,4 +1,4 @@
-import LedgerEntry from "xrpl/dist/npm/models/ledger/LedgerEntry"
+import { LedgerEntry } from "@transia/xrpl/dist/npm/models/ledger"
 
 export interface Currency {
     token: string,
@@ -64,7 +64,10 @@ export interface SupplyInfoType {
         xahTotalSupply: number,
         xahTotalBalance: number,
         xahTotalReserved: number,
-        xahTotalTransientReserves: number
+        xahTotalTransientReserves: number,
+        xahInEscrow: number,
+        xahInTreasury: number,
+        xahInTreasuryLocked: number
     },
     ledger_data: string
 }

@@ -2,7 +2,7 @@ import * as scheduler from 'node-schedule';
 import * as fetch from 'node-fetch';
 import { IssuerAccounts } from './issuerAccounts';
 import { LedgerData } from './ledgerData';
-import { Client, LedgerDataRequest, LedgerRequest} from 'xrpl';
+import { Client, LedgerDataRequest, LedgerRequest} from '@transia/xrpl';
 import { UriTokenIssuerAccounts } from './uriTokenIssuerAccounts';
 import { HookData } from './hookData'
 import { SupplyInfo } from './supplyInfo';

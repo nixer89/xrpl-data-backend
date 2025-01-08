@@ -1,10 +1,10 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
 import { AdaptedLedgerObject, SupplyInfoType } from './util/types';
-import { AccountRoot, FeeSettings, Offer, SignerList } from 'xrpl/dist/npm/models/ledger';
-import * as rippleAddressCodec from 'ripple-address-codec';
+import * as rippleAddressCodec from '@transia/ripple-address-codec';
 import { createHash } from 'crypto';
 import { LedgerData } from './ledgerData';
+import { LedgerEntry, AccountRoot, FeeSettings, HookDefinition, Offer, SignerList } from '@transia/xrpl/dist/npm/models/ledger';
 
 require("log-timestamp");
 
@@ -36,8 +36,17 @@ export class SupplyInfo {
 
     FLAG_SELL_NFT:number = 0x00000001;
 
+    TREASURY_HOOK_HASH_1 = '11B6F1534186086EF95E297F64806D8E4231865EE9871A0C438EA8A51BE20BD8';
+    TREASURY_HOOK_HASH_2 = 'B55839E8CABBDE2501249C0F7B4BFD58FC25838AC79D6822594076804EABBE60';
+
     accounts: {
       [key: string]: AccountRoot
+    } = {};
+
+    treasuryAccounts: string[] = [];
+
+    hookDefinitions_2: {
+      [key: string]: HookDefinition[]
     } = {};
 
     offers: {
@@ -48,7 +57,8 @@ export class SupplyInfo {
       [key: string]: SignerList
     } = {};
 
-    lockedInObjects:number = 0;
+    lockedInEscrows:number = 0;
+    lockedInPaychans:number = 0;
 
     feeSetting:FeeSettings = null;
 
@@ -69,44 +79,49 @@ export class SupplyInfo {
         for(let i = 0; i < ledgerState.length; i++) {
             let ledgerObject:AdaptedLedgerObject = ledgerState[i];
 
-            let entry = ledgerObject.parsed;
+            let entry:LedgerEntry = ledgerObject.parsed;
 
             if(entry.LedgerEntryType === 'AccountRoot') {
-              this.accounts[entry.Account] = entry;
+              this.accounts[entry.Account] = entry as AccountRoot;
+            }
+
+            if(entry.LedgerEntryType === 'Hook' && entry.Hooks.length > 1) {
+
+              let treasuryHooks:string[] = entry.Hooks.map(hook => hook.Hook.HookHash);
+
+              if(treasuryHooks.length > 1 && treasuryHooks.includes(this.TREASURY_HOOK_HASH_1) && treasuryHooks.includes(this.TREASURY_HOOK_HASH_2)) {
+                this.treasuryAccounts.push(entry.Account);
+              }
             }
 
             if(entry.LedgerEntryType === 'Offer') {
               if(!this.offers[entry.Account]) {
-                this.offers[entry.Account] = [entry];
+                this.offers[entry.Account] = [entry as Offer];
               } else {
-                this.offers[entry.Account].push(entry);
+                this.offers[entry.Account].push(entry as Offer);
               }
             }
 
             if(entry.LedgerEntryType === 'SignerList') {
-              this.signer_lists[entry.index] = entry;
+              this.signer_lists[entry.index] = entry as SignerList;
             }
 
             if(entry.LedgerEntryType === 'Escrow') {
-              if(isNaN(Number(entry.Amount))) {
-                console.log("NAN ESCROW:");
-                console.log(entry);
-              } else {
-                this.lockedInObjects = this.lockedInObjects + Number(entry.Amount);
+              //only add XAH escrows
+              if(!isNaN(Number(entry.Amount))) {
+                this.lockedInEscrows = this.lockedInEscrows + Number(entry.Amount);
               }
             }
 
             if(entry.LedgerEntryType === 'PayChannel') {
-              if(isNaN(Number(entry.Amount))) {
-                console.log("NAN PAYMENTCHANNEL:");
-                console.log(entry);
-              } else {
-                this.lockedInObjects = this.lockedInObjects + (Number(entry.Amount) - Number(entry.Balance));
+              //only count XAH paychannels
+              if(!isNaN(Number(entry.Amount))) {
+                this.lockedInPaychans = this.lockedInPaychans + (Number(entry.Amount) - Number(entry.Balance));
               }
             }
 
             if(entry.LedgerEntryType === 'FeeSettings') {
-              this.feeSetting = entry;
+              this.feeSetting = entry as FeeSettings;
             }
         }
     }
@@ -118,22 +133,19 @@ export class SupplyInfo {
         let accountReserve = 10000000;
         let ownerReserve = 2000000;
 
-        if('ReserveBase' in this.feeSetting) {
-          accountReserve = this.feeSetting.ReserveBase;
-          ownerReserve = this.feeSetting.ReserveIncrement;
-        } else {
-          accountReserve = Number(this.feeSetting.ReserveBaseDrops);
-          ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
-        }
+        accountReserve = this.feeSetting.ReserveBase;
+        ownerReserve = this.feeSetting.ReserveIncrement;
 
         console.log("accountReserve", accountReserve);
         console.log("ownerReserve", ownerReserve);
 
         let totalInAccounts = 0;
-        let circulatingXRP = 0;
+        let circulating = 0;
         let numberOfAccounts = 0;
         let totalReserved = 0;
         let totalTransientReserves = 0;
+        let totalInTreasury = 0;
+        let totalInTreasuryLocked = 0;
       
 
         for(let account in this.accounts) {
@@ -147,9 +159,17 @@ export class SupplyInfo {
             let canCirculateAmount = Math.max(spendableAccountBalance - reserved + transientReserve, 0)
 
             totalInAccounts = totalInAccounts + Number(accRoot.Balance);
-            //add spendable xrp to total xrp count
+            //add spendable to total count
             if(canCirculateAmount > 0) {
-              circulatingXRP = circulatingXRP + canCirculateAmount;
+              circulating = circulating + canCirculateAmount;
+            }
+
+            //check treasury accounts
+            if(this.treasuryAccounts.includes(account)) {
+              totalInTreasury = totalInTreasury + Number(accRoot.Balance);
+
+              let locked = this.isAccountBlackHoled(accRoot) ? Number(accRoot.Balance) : 0;
+              totalInTreasuryLocked = totalInTreasuryLocked + locked;
             }
 
             totalReserved = totalReserved + reserved;
@@ -181,22 +201,28 @@ export class SupplyInfo {
 
         console.log("numberOfAccounts", numberOfAccounts);
         console.log("totalInAccounts", totalInAccounts);
-        console.log("lockedInObjects", this.lockedInObjects);
-        console.log("circulatingXAH", circulatingXRP);
+        console.log("lockedInEscrows", this.lockedInEscrows);
+        console.log("lockedInPaychans", this.lockedInPaychans);
+        console.log("circulatingXAH", circulating);
         console.log("totalReserved", totalReserved);
         console.log("totalTransientReserves", totalTransientReserves);
+        console.log("totalInTreasury", totalInTreasury);
+        console.log("totalInTreasuryLocked", totalInTreasuryLocked);
 
 
         this.supplyInfo = {
           ledger: this.getCurrentLedgerIndex(),
           closeTimeHuman: this.getCurrentLedgerCloseTime(),
           accounts: numberOfAccounts,
-          xahExisting: (totalInAccounts + this.lockedInObjects)/1000000,
+          xahExisting: (totalInAccounts + this.lockedInEscrows)/1000000,
           xah: {
-            xahTotalSupply: circulatingXRP/1000000,
+            xahTotalSupply: circulating/1000000,
             xahTotalBalance: totalInAccounts/1000000,
             xahTotalReserved: totalReserved/1000000,
-            xahTotalTransientReserves: totalTransientReserves/1000000
+            xahTotalTransientReserves: totalTransientReserves/1000000,
+            xahInEscrow: this.lockedInEscrows/1000000,
+            xahInTreasury: totalInTreasury/1000000,
+            xahInTreasuryLocked: totalInTreasuryLocked/1000000
           },
           ledger_data: JSON.stringify(ledger_data)
         }
@@ -213,7 +239,7 @@ export class SupplyInfo {
 
     public clearSupplyInfo() {
       this.supplyInfo = null;
-      this.lockedInObjects = 0;
+      this.lockedInEscrows = 0;
       this.feeSetting = null;
       this.accounts = {};
       this.offers = {};
@@ -342,7 +368,7 @@ export class SupplyInfo {
     }
     
     //if master key disabled, no regular key set and no signer list -> black holed
-    if(this.isMasterKeyDisabled(accountRoot.Flags) && !accountRoot.RegularKey && !this.signer_lists[signerListHash]) {
+    if(this.isMasterKeyDisabled(accountRoot.Flags) && (!accountRoot.RegularKey || this.blackholeAccounts.includes(accountRoot.RegularKey)) && !this.signer_lists[signerListHash]) {
       return true;
     }
 
