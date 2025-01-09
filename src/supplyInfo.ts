@@ -221,16 +221,16 @@ export class SupplyInfo {
           ledger: this.getCurrentLedgerIndex(),
           closeTimeHuman: this.getCurrentLedgerCloseTime(),
           accounts: numberOfAccounts,
-          xahExisting: (totalInAccounts + this.lockedInEscrows)/1000000,
+          xahExisting: (totalInAccounts + this.lockedInEscrows + this.lockedInPaychans)/1000000,
           xah: {
-            xahTotalSupply: circulating/1000000,
-            xahTotalBalance: totalInAccounts/1000000,
-            xahTotalReserved: totalReserved/1000000,
-            xahTotalTransientReserves: totalTransientReserves/1000000,
-            xahInEscrow: this.lockedInEscrows/1000000,
-            xahInPaychan : this.lockedInPaychans/1000000,
-            xahInTreasury: totalInTreasury/1000000,
-            xahInTreasuryLocked: totalInTreasuryLocked/1000000
+            totalSupply: circulating/1000000,
+            totalBalance: totalInAccounts/1000000,
+            totalReserved: totalReserved/1000000,
+            totalTransientReserves: totalTransientReserves/1000000,
+            inEscrow: this.lockedInEscrows/1000000,
+            inPaychan : this.lockedInPaychans/1000000,
+            inTreasury: totalInTreasury/1000000,
+            inTreasuryLocked: totalInTreasuryLocked/1000000
           },
           ledger_data: JSON.stringify(ledger_data)
         }

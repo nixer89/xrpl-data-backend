@@ -61,14 +61,14 @@ export interface SupplyInfoType {
     accounts: number,
     xahExisting: number,
     xah: {
-        xahTotalSupply: number,
-        xahTotalBalance: number,
-        xahTotalReserved: number,
-        xahTotalTransientReserves: number,
-        xahInEscrow: number,
-        xahInPaychan: number,
-        xahInTreasury: number,
-        xahInTreasuryLocked: number
+        totalSupply: number,
+        totalBalance: number,
+        totalReserved: number,
+        totalTransientReserves: number,
+        inEscrow: number,
+        inTreasury: number,
+        inTreasuryLocked: number,
+        inPaychan: number
     },
     ledger_data: string
 }
