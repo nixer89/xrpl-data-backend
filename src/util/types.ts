@@ -66,6 +66,7 @@ export interface SupplyInfoType {
         xahTotalReserved: number,
         xahTotalTransientReserves: number,
         xahInEscrow: number,
+        xahInPaychan: number,
         xahInTreasury: number,
         xahInTreasuryLocked: number
     },

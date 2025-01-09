@@ -228,6 +228,7 @@ export class SupplyInfo {
             xahTotalReserved: totalReserved/1000000,
             xahTotalTransientReserves: totalTransientReserves/1000000,
             xahInEscrow: this.lockedInEscrows/1000000,
+            xahInPaychan : this.lockedInPaychans/1000000,
             xahInTreasury: totalInTreasury/1000000,
             xahInTreasuryLocked: totalInTreasuryLocked/1000000
           },
