@@ -160,8 +160,9 @@ export class SupplyInfo {
         for(let account in this.accounts) {
           if(this.accounts.hasOwnProperty(account)) {
             let accRoot = this.accounts[account];
+            const isBlackHoled = this.isAccountBlackHoled(accRoot);
 
-            let spendableAccountBalance = this.isAccountBlackHoled(accRoot) ? 0 : Number(accRoot.Balance);
+            let spendableAccountBalance = isBlackHoled ? 0 : Number(accRoot.Balance);
             let reserved = accountReserve + (accRoot.OwnerCount * ownerReserve);
             let transientReserve = (this.offers[accRoot.Account] || []).length * ownerReserve;
 
@@ -180,8 +181,8 @@ export class SupplyInfo {
 
               
               totalInTreasuryLocked = totalInTreasuryLocked + locked;
-            } else {
-              //other blackholed account.
+            } else if(isBlackHoled){
+              //other blackholed accounts.
               this.blackholeAccounts.push(account);
               this.lockedInBlackHoledAccounts = this.lockedInBlackHoledAccounts + locked;
             }
