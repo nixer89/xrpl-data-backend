@@ -68,7 +68,8 @@ export interface SupplyInfoType {
         inEscrow: number,
         inTreasury: number,
         inTreasuryLocked: number,
-        inPaychan: number
+        inPaychan: number,
+        inBlackholedAccounts: number
     },
     ledger_data: string
 }

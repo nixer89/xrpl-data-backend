@@ -44,6 +44,7 @@ export class SupplyInfo {
     } = {};
 
     treasuryAccounts: string[] = [];
+    blackholedAccounts: string[] = [];
 
     hookDefinitions_2: {
       [key: string]: HookDefinition[]
@@ -59,6 +60,7 @@ export class SupplyInfo {
 
     lockedInEscrows:number = 0;
     lockedInPaychans:number = 0;
+    lockedInBlackHoledAccounts:number = 0;
 
     feeSetting:FeeSettings = null;
 
@@ -171,12 +173,17 @@ export class SupplyInfo {
               circulating = circulating + canCirculateAmount;
             }
 
+            let locked = this.isAccountBlackHoled(accRoot) ? Number(accRoot.Balance) : 0;
             //check treasury accounts
             if(this.treasuryAccounts.includes(account)) {
               totalInTreasury = totalInTreasury + Number(accRoot.Balance);
 
-              let locked = this.isAccountBlackHoled(accRoot) ? Number(accRoot.Balance) : 0;
+              
               totalInTreasuryLocked = totalInTreasuryLocked + locked;
+            } else {
+              //other blackholed account.
+              this.blackholeAccounts.push(account);
+              this.lockedInBlackHoledAccounts = this.lockedInBlackHoledAccounts + locked;
             }
 
             totalReserved = totalReserved + reserved;
@@ -215,6 +222,8 @@ export class SupplyInfo {
         console.log("totalTransientReserves", totalTransientReserves);
         console.log("totalInTreasury", totalInTreasury);
         console.log("totalInTreasuryLocked", totalInTreasuryLocked);
+        console.log("lockedInBlackHoledAccounts", this.lockedInBlackHoledAccounts);
+        console.log("blackholeAccounts", this.blackholeAccounts);
 
 
         this.supplyInfo = {
@@ -230,7 +239,8 @@ export class SupplyInfo {
             inEscrow: this.lockedInEscrows/1000000,
             inPaychan : this.lockedInPaychans/1000000,
             inTreasury: totalInTreasury/1000000,
-            inTreasuryLocked: totalInTreasuryLocked/1000000
+            inTreasuryLocked: totalInTreasuryLocked/1000000,
+            inBlackholedAccounts: this.lockedInBlackHoledAccounts/1000000
           },
           ledger_data: JSON.stringify(ledger_data)
         }
