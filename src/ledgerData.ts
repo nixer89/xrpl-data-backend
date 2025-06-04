@@ -13,6 +13,8 @@ export class LedgerData {
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
     private scannedObjects:number = 0;
+    private objectsScanned:any = {};
+    private objectsScannedAbove16:any = {};
 
     private current_ledger_index: number;
     private current_ledger_date: string;
@@ -66,8 +68,29 @@ export class LedgerData {
 
             this.scannedObjects++;
 
-            if(this.scannedObjects%1000000 == 0) {
+            if(this.objectsScanned[ledgerObject.parsed.LedgerEntryType]) {
+              this.objectsScanned[ledgerObject.parsed.LedgerEntryType] += 1;
+            } else {
+              this.objectsScanned[ledgerObject.parsed.LedgerEntryType] = 1;
+            }
+
+            if(this.scannedObjects%1_000_000 == 0) {
               console.log("Scanned objects: " + this.scannedObjects);
+              console.log(JSON.stringify(this.objectsScanned));
+            }
+
+            if(this.scannedObjects > 16_000_000) {
+              if(this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType]) {
+                this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType] += 1;
+              } else {
+                this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType] = 1;
+              }
+
+              if(this.scannedObjects%10000 == 0) {
+                console.log("Scanned objects: " + this.scannedObjects);
+                console.log(JSON.stringify(this.objectsScanned));
+                console.log(JSON.stringify(this.objectsScannedAbove16));
+              }
             }
         }
 
