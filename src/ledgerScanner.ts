@@ -49,7 +49,7 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        //await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
@@ -124,9 +124,9 @@ export class LedgerScanner {
             time.setMilliseconds(0);
 
             console.log("getting ledger index with:")
-            console.log("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            console.log("https://xrpldata.inftf.org/v1/ledgers/ledger_index?date="+time.toISOString());
 
-            let ledgerResponse = await fetch.default("https://data.xrplf.org/v1/ledgers/ledger_index?date="+time.toISOString());
+            let ledgerResponse = await fetch.default("https://xrpldata.inftf.org/v1/ledgers/ledger_index?date="+time.toISOString());
 
             if(ledgerResponse && ledgerResponse.ok) {
               let responseJson = await ledgerResponse.json();
@@ -174,14 +174,14 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 50000,
           binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 100000,
+          limit: 50000,
           binary: false
         }
       
