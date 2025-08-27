@@ -78,20 +78,6 @@ export class LedgerData {
               console.log("Scanned objects: " + this.scannedObjects);
               console.log(JSON.stringify(this.objectsScanned));
             }
-
-            if(this.scannedObjects > 16_000_000) {
-              if(this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType]) {
-                this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType] += 1;
-              } else {
-                this.objectsScannedAbove16[ledgerObject.parsed.LedgerEntryType] = 1;
-              }
-
-              if(this.scannedObjects%10000 == 0) {
-                console.log("Scanned objects: " + this.scannedObjects);
-                console.log(JSON.stringify(this.objectsScanned));
-                console.log(JSON.stringify(this.objectsScannedAbove16));
-              }
-            }
         }
 
         //console.log(JSON.stringify(this.getLedgerData(load1)));

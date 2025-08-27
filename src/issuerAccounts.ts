@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import { AccountNames } from './accountNames';
 import { IssuerData } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
-import { TokenCreation } from './tokenCreation';
 import { DATA_PATH } from './util/config';
 
 require("log-timestamp");
@@ -12,7 +11,6 @@ export class IssuerAccounts {
     private static _instance: IssuerAccounts;
     
     private accountInfo:AccountNames;
-    private tokenCreation:TokenCreation;
 
     private issuers: Map<string, IssuerData> = new Map();
 
@@ -31,10 +29,8 @@ export class IssuerAccounts {
 
     public async init(): Promise<void> {
         this.accountInfo = AccountNames.Instance;
-        this.tokenCreation = TokenCreation.Instance;
 
         await this.accountInfo.init();
-        await this.tokenCreation.init();
     }
 
     public async resolveIssuerToken(ledgerState:any): Promise<void> {   
@@ -122,12 +118,6 @@ export class IssuerAccounts {
     private async resolveIssuerInfos(issuer): Promise<void> {
       await this.accountInfo.resolveKycStatus(issuer.substring(0, issuer.indexOf("_")));
       //await this.accountInfo.initAccountName(issuer.substring(0, issuer.indexOf("_")));
-
-      if(!this.tokenCreation.isTokenInCache(issuer)) {
-        //console.log("RESOLVING TOKEN CREATION DATE FOR: " + issuer);
-        this.tokenCreation.setDummyValueInCache(issuer);
-        this.tokenCreation.resolveTokenCreationDateFromXrplorer(issuer);
-      }
     }
     
     private hasIssuer(issuer: string) : boolean {
