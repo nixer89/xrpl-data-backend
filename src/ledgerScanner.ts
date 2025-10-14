@@ -183,15 +183,17 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 50000,
-          binary: true
+          limit: 20000,
+          binary: true,
+          type: "nft_page"
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 50000,
-          binary: false
+          limit: 20000,
+          binary: false,
+          type: "nft_page"
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
