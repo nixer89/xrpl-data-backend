@@ -17,6 +17,7 @@ export class LedgerScanner {
     private static _instance: LedgerScanner;
 
     private isRunning:boolean = false;
+    private failedToScheduleCount: number = 0;
 
     //private xrplClient:XrplClient;
 
@@ -70,6 +71,8 @@ export class LedgerScanner {
       if(!this.isRunning) {
         
         this.isRunning = true;
+        this.failedToScheduleCount = 0;
+
         try {
           let success:boolean = await this.readLedgerData(null, null, null, 0);
           if(success) {
@@ -96,7 +99,13 @@ export class LedgerScanner {
           this.isRunning = false;
         }
       } else {
+        this.failedToScheduleCount++
         console.log("LEDGER SCAN ALREADY RUNNING!");
+
+        if(this.failedToScheduleCount > 2) { //allow 2h of stuckness
+          console.log("seems like the ledger scan is stuck. resetting and starting again.");
+          process.exit(0);
+        }
       }
     }
 
