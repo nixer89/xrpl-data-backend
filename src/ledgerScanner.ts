@@ -229,11 +229,11 @@ export class LedgerScanner {
       
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
-          //console.time("requesting binary");
+          console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
           let messageBinary = await this.xrpljsClient.send(ledger_data_command_binary);
           //console.log("length binary: " + messageBinary.state.length);
-          //console.timeEnd("requesting binary");
+          console.timeEnd("requesting binary");
                 
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
 
@@ -249,11 +249,11 @@ export class LedgerScanner {
 
             ledger_data_command_json.ledger_index = newledgerIndex;          
 
-            //console.time("requesting json");
+            console.time("requesting json");
             //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson = await this.xrpljsClient.send(ledger_data_command_json);
             //console.log("length json: " + messageJson.state.length);
-            //console.timeEnd("requesting json");
+            console.timeEnd("requesting json");
 
             if(messageJson && messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index && messageBinary.state.length == messageJson.state.length && messageBinary.marker == messageJson.marker) {
 
