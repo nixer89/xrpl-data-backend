@@ -170,7 +170,7 @@ export class LedgerScanner {
           ledgerIndex = null;
         }
 
-        if(!marker) {
+        if(!marker && filterType != 'nft_page') {
             this.issuerAccount.clearIssuer();
             this.nftIssuerAccounts.clearData();
             this.ledgerData.clearLedgerData();
