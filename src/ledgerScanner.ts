@@ -185,7 +185,7 @@ export class LedgerScanner {
           command: "ledger_data",
           limit: 50000,
           binary: true,
-          filter: filterType
+          type: filterType
         }
     
 
@@ -193,7 +193,7 @@ export class LedgerScanner {
           command: "ledger_data",
           limit: 50000,
           binary: false,
-          filter: filterType
+          type: filterType
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
