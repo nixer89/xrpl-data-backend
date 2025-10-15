@@ -101,6 +101,10 @@ export class NftIssuerAccounts {
       return this.nftokensMap;
     }
 
+    public getNFTOfferMap():Map<string, NFTokenOffer> {
+      return this.nftOfferMap;
+    }
+
     public clearData() {
         this.nftokensMap.clear();
         this.nftOfferMap.clear();

@@ -50,7 +50,7 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0, 'nft_offer');
 
         //check if we can start right now
         let currentDate = new Date();
@@ -60,7 +60,7 @@ export class LedgerScanner {
         let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
 
         if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
-          await this.readLedgerData(null, null, null, 0);
+          await this.readLedgerData(null, null, null, 0, 'nft_offer');
 
         scheduler.scheduleJob("readIssuedToken", {minute: (SCHEDULE_MINUTE+1)}, () => this.scheduleLoadingIssuerData());
         console.log("started ledger scan schedule. Waiting now.");
@@ -74,7 +74,7 @@ export class LedgerScanner {
         this.failedToScheduleCount = 0;
 
         try {
-          let success:boolean = await this.readLedgerData(null, null, null, 0);
+          let success:boolean = await this.readLedgerData(null, null, null, 0, 'nft_offer');
           if(success) {
             console.log("loading ledger data successfull.")
             this.nftIssuerAccounts.clearData();
@@ -109,7 +109,7 @@ export class LedgerScanner {
       }
     }
 
-     public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number): Promise<boolean> {
+     public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number, filterType: 'nft_offer' | 'nft_page'): Promise<boolean> {
         if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
           console.log("increase retry counter");
           retryCounter++;
@@ -183,17 +183,15 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 20000,
-          binary: true,
-          type: "nft_offer"
+          limit: 50000,
+          binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 20000,
-          binary: false,
-          type: "nft_offer"
+          limit: 50000,
+          binary: false
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
@@ -223,7 +221,7 @@ export class LedgerScanner {
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
-              return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
+              return this.readLedgerData(ledgerIndex, marker, marker, retryCounter, filterType);
             }
           }
 
@@ -231,11 +229,11 @@ export class LedgerScanner {
       
           //console.log("ws://127.0.0.1:6006");
           //console.log("calling with: " + JSON.stringify(ledger_data_command));
-          console.time("requesting binary");
+          //console.time("requesting binary");
           //console.log("requesting with: " + JSON.stringify(ledger_data_command_binary))
           let messageBinary = await this.xrpljsClient.send(ledger_data_command_binary);
           //console.log("length binary: " + messageBinary.state.length);
-          console.timeEnd("requesting binary");
+          //console.timeEnd("requesting binary");
                 
           //console.log("got response: " + JSON.stringify(message).substring(0,1000));
 
@@ -251,11 +249,11 @@ export class LedgerScanner {
 
             ledger_data_command_json.ledger_index = newledgerIndex;          
 
-            console.time("requesting json");
+            //console.time("requesting json");
             //console.log("requesting with: " + JSON.stringify(ledger_data_command_json))
             let messageJson = await this.xrpljsClient.send(ledger_data_command_json);
             //console.log("length json: " + messageJson.state.length);
-            console.timeEnd("requesting json");
+            //console.timeEnd("requesting json");
 
             if(messageJson && messageJson && messageJson.state && messageJson.ledger_index == messageBinary.ledger_index && messageBinary.state.length == messageJson.state.length && messageBinary.marker == messageJson.marker) {
 
@@ -296,16 +294,28 @@ export class LedgerScanner {
             //console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
 
             if(newledgerIndex != null && newMarker != null) {
-              return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
+              return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter, filterType);
             } else {
-              console.log("ALL DONE");
+              console.log("ALL DONE for " + filterType);
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
               console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+              console.log("nft offer size: " + this.nftIssuerAccounts.getNFTOfferMap().size);
+
+              //nft offers done. read pages now.
+              if(filterType == 'nft_offer') {
+                await this.readLedgerData(newledgerIndex, null, null, 0, 'nft_page');
+              }
             }
           } else {
-            console.log("ALL DONE");
-            console.log("issuer size: " + this.issuerAccount.getIssuer().size);
-            console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+              console.log("ALL DONE for " + filterType);
+              console.log("issuer size: " + this.issuerAccount.getIssuer().size);
+              console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
+              console.log("nft offer size: " + this.nftIssuerAccounts.getNFTOfferMap().size);
+
+              //nft offers done. read pages now.
+              if(filterType == 'nft_offer') {
+                await this.readLedgerData(null, null, null, 0, 'nft_page');
+              }
           }
       
           let ledgerCommand:LedgerRequest = {
@@ -378,7 +388,7 @@ export class LedgerScanner {
           console.log(err);
           
           if(marker != null || (marker == null && ledgerIndex == null))
-            return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
+            return this.readLedgerData(ledgerIndex, marker, marker, retryCounter, filterType);
           else
             return false;
         }
