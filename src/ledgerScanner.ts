@@ -185,7 +185,7 @@ export class LedgerScanner {
           command: "ledger_data",
           limit: 20000,
           binary: true,
-          type: "nft_page"
+          type: "nft_offer"
         }
     
 
@@ -193,7 +193,7 @@ export class LedgerScanner {
           command: "ledger_data",
           limit: 20000,
           binary: false,
-          type: "nft_page"
+          type: "nft_offer"
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
