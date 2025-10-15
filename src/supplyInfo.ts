@@ -121,12 +121,15 @@ export class SupplyInfo {
         let accountReserve = 10000000;
         let ownerReserve = 2000000;
 
-        if('ReserveBase' in this.feeSetting) {
-          accountReserve = this.feeSetting.ReserveBase;
-          ownerReserve = this.feeSetting.ReserveIncrement;
-        } else {
-          accountReserve = Number(this.feeSetting.ReserveBaseDrops);
-          ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
+        if(this.feeSetting) {
+
+          if('ReserveBase' in this.feeSetting) {
+            accountReserve = this.feeSetting.ReserveBase;
+            ownerReserve = this.feeSetting.ReserveIncrement;
+          } else {
+            accountReserve = Number(this.feeSetting.ReserveBaseDrops);
+            ownerReserve = Number(this.feeSetting.ReserveIncrementDrops);
+          }
         }
 
         let totalXrpInAccounts = 0;
