@@ -338,13 +338,6 @@ export class LedgerScanner {
 
           await this.ledgerData.saveLedgerDataToFS();
 
-          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
-          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.ledger_hash);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
-          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
-
-          await this.nftIssuerAccounts.saveNFTDataToFS();
-
           this.supplyInfo.setCurrentLedgerIndex(ledgerIndex);
           this.supplyInfo.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
 
@@ -357,6 +350,13 @@ export class LedgerScanner {
           
           await this.issuerAccount.saveKycDataToFS();
           await this.issuerAccount.saveIssuerDataToFS();
+
+          this.nftIssuerAccounts.setCurrentLedgerIndex(ledgerIndex);
+          this.nftIssuerAccounts.setCurrentLedgerHash(ledgerInfo.ledger_hash);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTime(ledgerInfo.ledger.close_time_human);
+          this.nftIssuerAccounts.setCurrentLedgerCloseTimeMs(ledgerInfo.ledger.close_time);
+
+          await this.nftIssuerAccounts.saveNFTDataToFS();
 
           /**
           //trigger online delete

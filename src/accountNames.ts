@@ -368,7 +368,7 @@ export class AccountNames {
                 fs.writeFileSync(DATA_PATH+"kycData_new.js", JSON.stringify(kycData));
                 fs.renameSync(DATA_PATH+"kycData_new.js", DATA_PATH+"kycData.js");
 
-                //console.log("saved " + this.kycMap.size + " kyc data to file system");
+                console.log("saved " + this.kycMap.size + " kyc data to file system");
             }
         } catch(err) {
             console.log(err);
