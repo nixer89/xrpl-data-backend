@@ -86,11 +86,9 @@ export class NftIssuerAccounts {
     }
     
     public async addNFT(newNft:NFT): Promise<void> {
-      this.nftokensMap.set(newNft.NFTokenID, newNft);
-    }
-
-    public removeNft(burnedNftokenId:string) {
-      this.nftokensMap.delete(burnedNftokenId);
+      if(newNft.Issuer !== "rQJgPT6xhpT5Jr6GhcQQSWH3qYq3dyFSqY") { //filter out spam NFT issuer
+        this.nftokensMap.set(newNft.NFTokenID, newNft);
+      }
     }
 
     public getNft(nftokenId:string) {
@@ -157,6 +155,21 @@ export class NftIssuerAccounts {
             if(nftData["nfts"].length > 0) {
               fs.writeFileSync(DATA_PATH+"nfts/new/nftData_"+fileNumber+".js", JSON.stringify(nftData));
               fileNumber++;
+            }
+
+            for(let i = 1; i < 100; i++) {
+              try {
+                let exists = fs.existsSync(DATA_PATH+"nfts/nftData_"+i+".js");
+                if(exists) {
+                  fs.rmSync(DATA_PATH+"nfts/nftData_"+i+".js");
+                } else {
+                  break;
+                }
+              } catch(err) {
+                console.log("error deleting old nft data files");
+                console.log(err);
+              }
+              
             }
   
             for(let i = 1; i < fileNumber; i++) {
