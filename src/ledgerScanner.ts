@@ -50,7 +50,7 @@ export class LedgerScanner {
         await this.issuerAccount.init();
         await this.supplyInfo.init();
 
-        await this.readLedgerData(null, null, null, 0, 'nft_offer');
+        await this.readLedgerData(null, null, null, 0);
 
         //check if we can start right now
         let currentDate = new Date();
@@ -60,7 +60,7 @@ export class LedgerScanner {
         let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
 
         if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
-          await this.readLedgerData(null, null, null, 0, 'nft_offer');
+          await this.readLedgerData(null, null, null, 0);
 
         scheduler.scheduleJob("readIssuedToken", {minute: (SCHEDULE_MINUTE+1)}, () => this.scheduleLoadingIssuerData());
         console.log("started ledger scan schedule. Waiting now.");
@@ -74,7 +74,7 @@ export class LedgerScanner {
         this.failedToScheduleCount = 0;
 
         try {
-          let success:boolean = await this.readLedgerData(null, null, null, 0, 'nft_offer');
+          let success:boolean = await this.readLedgerData(null, null, null, 0);
           if(success) {
             console.log("loading ledger data successfull.")
             this.nftIssuerAccounts.clearData();
@@ -109,7 +109,7 @@ export class LedgerScanner {
       }
     }
 
-     public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number, filterType: 'nft_offer' | 'nft_page'): Promise<boolean> {
+     public async readLedgerData(ledgerIndex:number, marker:unknown, oldMarker:unknown, retryCounter:number): Promise<boolean> {
         if(oldMarker && oldMarker == marker || (!marker && !oldMarker)) {
           console.log("increase retry counter");
           retryCounter++;
@@ -170,7 +170,7 @@ export class LedgerScanner {
           ledgerIndex = null;
         }
 
-        if(!marker && filterType != 'nft_page') {
+        if(!marker) {
             this.issuerAccount.clearIssuer();
             this.nftIssuerAccounts.clearData();
             this.ledgerData.clearLedgerData();
@@ -183,17 +183,15 @@ export class LedgerScanner {
       
         let ledger_data_command_binary:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 50000,
-          binary: true,
-          type: filterType
+          limit: 10000,
+          binary: true
         }
     
 
         let ledger_data_command_json:LedgerDataRequest = {
           command: "ledger_data",
-          limit: 50000,
-          binary: false,
-          type: filterType
+          limit: 10000,
+          binary: false
         }
       
         if(ledgerIndex && typeof(ledgerIndex) === "number")
@@ -223,7 +221,7 @@ export class LedgerScanner {
               //console.log(JSON.stringify(this.xrplClient.getState()));
               //console.log(JSON.stringify(await this.xrplClient.send({command: "", "__api":"state"})));
             } catch(err) {
-              return this.readLedgerData(ledgerIndex, marker, marker, retryCounter, filterType);
+              return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
             }
           }
 
@@ -296,24 +294,14 @@ export class LedgerScanner {
             //console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
 
             if(newledgerIndex != null && newMarker != null) {
-              return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter, filterType);
+              return this.readLedgerData(newledgerIndex, newMarker, marker, retryCounter);
             } else {
-              if(filterType == 'nft_offer') {
-                //now read nft pages
-                console.log("starting to read nft pages now...");
-                return this.readLedgerData(ledgerIndex, null, null, 0, 'nft_page');
-              }
               console.log("ALL DONE!");
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
               console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
               console.log("nft offer size: " + this.nftIssuerAccounts.getNFTOfferMap().size);
             }
           } else {
-              if(filterType == 'nft_offer') {
-                //now read nft pages
-                console.log("starting to read nft pages now...");
-                return this.readLedgerData(ledgerIndex, null, null, 0, 'nft_page');
-              }
               console.log("ALL DONE!");
               console.log("issuer size: " + this.issuerAccount.getIssuer().size);
               console.log("nft size: " + this.nftIssuerAccounts.getNFTMap().size);
@@ -390,7 +378,7 @@ export class LedgerScanner {
           console.log(err);
           
           if(marker != null || (marker == null && ledgerIndex == null))
-            return this.readLedgerData(ledgerIndex, marker, marker, retryCounter, filterType);
+            return this.readLedgerData(ledgerIndex, marker, marker, retryCounter);
           else
             return false;
         }
