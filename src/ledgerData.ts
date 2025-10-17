@@ -80,9 +80,8 @@ export class LedgerData {
             }
         }
 
-        //console.log("Total scanned objects: " + this.scannedObjects);
-
-        //console.log(JSON.stringify(this.getLedgerData(load1)));
+        console.log("Total scanned objects: " + this.scannedObjects);
+        console.log(JSON.stringify(this.getLedgerData()));
     }
 
     addAdditionalData(ledgerObject: any) {
