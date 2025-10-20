@@ -376,8 +376,6 @@ export class LedgerData {
 
           fs.writeFileSync(DATA_PATH+"ledgerData.js", JSON.stringify(ledger_data));
 
-          this.clearLedgerData();
-
           console.log("saved ledger data to file system");
         } else {
           console.log("ledger data is empty! Nothing saved");

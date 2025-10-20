@@ -177,8 +177,6 @@ export class NftIssuerAccounts {
             }
             
             console.timeEnd("saveNFTDataToFS");
-
-            this.clearData();
   
           } else {
             console.log("nft data is empty!");
