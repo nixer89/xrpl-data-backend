@@ -102,7 +102,7 @@ export class LedgerScanner {
         this.failedToScheduleCount++
         console.log("LEDGER SCAN ALREADY RUNNING!");
 
-        if(this.failedToScheduleCount > 2) { //allow 2h of stuckness
+        if(this.failedToScheduleCount > 1) { //allow 2h of stuckness
           console.log("seems like the ledger scan is stuck. resetting and starting again.");
           process.exit(0);
         }

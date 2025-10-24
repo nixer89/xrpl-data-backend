@@ -10,6 +10,7 @@ export class LedgerData {
 
     private ledgerData: any = {};
     private escrows:any[] = [];
+    private offers:any[] = [];
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
     private scannedObjects:number = 0;
@@ -116,6 +117,10 @@ export class LedgerData {
 
       if("escrow" === ledgerObject.LedgerEntryType.toLowerCase()) {
         this.escrows.push(ledgerObject)
+      }
+
+      if("offer" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        this.offers.push(ledgerObject)
       }
     }
 
@@ -337,6 +342,10 @@ export class LedgerData {
       return this.escrows;
     }
 
+    public getOffers() {
+      return this.offers;
+    }
+
     public getLedgerDataV1(): any[] {
       let dataToUse = JSON.parse(JSON.stringify(this.ledgerData))
       let totalBytes:number = 0;
@@ -358,6 +367,7 @@ export class LedgerData {
     public clearLedgerData() {
       this.ledgerData = {};
       this.escrows = [];
+      this.offers = [];
       this.uniqueAccounts = new Map();
       this.scannedObjects = 0;
     }
@@ -390,9 +400,23 @@ export class LedgerData {
 
             fs.writeFileSync(DATA_PATH+"escrows.js", escrowsToSave);
 
-            //console.log("saved ledger data to file system");
+            console.log("saved escrows to file system");
         } else {
           console.log("escrows empty! Nothing saved");
+        }
+      } catch(err) {
+        console.log(err);
+      }
+
+      try {
+        let offersToSave:string = JSON.stringify({offers: this.offers});
+        if(offersToSave && offersToSave.length > 0) {
+
+            fs.writeFileSync(DATA_PATH+"offers.js", offersToSave);
+
+            console.log("saved offers to file system");
+        } else {
+          console.log("offers empty! Nothing saved");
         }
       } catch(err) {
         console.log(err);
