@@ -409,12 +409,19 @@ export class LedgerData {
       }
 
       try {
-        let offersToSave:string = JSON.stringify({offers: this.offers});
-        if(offersToSave && offersToSave.length > 0) {
+        if(this.offers && this.offers.length > 0) {
 
-            fs.writeFileSync(DATA_PATH+"offers.js", offersToSave);
+          let offer_data:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            offers: this.offers
+          };
 
-            console.log("saved offers to file system");
+            fs.writeFileSync(DATA_PATH+"offers.js", JSON.stringify(offer_data));
+
+            console.log(this.offers.length + " offers saved to file system");
         } else {
           console.log("offers empty! Nothing saved");
         }
