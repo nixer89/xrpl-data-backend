@@ -68,3 +68,17 @@ export interface SupplyInfoType {
     },
     ledger_data: string
 }
+
+export interface IOU {
+    issuer: string,
+    currency: string,
+    value: string
+}
+
+export interface AMMPool {
+    Account: string,
+    Asset: string | IOU,
+    Asset2: string | IOU,
+    TradingFee: number,
+    Flags: number
+}

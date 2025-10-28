@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
-import { AdaptedLedgerObject } from './util/types';
+import { AdaptedLedgerObject, AMMPool, IOU } from './util/types';
+import { AccountRoot, AMM, RippleState } from 'xrpl/dist/npm/models/ledger';
 
 require("log-timestamp");
 
@@ -11,6 +12,12 @@ export class LedgerData {
     private ledgerData: any = {};
     private escrows:any[] = [];
     private offers:any[] = [];
+    private ammPools:AMMPool[] = [];
+
+    private ammAccountRoots:Map<string, AccountRoot> = new Map();
+    private ammTrustlines:Map<string, RippleState[]> = new Map();
+    private ammAMMs:Map<string, AMM> = new Map();
+
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
     private scannedObjects:number = 0;
@@ -33,6 +40,8 @@ export class LedgerData {
     FLAG_16777216:number = 16777216;
 
     FLAG_SELL_NFT:number = 0x00000001;
+
+    FLAG_AMM_NODE = 0x01000000;
 
     private constructor() { }
 
@@ -121,6 +130,44 @@ export class LedgerData {
 
       if("offer" === ledgerObject.LedgerEntryType.toLowerCase()) {
         this.offers.push(ledgerObject)
+      }
+
+      //amm logic
+      if("ripplestate" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        let trustline:RippleState = ledgerObject as RippleState;
+        if(this.isAmmTrustline(trustline.Flags)) {
+          //this is an AMM trustline
+          //extract the issuer and amm account and its token balance
+          const trustlineBalance = Number(trustline.Balance.value);
+          let ammAccount:string = "";
+
+          //positive balance means HIGH account is ISSUER and LOW account is AMM
+          if(trustlineBalance > 0) {
+              ammAccount = trustline.LowLimit.issuer;
+          } else if(trustlineBalance < 0) { //negative balance means LOW account is ISSUER and HIGH account is AMM
+            ammAccount = trustline.HighLimit.issuer;
+          }
+
+          if(this.ammTrustlines.has(ammAccount)) {
+            this.ammTrustlines.get(ammAccount).push(trustline);
+          } else {
+            this.ammTrustlines.set(ammAccount, [trustline]);
+          }
+        }
+      }
+
+      if("accountroot" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        let accRoot:AccountRoot = ledgerObject as AccountRoot;
+
+        if(accRoot.AMMID) {
+          //AMM account
+          this.ammAccountRoots.set(accRoot.Account, accRoot);
+        }
+      }
+
+      if("amm" === ledgerObject.LedgerEntryType.toLowerCase()) {
+        let amm:AMM = ledgerObject as AMM;
+        this.ammAMMs.set(amm.Account, amm);
       }
     }
 
@@ -346,6 +393,10 @@ export class LedgerData {
       return this.offers;
     }
 
+    public getAmmPools() {
+      return this.ammPools;
+    }
+
     public getLedgerDataV1(): any[] {
       let dataToUse = JSON.parse(JSON.stringify(this.ledgerData))
       let totalBytes:number = 0;
@@ -424,6 +475,96 @@ export class LedgerData {
             console.log(this.offers.length + " offers saved to file system");
         } else {
           console.log("offers empty! Nothing saved");
+        }
+      } catch(err) {
+        console.log(err);
+      }
+
+      //collect AMM pool data and save to FS
+      try {
+        this.ammPools = [];
+        let ammAccounts = Array.from(this.ammAMMs.keys());
+
+        for(let i = 0; i < ammAccounts.length; i++) {
+          let ammAccount = ammAccounts[i];
+          let ammObject:AMM = this.ammAMMs.get(ammAccount);
+          let accRoot:AccountRoot = this.ammAccountRoots.get(ammAccount);
+          let trustlines:RippleState[] = this.ammTrustlines.get(ammAccount);
+
+          let newAmmPool:AMMPool = {
+            Account: ammAccount,
+            Flags: ammObject.Flags,
+            TradingFee: ammObject.TradingFee,
+            Asset: "",
+            Asset2: ""
+          };
+
+          //determine assets
+          if(!ammObject.Asset.issuer ) {
+            //asset is XRP, take balance from AccountRoot but deduct reserves
+            let xrpBalance = Number(accRoot.Balance) - 1000000 - Number(accRoot.OwnerCount) * 200000; //reserve per owner + base reserve
+
+            newAmmPool.Asset = xrpBalance.toString();
+          }
+          
+          if(!ammObject.Asset2.issuer ) {
+            //asset is XRP, take balance from AccountRoot but deduct reserves
+            let xrpBalance = Number(accRoot.Balance) - 1000000 - Number(accRoot.OwnerCount) * 200000; //reserve per owner + base reserve
+
+            newAmmPool.Asset2 = xrpBalance.toString();
+          }
+
+          //find trustline for asset
+          for(let j = 0; j < trustlines.length; j++) {
+            let trustline = trustlines[j];
+            if(trustline && trustline.Balance) {
+              let balanceValue = Number(trustline.Balance.value);
+
+              let newAsset:IOU = {
+                currency: trustline.Balance.currency,
+                issuer: "",
+                value: ""
+              }
+
+              if(balanceValue > 0 && trustline.HighLimit.issuer === ammObject.Asset.issuer) {
+                  newAsset.issuer = trustline.HighLimit.issuer;
+                  newAsset.value = balanceValue.toString();
+              } else if (balanceValue < 0 && trustline.LowLimit.issuer === ammObject.Asset.issuer) {
+                newAsset.issuer = trustline.LowLimit.issuer;
+                newAsset.value = (balanceValue*-1).toString();
+              } else {
+                //trustline has 0 balance
+                newAsset.issuer = trustline.HighLimit.issuer === ammAccount ? trustline.LowLimit.issuer : trustline.HighLimit.issuer;
+                newAsset.value = "0";
+              }
+
+              //add new asset to pool
+              if(ammObject.Asset.currency === trustline.Balance.currency && ammObject.Asset.issuer === newAsset.issuer) {
+                newAmmPool.Asset = newAsset;
+              } else if (ammObject.Asset2.currency === trustline.Balance.currency && ammObject.Asset2.issuer === newAsset.issuer) {
+                newAmmPool.Asset2 = newAsset;
+              }
+            }
+          }
+
+          this.ammPools.push(newAmmPool);
+        }
+
+        if(this.ammPools && this.ammPools.length > 0) {
+
+          let amm_data:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            amm_pools: this.ammPools
+          };
+
+            fs.writeFileSync(DATA_PATH+"amm_pools.js", JSON.stringify(amm_data));
+
+            console.log(this.ammPools.length + " AMM pools saved to file system");
+        } else {
+          console.log("AMM pools empty! Nothing saved");
         }
       } catch(err) {
         console.log(err);
@@ -512,6 +653,10 @@ export class LedgerData {
 
   isNFTokenOfferFlagSell(flags:number) {
     return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
+  }
+
+  isAmmTrustline(flags:number) {
+    return flags && (flags & this.FLAG_AMM_NODE) == this.FLAG_AMM_NODE;
   }
 
   public getCurrentLedgerIndex(): number {
