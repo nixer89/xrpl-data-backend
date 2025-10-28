@@ -527,10 +527,10 @@ export class LedgerData {
                   value: ""
                 }
 
-                if(balanceValue > 0 && trustline.HighLimit.issuer === ammObject.Asset.issuer) {
+                if(balanceValue > 0) {
                     newAsset.issuer = trustline.HighLimit.issuer;
                     newAsset.value = balanceValue.toString();
-                } else if (balanceValue < 0 && trustline.LowLimit.issuer === ammObject.Asset.issuer) {
+                } else if (balanceValue < 0) {
                   newAsset.issuer = trustline.LowLimit.issuer;
                   newAsset.value = (balanceValue*-1).toString();
                 } else {
@@ -540,7 +540,7 @@ export class LedgerData {
                 }
 
                 //add new asset to pool
-                if(ammObject.Asset.currency === trustline.Balance.currency && ammObject.Asset.issuer === newAsset.issuer) {
+                if(ammObject.Asset.currency === newAsset.currency && ammObject.Asset.issuer === newAsset.issuer) {
                   newAmmPool.Asset = newAsset;
                 } else if (ammObject.Asset2.currency === trustline.Balance.currency && ammObject.Asset2.issuer === newAsset.issuer) {
                   newAmmPool.Asset2 = newAsset;
