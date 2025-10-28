@@ -143,7 +143,7 @@ export class LedgerData {
 
           //positive balance means HIGH account is ISSUER and LOW account is AMM
           if(trustlineBalance > 0) {
-              ammAccount = trustline.LowLimit.issuer;
+            ammAccount = trustline.LowLimit.issuer;
           } else if(trustlineBalance < 0) { //negative balance means LOW account is ISSUER and HIGH account is AMM
             ammAccount = trustline.HighLimit.issuer;
           }
@@ -515,36 +515,40 @@ export class LedgerData {
           }
 
           //find trustline for asset
-          for(let j = 0; j < trustlines.length; j++) {
-            let trustline = trustlines[j];
-            if(trustline && trustline.Balance) {
-              let balanceValue = Number(trustline.Balance.value);
+          if(trustlines) {
+            for(let j = 0; j < trustlines.length; j++) {
+              let trustline = trustlines[j];
+              if(trustline && trustline.Balance) {
+                let balanceValue = Number(trustline.Balance.value);
 
-              let newAsset:IOU = {
-                currency: trustline.Balance.currency,
-                issuer: "",
-                value: ""
-              }
+                let newAsset:IOU = {
+                  currency: trustline.Balance.currency,
+                  issuer: "",
+                  value: ""
+                }
 
-              if(balanceValue > 0 && trustline.HighLimit.issuer === ammObject.Asset.issuer) {
-                  newAsset.issuer = trustline.HighLimit.issuer;
-                  newAsset.value = balanceValue.toString();
-              } else if (balanceValue < 0 && trustline.LowLimit.issuer === ammObject.Asset.issuer) {
-                newAsset.issuer = trustline.LowLimit.issuer;
-                newAsset.value = (balanceValue*-1).toString();
-              } else {
-                //trustline has 0 balance
-                newAsset.issuer = trustline.HighLimit.issuer === ammAccount ? trustline.LowLimit.issuer : trustline.HighLimit.issuer;
-                newAsset.value = "0";
-              }
+                if(balanceValue > 0 && trustline.HighLimit.issuer === ammObject.Asset.issuer) {
+                    newAsset.issuer = trustline.HighLimit.issuer;
+                    newAsset.value = balanceValue.toString();
+                } else if (balanceValue < 0 && trustline.LowLimit.issuer === ammObject.Asset.issuer) {
+                  newAsset.issuer = trustline.LowLimit.issuer;
+                  newAsset.value = (balanceValue*-1).toString();
+                } else {
+                  //trustline has 0 balance
+                  newAsset.issuer = trustline.HighLimit.issuer === ammAccount ? trustline.LowLimit.issuer : trustline.HighLimit.issuer;
+                  newAsset.value = "0";
+                }
 
-              //add new asset to pool
-              if(ammObject.Asset.currency === trustline.Balance.currency && ammObject.Asset.issuer === newAsset.issuer) {
-                newAmmPool.Asset = newAsset;
-              } else if (ammObject.Asset2.currency === trustline.Balance.currency && ammObject.Asset2.issuer === newAsset.issuer) {
-                newAmmPool.Asset2 = newAsset;
+                //add new asset to pool
+                if(ammObject.Asset.currency === trustline.Balance.currency && ammObject.Asset.issuer === newAsset.issuer) {
+                  newAmmPool.Asset = newAsset;
+                } else if (ammObject.Asset2.currency === trustline.Balance.currency && ammObject.Asset2.issuer === newAsset.issuer) {
+                  newAmmPool.Asset2 = newAsset;
+                }
               }
             }
+          } else {
+            console.log("No trustlines found for AMM account: " + ammAccount);
           }
 
           this.ammPools.push(newAmmPool);
