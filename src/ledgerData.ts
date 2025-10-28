@@ -542,7 +542,7 @@ export class LedgerData {
                 //add new asset to pool
                 if(ammObject.Asset.currency === newAsset.currency && ammObject.Asset.issuer === newAsset.issuer) {
                   newAmmPool.Asset = newAsset;
-                } else if (ammObject.Asset2.currency === trustline.Balance.currency && ammObject.Asset2.issuer === newAsset.issuer) {
+                } else if (ammObject.Asset2.currency === newAsset.currency && ammObject.Asset2.issuer === newAsset.issuer) {
                   newAmmPool.Asset2 = newAsset;
                 }
               }
