@@ -499,6 +499,8 @@ export class LedgerData {
             Asset2: ""
           };
 
+          
+
           //determine assets
           if(!ammObject.Asset.issuer ) {
             //asset is XRP, take balance from AccountRoot but deduct reserves
@@ -551,6 +553,14 @@ export class LedgerData {
             console.log("No trustlines found for AMM account: " + ammAccount);
           }
 
+          if(ammAccount === 'rB7idnFmYcGRNZRCALiuwxcrWLv78GmgMt') {
+            console.log(JSON.stringify(ammAccount));
+            console.log(JSON.stringify(ammObject));
+            console.log(JSON.stringify(accRoot));
+            console.log(JSON.stringify(trustlines));
+            console.log(JSON.stringify(newAmmPool));
+          }
+
           this.ammPools.push(newAmmPool);
         }
 
@@ -563,6 +573,8 @@ export class LedgerData {
             ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
             amm_pools: this.ammPools
           };
+
+            fs.rmSync(DATA_PATH+"amm_pools.js", { force: true });
 
             fs.writeFileSync(DATA_PATH+"amm_pools.js", JSON.stringify(amm_data));
 
