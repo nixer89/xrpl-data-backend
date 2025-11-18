@@ -18,6 +18,8 @@ export class LedgerData {
     private ammTrustlines:Map<string, RippleState[]> = new Map();
     private ammAMMs:Map<string, AMM> = new Map();
 
+    private transferRate:Map<string,number> = new Map();
+
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
     private scannedObjects:number = 0;
@@ -162,6 +164,10 @@ export class LedgerData {
         if(accRoot.AMMID) {
           //AMM account
           this.ammAccountRoots.set(accRoot.Account, accRoot);
+        }
+
+        if(accRoot.TransferRate && accRoot.TransferRate > 0) {
+          this.transferRate.set(accRoot.Account, accRoot.TransferRate);
         }
       }
 
@@ -419,8 +425,15 @@ export class LedgerData {
       this.ledgerData = {};
       this.escrows = [];
       this.offers = [];
+      this.ammPools = [];
+      this.ammAccountRoots = new Map();
+      this.ammTrustlines = new Map();
+      this.ammAMMs = new Map();
+      this.transferRate = new Map();
       this.uniqueAccounts = new Map();
       this.scannedObjects = 0;
+      this.objectsScanned = {};
+      this.objectsScannedAbove16 = {};
     }
 
     public async saveLedgerDataToFS(): Promise<void> {
@@ -581,6 +594,33 @@ export class LedgerData {
             console.log(this.ammPools.length + " AMM pools saved to file system");
         } else {
           console.log("AMM pools empty! Nothing saved");
+        }
+      } catch(err) {
+        console.log(err);
+      }
+
+      try {
+        if(this.transferRate && this.transferRate.size > 0) {
+
+          let rateArray:{account:string, rate:number}[] = [];
+
+          for(let [account, rate] of this.transferRate) {
+            rateArray.push({account: account, rate: rate});
+          }
+
+          let transfer_rate:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            transfer_rate: JSON.stringify(rateArray)
+          };
+
+            fs.writeFileSync(DATA_PATH+"transfer_rate.js", JSON.stringify(transfer_rate));
+
+            console.log(this.transferRate.size + " transfer rates saved to file system");
+        } else {
+          console.log("transfer rates empty! Nothing saved");
         }
       } catch(err) {
         console.log(err);
