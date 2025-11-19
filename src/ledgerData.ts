@@ -613,12 +613,14 @@ export class LedgerData {
             ledger_hash: this.getCurrentLedgerHash(),
             ledger_close: this.getCurrentLedgerCloseTime(),
             ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
-            transfer_rate: JSON.stringify(rateArray)
+            transfer_rate: rateArray
           };
 
-            fs.writeFileSync(DATA_PATH+"transfer_rate.js", JSON.stringify(transfer_rate));
+          fs.rmSync(DATA_PATH+"transfer_rate.js", { force: true });
 
-            console.log(this.transferRate.size + " transfer rates saved to file system");
+          fs.writeFileSync(DATA_PATH+"transfer_rate.js", JSON.stringify(transfer_rate));
+
+          console.log(rateArray.length + " transfer rates saved to file system");
         } else {
           console.log("transfer rates empty! Nothing saved");
         }
