@@ -512,7 +512,14 @@ export class LedgerData {
             Asset2: ""
           };
 
-          
+          if(!accRoot || !accRoot.Balance) {
+            console.log("No account root for AMM account or not balance: " + ammAccount);
+            console.log("AMMRoot: " + JSON.stringify(accRoot));
+            console.log("AMMObject: " + JSON.stringify(ammObject));
+            console.log("Trustlines: " + JSON.stringify(trustlines));
+            console.log("amm PoolObject: " + JSON.stringify(newAmmPool));
+            continue;
+          }
 
           //determine assets
           if(!ammObject.Asset.issuer ) {
