@@ -40,6 +40,12 @@ export class LedgerData {
     FLAG_4194304:number = 4194304;
     FLAG_8388608:number = 8388608;
     FLAG_16777216:number = 16777216;
+    FLAG_67108864:number = 67108864;
+    FLAG_134217728:number = 134217728;
+    FLAG_268435456:number = 268435456;
+    FLAG_536870912:number = 536870912;
+    FLAG_1073741824:number = 1073741824;
+    FLAG_2147483648:number = 2147483648;
 
     FLAG_SELL_NFT:number = 0x00000001;
 
@@ -320,6 +326,24 @@ export class LedgerData {
 
             if(this.isRequireDestinationTagEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfRequireDestTag", 1);
+
+            if(this.isAllowTrustLineClawbackEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineClawback", 1);
+
+            if(this.isAllowTrustLineLockingEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineLocking", 1);
+
+            if(this.isDisallowIncomingCheckEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowIncomingCheck", 1);
+
+            if(this.isDisallowIncomingNFTokenOfferEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowIncomingNFTokenOffer", 1);
+
+            if(this.isDisallowIncomingPayChanEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowIncomingPayChan", 1);
+
+            if(this.isDisallowIncomingTrustlineEnabled(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowIncomingTrustline", 1);
           }
 
           if("offer" === ledgerObject.LedgerEntryType.toLowerCase()) {
@@ -636,6 +660,30 @@ export class LedgerData {
       }
     }
 
+  isAllowTrustLineClawbackEnabled(flags:number) {
+      return flags && (flags & this.FLAG_2147483648) == this.FLAG_2147483648;
+  }
+
+  isAllowTrustLineLockingEnabled(flags:number) {
+      return flags && (flags & this.FLAG_1073741824) == this.FLAG_1073741824;
+  }
+
+  isDisallowIncomingCheckEnabled(flags:number) {
+      return flags && (flags & this.FLAG_134217728) == this.FLAG_134217728;
+  }
+
+  isDisallowIncomingNFTokenOfferEnabled(flags:number) {
+      return flags && (flags & this.FLAG_67108864) == this.FLAG_67108864;
+  }
+
+  isDisallowIncomingPayChanEnabled(flags:number) {
+      return flags && (flags & this.FLAG_268435456) == this.FLAG_268435456;
+  }
+  
+  isDisallowIncomingTrustlineEnabled(flags:number) {
+      return flags && (flags & this.FLAG_536870912) == this.FLAG_536870912;
+  }
+  
   isDefaultRippleEnabled(flags:number) {
       return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
   }

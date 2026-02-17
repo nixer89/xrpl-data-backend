@@ -14,7 +14,8 @@ export interface IssuerData {
     amount: number,
     trustlines: number,
     offers: number,
-    holders:number
+    holders:number,
+    escrowEnabled:boolean
 }
 
 export interface NFT {

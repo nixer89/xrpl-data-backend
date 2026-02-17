@@ -3,6 +3,7 @@ import { AccountNames } from './accountNames';
 import { IssuerData } from "./util/types"
 import { LedgerScanner } from './ledgerScanner';
 import { DATA_PATH } from './util/config';
+import { AccountRoot, Offer } from 'xrpl/dist/npm/models/ledger';
 
 require("log-timestamp");
 
@@ -71,12 +72,12 @@ export class IssuerAccounts {
         }
       }
 
-      let offers:any[] = ledgerState.filter(element => element.LedgerEntryType === 'Offer');
+      let offers:Offer[] = ledgerState.filter(element => element.LedgerEntryType === 'Offer');
 
       for(let j = 0; j < offers.length; j++) {
         //check taker gets first
         let takerGets = offers[j].TakerGets
-        if(takerGets.currency) {
+        if(typeof(takerGets) === 'object') {
           //we are an issued currency so add offer to the list
           let issuer:string = takerGets.issuer;
           let currency:string = takerGets.currency;
@@ -84,8 +85,8 @@ export class IssuerAccounts {
           await this.increaseOfferCount(issuer+"_"+currency);
         }
 
-        let takerPays:any = offers[j].TakerPays
-        if(takerPays.currency) {
+        let takerPays = offers[j].TakerPays
+        if(typeof(takerPays) === 'object') {
           //we are an issued currency so add offer to the list
           let issuer:string = takerPays.issuer;
           let currency:string = takerPays.currency;
@@ -93,6 +94,20 @@ export class IssuerAccounts {
           await this.increaseOfferCount(issuer+"_"+currency);
         }
       }
+
+      let accountRoots:AccountRoot[] = ledgerState.filter(element => element.LedgerEntryType === 'AccountRoot');
+
+      for(let k = 0; k < accountRoots.length; k++) {
+        const accRoot = accountRoots[k];
+
+        if(this.isAllowTrustLineLockingEnabled(accRoot.Flags)) {
+          this.enableIssuerTokenEscrow(accRoot.Account)
+        }
+      }
+    }
+
+    isAllowTrustLineLockingEnabled(flags:number) {
+      return flags && (flags & 1073741824) == 1073741824;
     }
     
     private async addIssuer(issuer:string, amount:number): Promise<void> {
@@ -106,7 +121,7 @@ export class IssuerAccounts {
         this.addExistingIssuer(issuer, amount);
       } else {
         // add issuer now but remove him later if the issued value is 0!
-        this.addNewIssuer(issuer, amount, 1, 0, 1);
+        this.addNewIssuer(issuer, amount, 1, 0, 1, false);
 
         if(amount > 0) {
           //initialize user name to have faster access later on
@@ -124,8 +139,8 @@ export class IssuerAccounts {
         return this.issuers.has(issuer);
     }
     
-    private addNewIssuer(issuer:string, amount: number, trustlines: number, offers: number, holders:number): void {
-          this.issuers.set(issuer, {amount: amount, trustlines: trustlines, offers: offers, holders: holders});
+    private addNewIssuer(issuer:string, amount: number, trustlines: number, offers: number, holders:number, escrowEnabled: boolean): void {
+          this.issuers.set(issuer, {amount: amount, trustlines: trustlines, offers: offers, holders: holders, escrowEnabled: escrowEnabled});
     }
     
     private getIssuerData(issuer:string): IssuerData {
@@ -136,16 +151,26 @@ export class IssuerAccounts {
       let issuerData:IssuerData = this.getIssuerData(issuer);
       let newAmount = issuerData.amount + amount
       //console.log("setting issuer old");
-      this.addNewIssuer(issuer, newAmount, ++issuerData.trustlines, issuerData.offers, (amount > 0 ? ++issuerData.holders : issuerData.holders));
+      this.addNewIssuer(issuer, newAmount, ++issuerData.trustlines, issuerData.offers, (amount > 0 ? ++issuerData.holders : issuerData.holders), issuerData.escrowEnabled);
+    }
+
+    private enableIssuerTokenEscrow(issuer: string) {
+      if(this.hasIssuer(issuer)) {
+        let issuerData:IssuerData = this.getIssuerData(issuer);
+        //console.log("setting issuer old");
+        this.addNewIssuer(issuer, issuerData.amount, issuerData.trustlines, issuerData.offers, issuerData.holders, true);
+      } else {
+        this.addNewIssuer(issuer, 0, 0, 0, 0, true);
+      }
     }
 
     private increaseOfferCount(issuer: string) {
       if(this.hasIssuer(issuer)) {
         let issuerData:IssuerData = this.getIssuerData(issuer);
         //console.log("setting issuer old");
-        this.addNewIssuer(issuer, issuerData.amount, issuerData.trustlines, ++issuerData.offers, issuerData.holders);
+        this.addNewIssuer(issuer, issuerData.amount, issuerData.trustlines, ++issuerData.offers, issuerData.holders, issuerData.escrowEnabled);
       } else {
-        this.addNewIssuer(issuer, 0, 0, 1, 0);
+        this.addNewIssuer(issuer, 0, 0, 1, 0, false);
       }
     }
   
