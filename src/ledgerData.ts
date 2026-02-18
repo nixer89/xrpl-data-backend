@@ -328,13 +328,13 @@ export class LedgerData {
             if(this.isRequireDestinationTagEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfRequireDestTag", 1);
 
-            if(this.isAllowTrustLineClawbackEnabled(ledgerObject[property])) {
+            if(this.isAllowTrustLineClawbackEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineClawback", 1);
-            }
 
-            if(this.isAllowTrustLineLockingEnabled(ledgerObject[property]))
+            if(this.isAllowTrustLineLockingEnabled(ledgerObject[property])) {
               this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineLocking", 1);
               this.tokenEscrowEnabled.push(ledgerObject.Account);
+            }
 
             if(this.isDisallowIncomingCheckEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowIncomingCheck", 1);
