@@ -19,6 +19,7 @@ export class LedgerData {
     private ammAMMs:Map<string, AMM> = new Map();
 
     private transferRate:Map<string,number> = new Map();
+    private tokenEscrowEnabled:string[] = [];
 
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
@@ -327,8 +328,10 @@ export class LedgerData {
             if(this.isRequireDestinationTagEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfRequireDestTag", 1);
 
-            if(this.isAllowTrustLineClawbackEnabled(ledgerObject[property]))
+            if(this.isAllowTrustLineClawbackEnabled(ledgerObject[property])) {
               this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineClawback", 1);
+              this.tokenEscrowEnabled.push(ledgerObject.Account);
+            }
 
             if(this.isAllowTrustLineLockingEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfAllowTrustLineLocking", 1);
@@ -454,6 +457,7 @@ export class LedgerData {
       this.ammTrustlines = new Map();
       this.ammAMMs = new Map();
       this.transferRate = new Map();
+      this.tokenEscrowEnabled = [];
       this.uniqueAccounts = new Map();
       this.scannedObjects = 0;
       this.objectsScanned = {};
@@ -654,6 +658,29 @@ export class LedgerData {
           console.log(rateArray.length + " transfer rates saved to file system");
         } else {
           console.log("transfer rates empty! Nothing saved");
+        }
+      } catch(err) {
+        console.log(err);
+      }
+
+      try {
+        if(this.tokenEscrowEnabled && this.tokenEscrowEnabled.length > 0) {
+
+          let tokenEscrow:any = {
+            ledger_index: this.getCurrentLedgerIndex(),
+            ledger_hash: this.getCurrentLedgerHash(),
+            ledger_close: this.getCurrentLedgerCloseTime(),
+            ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+            token_escrow_enabled: this.tokenEscrowEnabled
+          };
+
+          fs.rmSync(DATA_PATH+"token_escrow.js", { force: true });
+
+          fs.writeFileSync(DATA_PATH+"token_escrow.js", JSON.stringify(tokenEscrow));
+
+          console.log(tokenEscrow.length + " token_escrow_enabled accounts saved to file system");
+        } else {
+          console.log("token escrow enabled empty! Nothing saved");
         }
       } catch(err) {
         console.log(err);
