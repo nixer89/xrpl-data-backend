@@ -688,115 +688,119 @@ export class LedgerData {
     }
 
   isAllowTrustLineClawbackEnabled(flags:number) {
-      return flags && (flags & this.FLAG_2147483648) == this.FLAG_2147483648;
+    return this.isFlagSet(flags,this.FLAG_2147483648);
   }
 
   isAllowTrustLineLockingEnabled(flags:number) {
-      return flags && (flags & this.FLAG_1073741824) == this.FLAG_1073741824;
+    return this.isFlagSet(flags,this.FLAG_1073741824);
   }
 
   isDisallowIncomingCheckEnabled(flags:number) {
-      return flags && (flags & this.FLAG_134217728) == this.FLAG_134217728;
+    return this.isFlagSet(flags,this.FLAG_134217728);
   }
 
   isDisallowIncomingNFTokenOfferEnabled(flags:number) {
-      return flags && (flags & this.FLAG_67108864) == this.FLAG_67108864;
+    return this.isFlagSet(flags,this.FLAG_67108864);
   }
 
   isDisallowIncomingPayChanEnabled(flags:number) {
-      return flags && (flags & this.FLAG_268435456) == this.FLAG_268435456;
+    return this.isFlagSet(flags,this.FLAG_268435456);
   }
   
   isDisallowIncomingTrustlineEnabled(flags:number) {
-      return flags && (flags & this.FLAG_536870912) == this.FLAG_536870912;
+    return this.isFlagSet(flags,this.FLAG_536870912);
   }
   
   isDefaultRippleEnabled(flags:number) {
-      return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
+    return this.isFlagSet(flags,this.FLAG_8388608);
   }
 
   isDepositAuthEnabled(flags:number) {
-    return flags && (flags & this.FLAG_16777216) == this.FLAG_16777216;
+    return this.isFlagSet(flags,this.FLAG_16777216);
   }
 
   isMasterKeyDisabled(flags:number) {
-    return flags && (flags & this.FLAG_1048576) == this.FLAG_1048576;
+    return this.isFlagSet(flags,this.FLAG_1048576);
   }
 
   isDisallowXRPEnabled(flags:number) {
-    return flags && (flags & this.FLAG_524288) == this.FLAG_524288;
+    return this.isFlagSet(flags,this.FLAG_524288);
   }
 
   isGlobalFreezeEnabled(flags:number) {
-    return flags && (flags & this.FLAG_4194304) == this.FLAG_4194304;
+    return this.isFlagSet(flags,this.FLAG_4194304);
   }
 
   isNoFreezeEnabled(flags:number) {
-    return flags && (flags & this.FLAG_2097152) == this.FLAG_2097152;
+    return this.isFlagSet(flags,this.FLAG_2097152);
   }
   
   isPasswordSpentEnabled(flags:number) {
-    return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
+    return this.isFlagSet(flags,this.FLAG_65536);
   }
 
   isRequireAuthEnabled(flags:number) {
-    return flags && (flags & this.FLAG_262144) == this.FLAG_262144;
+    return this.isFlagSet(flags,this.FLAG_262144);
   }
 
   isRequireDestinationTagEnabled(flags:number) {
-      return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
+    return this.isFlagSet(flags,this.FLAG_131072);
   }  
 
   isOfferFlagPassive(flags:number) {
-    return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
+    return this.isFlagSet(flags,this.FLAG_65536);
   }
 
   isOfferFlagSell(flags:number) {
-    return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
+    return this.isFlagSet(flags,this.FLAG_131072);
   }
 
   isSignerListFlagOneOwnerCount(flags:number) {
-    return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
+    return this.isFlagSet(flags,this.FLAG_65536);
   }
 
   isRippleStateFlagLowReserve(flags:number) {
-    return flags && (flags & this.FLAG_65536) == this.FLAG_65536;
+    return this.isFlagSet(flags,this.FLAG_65536);
   }
 
   isRippleStateFlagHighReserve(flags:number) {
-    return flags && (flags & this.FLAG_131072) == this.FLAG_131072;
+    return this.isFlagSet(flags,this.FLAG_131072);
   }
 
   isRippleStateFlagLowAuth(flags:number) {
-    return flags && (flags & this.FLAG_262144) == this.FLAG_262144;
+    return this.isFlagSet(flags,this.FLAG_262144);
   }
 
   isRippleStateFlagHighAuth(flags:number) {
-    return flags && (flags & this.FLAG_524288) == this.FLAG_524288;
+    return this.isFlagSet(flags,this.FLAG_524288);
   }
 
   isRippleStateFlagLowNoRipple(flags:number) {
-    return flags && (flags & this.FLAG_1048576) == this.FLAG_1048576;
+    return this.isFlagSet(flags,this.FLAG_1048576);
   }
 
   isRippleStateFlagHighNoRipple(flags:number) {
-    return flags && (flags & this.FLAG_2097152) == this.FLAG_2097152;
+    return this.isFlagSet(flags,this.FLAG_2097152);
   }
 
   isRippleStateFlagLowFreeze(flags:number) {
-    return flags && (flags & this.FLAG_4194304) == this.FLAG_4194304;
+    return this.isFlagSet(flags,this.FLAG_4194304);
   }
 
   isRippleStateFlagHighFreeze(flags:number) {
-    return flags && (flags & this.FLAG_8388608) == this.FLAG_8388608;
+    return this.isFlagSet(flags,this.FLAG_8388608);
   }
 
   isNFTokenOfferFlagSell(flags:number) {
-    return flags && (flags & this.FLAG_SELL_NFT) == this.FLAG_SELL_NFT;
+    return this.isFlagSet(flags,this.FLAG_SELL_NFT);
   }
 
   isAmmTrustline(flags:number) {
-    return flags && (flags & this.FLAG_AMM_NODE) == this.FLAG_AMM_NODE;
+    return this.isFlagSet(flags,this.FLAG_AMM_NODE);
+  }
+
+  isFlagSet(flags:number, flagToCheck:number)  {
+    return flags && Math.abs((flags & flagToCheck)) == flagToCheck;
   }
 
   public getCurrentLedgerIndex(): number {
