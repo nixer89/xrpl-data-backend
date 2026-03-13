@@ -380,9 +380,30 @@ export class SupplyInfo {
     if(this.blackholeAccounts.includes(accountRoot.Account)) {
       return true;
     }
+
+    //has signer list but signer list is unable to sign!
+    let noSignerListOrSignerListBlackholed = false;
+    const signerList:SignerList = this.signer_lists[signerListHash];
+
+    if(!signerList) {
+      noSignerListOrSignerListBlackholed = true;
+    } else {
+      //ok, we need to check the signer list quorum AND if the signer list entries are blackholed accounts
+      const quorum = signerList.SignerQuorum;
+      const totalSigners = signerList.SignerEntries.length;
+      const blackholesAccountsInSignerList = signerList.SignerEntries.filter(entry => this.blackholeAccounts.includes(entry.SignerEntry.Account)).length;
+      console.log("Checking signer list for: " + accountRoot.Account);
+      console.log("quorum: " + quorum);
+      console.log("totalSigners: " + totalSigners);
+      console.log("blackholesAccountsInSignerList: " + blackholesAccountsInSignerList);
+      console.log("calculation result: " + ((totalSigners - blackholesAccountsInSignerList) < quorum));
+      noSignerListOrSignerListBlackholed = (totalSigners - blackholesAccountsInSignerList) < quorum;
+
+      console.log("noSignerListOrSignerListBlackholed: " + noSignerListOrSignerListBlackholed);
+    }
     
     //if master key disabled, no regular key set (or set to blackholed account) and no signer list -> black holed
-    if(this.isMasterKeyDisabled(accountRoot.Flags) && (!accountRoot.RegularKey || this.blackholeAccounts.includes(accountRoot.RegularKey)) && !this.signer_lists[signerListHash]) {
+    if(this.isMasterKeyDisabled(accountRoot.Flags) && (!accountRoot.RegularKey || this.blackholeAccounts.includes(accountRoot.RegularKey)) && noSignerListOrSignerListBlackholed) {
       return true;
     }
 
