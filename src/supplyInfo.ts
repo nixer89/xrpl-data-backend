@@ -139,9 +139,6 @@ export class SupplyInfo {
           }
         }
 
-        console.log("accountReserve", accountReserve);
-        console.log("ownerReserve", ownerReserve);
-
         let totalInAccounts = 0;
         let circulating = 0;
         let numberOfAccounts = 0;
@@ -392,14 +389,8 @@ export class SupplyInfo {
       const quorum = signerList.SignerQuorum;
       const totalSigners = signerList.SignerEntries.length;
       const blackholesAccountsInSignerList = signerList.SignerEntries.filter(entry => this.blackholeAccounts.includes(entry.SignerEntry.Account)).length;
-      console.log("Checking signer list for: " + accountRoot.Account);
-      console.log("quorum: " + quorum);
-      console.log("totalSigners: " + totalSigners);
-      console.log("blackholesAccountsInSignerList: " + blackholesAccountsInSignerList);
-      console.log("calculation result: " + ((totalSigners - blackholesAccountsInSignerList) < quorum));
+      
       noSignerListOrSignerListBlackholed = (totalSigners - blackholesAccountsInSignerList) < quorum;
-
-      console.log("noSignerListOrSignerListBlackholed: " + noSignerListOrSignerListBlackholed);
     }
     
     //if master key disabled, no regular key set (or set to blackholed account) and no signer list -> black holed
