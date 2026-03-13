@@ -678,7 +678,7 @@ export class LedgerData {
 
           fs.writeFileSync(DATA_PATH+"token_escrow.js", JSON.stringify(tokenEscrow));
 
-          console.log(tokenEscrow.length + " token_escrow_enabled accounts saved to file system");
+          console.log(this.tokenEscrowEnabled.length + " token_escrow_enabled accounts saved to file system");
         } else {
           console.log("token escrow enabled empty! Nothing saved");
         }
