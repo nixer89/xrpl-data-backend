@@ -58,10 +58,7 @@ export class LedgerScanner {
         currentDate.setSeconds(0);
         currentDate.setMilliseconds(0);
 
-        let diff = currentDate.getMinutes() - SCHEDULE_MINUTE;
-
-        if(diff >=1 && diff < 15) //only start if withing the first 15 minutes of schedule
-          await this.readLedgerData(null, null, null, 0);
+        await this.readLedgerData(null, null, null, 0);
 
         scheduler.scheduleJob("resolveLedgerData1", {minute: 1}, () => this.scheduleLoadingIssuerData());
         scheduler.scheduleJob("resolveLedgerData2", {minute: 11}, () => this.scheduleLoadingIssuerData());
