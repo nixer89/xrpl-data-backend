@@ -535,13 +535,13 @@ export class LedgerData {
           let newAmmPool:AMMPool = {
             Account: ammAccount,
             Flags: ammObject.Flags,
-            TradingFee: ammObject.TradingFee,
+            TradingFee: ammObject.TradingFee ?? 0,
             Asset: "",
             Asset2: ""
           };
 
           if(!accRoot || !accRoot.Balance) {
-            console.log("No account root for AMM account or not balance: " + ammAccount);
+            console.log("No account root for AMM account or no balance: " + ammAccount);
             console.log("AMMRoot: " + JSON.stringify(accRoot));
             console.log("AMMObject: " + JSON.stringify(ammObject));
             console.log("Trustlines: " + JSON.stringify(trustlines));
@@ -551,17 +551,13 @@ export class LedgerData {
 
           //determine assets
           if(!ammObject.Asset.issuer ) {
-            //asset is XRP, take balance from AccountRoot but deduct reserves
-            let xrpBalance = Number(accRoot.Balance) - 1000000 - Number(accRoot.OwnerCount) * 200000; //reserve per owner + base reserve
-
-            newAmmPool.Asset = xrpBalance.toString();
+            //NO NEED TO DEDUCT RESERVES! an AMM pool can be drained completely
+            newAmmPool.Asset = accRoot.Balance
           }
           
           if(!ammObject.Asset2.issuer ) {
-            //asset is XRP, take balance from AccountRoot but deduct reserves
-            let xrpBalance = Number(accRoot.Balance) - 1000000 - Number(accRoot.OwnerCount) * 200000; //reserve per owner + base reserve
-
-            newAmmPool.Asset2 = xrpBalance.toString();
+            //NO NEED TO DEDUCT RESERVES! an AMM pool can be drained completely
+            newAmmPool.Asset2 = accRoot.Balance;
           }
 
           //find trustline for asset
