@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { DATA_PATH } from './util/config';
-import { AdaptedLedgerObject, AMMPool, IOU } from './util/types';
+import { AdaptedLedgerObject, AMMPool, FrozenTrustline, IOU } from './util/types';
 import { AccountRoot, AMM, RippleState } from 'xrpl/dist/npm/models/ledger';
 
 require("log-timestamp");
@@ -20,6 +20,8 @@ export class LedgerData {
 
     private transferRate:Map<string,number> = new Map();
     private tokenEscrowEnabled:string[] = [];
+    private frozenAccounts:string[] = [];
+    private frozenTrustlines:FrozenTrustline[] = [];
 
     private uniqueAccountProperties:string[] = ["Account","Destination","Owner","Authorize","NFTokenMinter","RegularKey"];
     private uniqueAccounts:Map<string,Map<string,number>> = new Map();
@@ -51,6 +53,8 @@ export class LedgerData {
     FLAG_SELL_NFT:number = 0x00000001;
 
     FLAG_AMM_NODE = 0x01000000;
+    FLAG_LOW_DEEP_FREEZE = 0x02000000;
+    FLAG_HIGH_DEEP_FREEZE = 0x04000000;
 
     private constructor() { }
 
@@ -162,6 +166,8 @@ export class LedgerData {
           } else {
             this.ammTrustlines.set(ammAccount, [trustline]);
           }
+        } else {
+          this.collectFrozenTrustline(trustline);
         }
       }
 
@@ -313,8 +319,10 @@ export class LedgerData {
             if(this.isDisallowXRPEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfDisallowXRP", 1);
 
-            if(this.isGlobalFreezeEnabled(ledgerObject[property]))
+            if(this.isGlobalFreezeEnabled(ledgerObject[property])) {
               this.increaseCountForProperty(ledgerObject, "flags", "lsfGlobalFreeze", 1);
+              this.frozenAccounts.push(ledgerObject.Account);
+            }
 
             if(this.isNoFreezeEnabled(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfNoFreeze", 1);
@@ -391,6 +399,12 @@ export class LedgerData {
 
             if(this.isRippleStateFlagHighFreeze(ledgerObject[property]))
               this.increaseCountForProperty(ledgerObject, "flags", "lsfHighFreeze", 1);
+
+            if(this.isRippleStateFlagLowDeepFreeze(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfLowDeepFreeze", 1);
+
+            if(this.isRippleStateFlagHighDeepFreeze(ledgerObject[property]))
+              this.increaseCountForProperty(ledgerObject, "flags", "lsfHighDeepFreeze", 1);
           }
 
           if("nftokenoffer" === ledgerObject.LedgerEntryType.toLowerCase()) {
@@ -458,6 +472,8 @@ export class LedgerData {
       this.ammAMMs = new Map();
       this.transferRate = new Map();
       this.tokenEscrowEnabled = [];
+      this.frozenAccounts = [];
+      this.frozenTrustlines = [];
       this.uniqueAccounts = new Map();
       this.scannedObjects = 0;
       this.objectsScanned = {};
@@ -681,6 +697,40 @@ export class LedgerData {
       } catch(err) {
         console.log(err);
       }
+
+      try {
+        let frozenAccountsData:any = {
+          ledger_index: this.getCurrentLedgerIndex(),
+          ledger_hash: this.getCurrentLedgerHash(),
+          ledger_close: this.getCurrentLedgerCloseTime(),
+          ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+          frozen_accounts: this.frozenAccounts
+        };
+
+        fs.rmSync(DATA_PATH+"frozen_accounts.js", { force: true });
+        fs.writeFileSync(DATA_PATH+"frozen_accounts.js", JSON.stringify(frozenAccountsData));
+
+        console.log(this.frozenAccounts.length + " globally frozen accounts saved to file system");
+      } catch(err) {
+        console.log(err);
+      }
+
+      try {
+        let frozenTrustlinesData:any = {
+          ledger_index: this.getCurrentLedgerIndex(),
+          ledger_hash: this.getCurrentLedgerHash(),
+          ledger_close: this.getCurrentLedgerCloseTime(),
+          ledger_close_ms: this.getCurrentLedgerCloseTimeMs(),
+          frozen_trustlines: this.frozenTrustlines
+        };
+
+        fs.rmSync(DATA_PATH+"frozen_trustlines.js", { force: true });
+        fs.writeFileSync(DATA_PATH+"frozen_trustlines.js", JSON.stringify(frozenTrustlinesData));
+
+        console.log(this.frozenTrustlines.length + " frozen trustlines saved to file system");
+      } catch(err) {
+        console.log(err);
+      }
     }
 
   isAllowTrustLineClawbackEnabled(flags:number) {
@@ -785,6 +835,69 @@ export class LedgerData {
 
   isRippleStateFlagHighFreeze(flags:number) {
     return this.isFlagSet(flags,this.FLAG_8388608);
+  }
+
+  isRippleStateFlagLowDeepFreeze(flags:number) {
+    return this.isFlagSet(flags,this.FLAG_LOW_DEEP_FREEZE);
+  }
+
+  isRippleStateFlagHighDeepFreeze(flags:number) {
+    return this.isFlagSet(flags,this.FLAG_HIGH_DEEP_FREEZE);
+  }
+
+  collectFrozenTrustline(trustline: RippleState): void {
+    const { issuer, holder } = this.resolveIssuerAndHolder(trustline);
+    if(!issuer || !holder || !this.isHolderTrustlineFrozen(trustline, holder)) {
+      return;
+    }
+
+    this.frozenTrustlines.push({
+      issuer,
+      currency: trustline.Balance.currency,
+      account: holder
+    });
+  }
+
+  isHolderTrustlineFrozen(trustline: RippleState, holder: string): boolean {
+    const flags = trustline.Flags;
+    const lowAccount = trustline.LowLimit.issuer;
+    const highAccount = trustline.HighLimit.issuer;
+
+    // Low froze → high account is blocked
+    if(holder === highAccount && (this.isRippleStateFlagLowFreeze(flags) || this.isRippleStateFlagLowDeepFreeze(flags))) {
+      return true;
+    }
+
+    // High froze → low account is blocked
+    if(holder === lowAccount && (this.isRippleStateFlagHighFreeze(flags) || this.isRippleStateFlagHighDeepFreeze(flags))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  resolveIssuerAndHolder(trustline: RippleState): { issuer: string, holder: string } {
+    const balance = Number.parseFloat(trustline.Balance.value);
+    let issuer: string = null;
+    let holder: string = null;
+
+    if(balance > 0) {
+      issuer = trustline.HighLimit.issuer;
+      holder = trustline.LowLimit.issuer;
+    } else if(balance < 0) {
+      issuer = trustline.LowLimit.issuer;
+      holder = trustline.HighLimit.issuer;
+    } else {
+      if(Number.parseFloat(trustline.HighLimit.value) > 0 && Number.parseFloat(trustline.LowLimit.value) == 0) {
+        issuer = trustline.LowLimit.issuer;
+        holder = trustline.HighLimit.issuer;
+      } else if(Number.parseFloat(trustline.LowLimit.value) > 0 && Number.parseFloat(trustline.HighLimit.value) == 0) {
+        issuer = trustline.HighLimit.issuer;
+        holder = trustline.LowLimit.issuer;
+      }
+    }
+
+    return { issuer, holder };
   }
 
   isNFTokenOfferFlagSell(flags:number) {

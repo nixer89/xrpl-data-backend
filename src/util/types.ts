@@ -83,3 +83,9 @@ export interface AMMPool {
     TradingFee: number,
     Flags: number
 }
+
+export interface FrozenTrustline {
+    issuer: string,
+    currency: string,
+    account: string
+}
