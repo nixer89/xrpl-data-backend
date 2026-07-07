@@ -149,22 +149,14 @@ export class LedgerData {
       if("ripplestate" === ledgerObject.LedgerEntryType.toLowerCase()) {
         let trustline:RippleState = ledgerObject as RippleState;
         if(this.isAmmTrustline(trustline.Flags)) {
-          //this is an AMM trustline
-          //extract the issuer and amm account and its token balance
-          const trustlineBalance = Number(trustline.Balance.value);
-          let ammAccount:string = "";
+          const ammAccount = this.getAmmAccountFromTrustline(trustline);
 
-          //positive balance means HIGH account is ISSUER and LOW account is AMM
-          if(trustlineBalance > 0) {
-            ammAccount = trustline.LowLimit.issuer;
-          } else if(trustlineBalance < 0) { //negative balance means LOW account is ISSUER and HIGH account is AMM
-            ammAccount = trustline.HighLimit.issuer;
-          }
-
-          if(this.ammTrustlines.has(ammAccount)) {
-            this.ammTrustlines.get(ammAccount).push(trustline);
-          } else {
-            this.ammTrustlines.set(ammAccount, [trustline]);
+          if(ammAccount) {
+            if(this.ammTrustlines.has(ammAccount)) {
+              this.ammTrustlines.get(ammAccount).push(trustline);
+            } else {
+              this.ammTrustlines.set(ammAccount, [trustline]);
+            }
           }
         } else {
           this.collectFrozenTrustline(trustline);
@@ -174,8 +166,7 @@ export class LedgerData {
       if("accountroot" === ledgerObject.LedgerEntryType.toLowerCase()) {
         let accRoot:AccountRoot = ledgerObject as AccountRoot;
 
-        if(accRoot.AMMID) {
-          //AMM account
+        if(accRoot.AMMID || this.ammAMMs.has(accRoot.Account)) {
           this.ammAccountRoots.set(accRoot.Account, accRoot);
         }
 
@@ -541,11 +532,13 @@ export class LedgerData {
       try {
         this.ammPools = [];
         let ammAccounts = Array.from(this.ammAMMs.keys());
+        let skippedMissingAccountRoot = 0;
+        let skippedMissingTrustlines = 0;
 
         for(let i = 0; i < ammAccounts.length; i++) {
           let ammAccount = ammAccounts[i];
           let ammObject:AMM = this.ammAMMs.get(ammAccount);
-          let accRoot:AccountRoot = this.ammAccountRoots.get(ammAccount);
+          let accRoot:AccountRoot = this.getAccountRootForAmm(ammAccount);
           let trustlines:RippleState[] = this.ammTrustlines.get(ammAccount);
 
           let newAmmPool:AMMPool = {
@@ -556,12 +549,8 @@ export class LedgerData {
             Asset2: ""
           };
 
-          if(!accRoot || !accRoot.Balance) {
-            console.log("No account root for AMM account or no balance: " + ammAccount);
-            console.log("AMMRoot: " + JSON.stringify(accRoot));
-            console.log("AMMObject: " + JSON.stringify(ammObject));
-            console.log("Trustlines: " + JSON.stringify(trustlines));
-            console.log("amm PoolObject: " + JSON.stringify(newAmmPool));
+          if(!accRoot || accRoot.Balance === undefined || accRoot.Balance === null) {
+            skippedMissingAccountRoot++;
             continue;
           }
 
@@ -610,18 +599,18 @@ export class LedgerData {
               }
             }
           } else {
-            console.log("No trustlines found for AMM account: " + ammAccount);
-          }
-
-          if(ammAccount === 'rB7idnFmYcGRNZRCALiuwxcrWLv78GmgMt') {
-            console.log(JSON.stringify(ammAccount));
-            console.log(JSON.stringify(ammObject));
-            console.log(JSON.stringify(accRoot));
-            console.log(JSON.stringify(trustlines));
-            console.log(JSON.stringify(newAmmPool));
+            skippedMissingTrustlines++;
           }
 
           this.ammPools.push(newAmmPool);
+        }
+
+        if(skippedMissingAccountRoot > 0) {
+          console.log(skippedMissingAccountRoot + " AMM pools skipped (account root not found)");
+        }
+
+        if(skippedMissingTrustlines > 0) {
+          console.log(skippedMissingTrustlines + " AMM pools missing trustline data");
         }
 
         if(this.ammPools && this.ammPools.length > 0) {
@@ -845,6 +834,43 @@ export class LedgerData {
     return this.isFlagSet(flags,this.FLAG_HIGH_DEEP_FREEZE);
   }
 
+  getAmmAccountFromTrustline(trustline: RippleState): string {
+    const lowLimit = Number(trustline.LowLimit.value);
+    const highLimit = Number(trustline.HighLimit.value);
+    const trustlineBalance = Number(trustline.Balance.value);
+
+    // AMM pseudo-account always has a 0 limit on its side of the trustline
+    if(lowLimit === 0 && highLimit !== 0) {
+      return trustline.LowLimit.issuer;
+    }
+
+    if(highLimit === 0 && lowLimit !== 0) {
+      return trustline.HighLimit.issuer;
+    }
+
+    // Fallback when both limits are 0
+    if(trustlineBalance > 0) {
+      return trustline.LowLimit.issuer;
+    }
+
+    if(trustlineBalance < 0) {
+      return trustline.HighLimit.issuer;
+    }
+
+    return "";
+  }
+
+  getAccountRootForAmm(ammAccount: string): AccountRoot {
+    let accRoot = this.ammAccountRoots.get(ammAccount);
+
+    if(!accRoot) {
+      const { SupplyInfo } = require('./supplyInfo');
+      accRoot = SupplyInfo.Instance.accounts[ammAccount];
+    }
+
+    return accRoot;
+  }
+
   collectFrozenTrustline(trustline: RippleState): void {
     const { issuer, holder } = this.resolveIssuerAndHolder(trustline);
     if(!issuer || !holder || !this.isHolderTrustlineFrozen(trustline, holder)) {
@@ -854,8 +880,27 @@ export class LedgerData {
     this.frozenTrustlines.push({
       issuer,
       currency: trustline.Balance.currency,
-      account: holder
+      account: holder,
+      deep: this.isHolderTrustlineDeepFrozen(trustline, holder)
     });
+  }
+
+  isHolderTrustlineDeepFrozen(trustline: RippleState, holder: string): boolean {
+    const flags = trustline.Flags;
+    const lowAccount = trustline.LowLimit.issuer;
+    const highAccount = trustline.HighLimit.issuer;
+
+    // Low deep-froze → high account is blocked
+    if(holder === highAccount && this.isRippleStateFlagLowDeepFreeze(flags)) {
+      return true;
+    }
+
+    // High deep-froze → low account is blocked
+    if(holder === lowAccount && this.isRippleStateFlagHighDeepFreeze(flags)) {
+      return true;
+    }
+
+    return false;
   }
 
   isHolderTrustlineFrozen(trustline: RippleState, holder: string): boolean {

@@ -87,5 +87,6 @@ export interface AMMPool {
 export interface FrozenTrustline {
     issuer: string,
     currency: string,
-    account: string
+    account: string,
+    deep: boolean
 }
